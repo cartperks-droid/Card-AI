@@ -1,0 +1,114 @@
+[
+  {
+    "pack_id": 1,
+    "name": "Era 1",
+    "first_card_id": 1,
+    "last_card_id": 65,
+    "basis": "User-specified pack order and screenshot section boundaries",
+    "status": "user_screenshot_supported"
+  },
+  {
+    "pack_id": 2,
+    "name": "Egypt",
+    "first_card_id": 66,
+    "last_card_id": 79,
+    "basis": "User-specified pack order and screenshot section boundaries",
+    "status": "user_screenshot_supported"
+  },
+  {
+    "pack_id": 3,
+    "name": "Anime",
+    "first_card_id": 80,
+    "last_card_id": 104,
+    "basis": "User-specified pack order and screenshot section boundaries",
+    "status": "user_screenshot_supported"
+  },
+  {
+    "pack_id": 4,
+    "name": "Rising Sun",
+    "first_card_id": 105,
+    "last_card_id": 119,
+    "basis": "User-specified pack order and screenshot section boundaries",
+    "status": "user_screenshot_supported"
+  },
+  {
+    "pack_id": 5,
+    "name": "Immortal",
+    "first_card_id": 120,
+    "last_card_id": 140,
+    "basis": "User-specified pack order and screenshot section boundaries",
+    "status": "user_screenshot_supported"
+  },
+  {
+    "pack_id": 6,
+    "name": "Prehistoric",
+    "first_card_id": 141,
+    "last_card_id": 159,
+    "basis": "User-specified pack order and screenshot section boundaries",
+    "status": "user_screenshot_supported"
+  },
+  {
+    "pack_id": 7,
+    "name": "Era 2",
+    "first_card_id": 160,
+    "last_card_id": 182,
+    "basis": "User-specified pack order and screenshot section boundaries",
+    "status": "user_screenshot_supported"
+  },
+  {
+    "pack_id": 8,
+    "name": "Video Game",
+    "first_card_id": 183,
+    "last_card_id": 194,
+    "basis": "User-specified pack order and screenshot section boundaries",
+    "status": "user_screenshot_supported"
+  },
+  {
+    "pack_id": 9,
+    "name": "Cryptid",
+    "first_card_id": 195,
+    "last_card_id": 204,
+    "basis": "User-specified pack order and screenshot section boundaries",
+    "status": "user_screenshot_supported"
+  },
+  {
+    "pack_id": 10,
+    "name": "Bosses",
+    "first_card_id": 205,
+    "last_card_id": 212,
+    "basis": "User-specified pack order and screenshot section boundaries",
+    "status": "user_screenshot_supported"
+  },
+  {
+    "pack_id": 11,
+    "name": "Limited",
+    "first_card_id": 213,
+    "last_card_id": 250,
+    "basis": "User-specified pack order and screenshot section boundaries",
+    "status": "user_screenshot_supported"
+  },
+  {
+    "pack_id": 12,
+    "name": "Christmas",
+    "first_card_id": 251,
+    "last_card_id": 265,
+    "basis": "User-specified pack order and screenshot section boundaries",
+    "status": "user_screenshot_supported"
+  },
+  {
+    "pack_id": 13,
+    "name": "Halloween",
+    "first_card_id": 266,
+    "last_card_id": 273,
+    "basis": "User-specified pack order and screenshot section boundaries",
+    "status": "user_screenshot_supported"
+  },
+  {
+    "pack_id": 14,
+    "name": "Halloween 2025",
+    "first_card_id": 274,
+    "last_card_id": 289,
+    "basis": "User-specified pack order and screenshot section boundaries",
+    "status": "user_screenshot_supported"
+  }
+]

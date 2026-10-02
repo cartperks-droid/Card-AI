@@ -1,0 +1,16 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "snap-card-engine"
+version = "0.1.0"
+description = "Validated migration of the Snap card dataset and battle engine"
+requires-python = ">=3.11"
+dependencies = []
+
+[project.optional-dependencies]
+model = ["torch>=2.2", "numpy>=1.26"]
+
+[tool.setuptools.packages.find]
+include = ["card_engine*"]

@@ -1,0 +1,290 @@
+card_id,name,status,training_labels_allowed,reason
+1,Archer,experimental_complete_ability_subset,false,Shared event/rounding rules still require game validation
+2,Shining Armor,experimental_complete_ability_subset,false,Shared event/rounding rules still require game validation
+3,Good Boy,experimental_complete_ability_subset,false,Shared event/rounding rules still require game validation
+4,Useless Seer,unsupported,false,4 Useless Seer: complete ability is not implemented; no battle label generated
+5,Baby Skeleton,experimental_complete_ability_subset,false,Shared event/rounding rules still require game validation
+6,Wizard,experimental_complete_ability_subset,false,Shared event/rounding rules still require game validation
+7,Forest Spirit,experimental_complete_ability_subset,false,Shared event/rounding rules still require game validation
+8,General Moon Zoo,experimental_complete_ability_subset,false,Shared event/rounding rules still require game validation
+9,Crown Prince,experimental_complete_ability_subset,false,Shared event/rounding rules still require game validation
+10,Arthur,experimental_complete_ability_subset,false,Shared event/rounding rules still require game validation
+11,Beelzebub,experimental_complete_ability_subset,false,Shared event/rounding rules still require game validation
+12,Michael,experimental_complete_ability_subset,false,Shared event/rounding rules still require game validation
+13,Lucifer,experimental_complete_ability_subset,false,Shared event/rounding rules still require game validation
+14,Knightmare,experimental_complete_ability_subset,false,Shared event/rounding rules still require game validation
+15,Arcane Avian,experimental_complete_ability_subset,false,Shared event/rounding rules still require game validation
+16,Tartarus,unsupported,false,16 Tartarus: complete ability is not implemented; no battle label generated
+17,Greedy Belly,experimental_complete_ability_subset,false,Shared event/rounding rules still require game validation
+18,Arthur of Excalibur,experimental_complete_ability_subset,false,Shared event/rounding rules still require game validation
+19,Wind Spirit,experimental_complete_ability_subset,false,Shared event/rounding rules still require game validation
+20,Conqueror,experimental_complete_ability_subset,false,Shared event/rounding rules still require game validation
+21,Ice Queen,experimental_complete_ability_subset,false,Shared event/rounding rules still require game validation
+22,Three-Legged Golden Crow,experimental_complete_ability_subset,false,Shared event/rounding rules still require game validation
+23,Ixion,experimental_complete_ability_subset,false,Shared event/rounding rules still require game validation
+24,Leviathan,experimental_complete_ability_subset,false,Shared event/rounding rules still require game validation
+25,Brunhilde,experimental_complete_ability_subset,false,Shared event/rounding rules still require game validation
+26,Savior,unsupported,false,26 Savior: complete ability is not implemented; no battle label generated
+27,Frankenstein,unsupported,false,27 Frankenstein: complete ability is not implemented; no battle label generated
+28,Titan,experimental_complete_ability_subset,false,Shared event/rounding rules still require game validation
+29,Sciron,experimental_complete_ability_subset,false,Shared event/rounding rules still require game validation
+30,Mist Spirit,unsupported,false,30 Mist Spirit: complete ability is not implemented; no battle label generated
+31,Phoenix,experimental_complete_ability_subset,false,Shared event/rounding rules still require game validation
+32,Hoarfrost Phoenix,experimental_complete_ability_subset,false,Shared event/rounding rules still require game validation
+33,Hell's Army,unsupported,false,33 Hell's Army: complete ability is not implemented; no battle label generated
+34,Zeus,experimental_complete_ability_subset,false,Shared event/rounding rules still require game validation
+35,Pegasus,experimental_complete_ability_subset,false,Shared event/rounding rules still require game validation
+36,Bad Boys,experimental_complete_ability_subset,false,Shared event/rounding rules still require game validation
+37,Pandora,unsupported,false,37 Pandora: complete ability is not implemented; no battle label generated
+38,Heaven's Armor,experimental_complete_ability_subset,false,Shared event/rounding rules still require game validation
+39,Jamiy the Bald One,experimental_complete_ability_subset,false,Shared event/rounding rules still require game validation
+40,ToadBoiGaming,experimental_complete_ability_subset,false,Shared event/rounding rules still require game validation
+41,Boreas,experimental_complete_ability_subset,false,Shared event/rounding rules still require game validation
+42,Thor,experimental_complete_ability_subset,false,Shared event/rounding rules still require game validation
+43,Loki,unsupported,false,43 Loki: complete ability is not implemented; no battle label generated
+44,Poseidon,experimental_complete_ability_subset,false,Shared event/rounding rules still require game validation
+45,Limitless Rivals,experimental_complete_ability_subset,false,Shared event/rounding rules still require game validation
+46,Vicious,experimental_complete_ability_subset,false,Shared event/rounding rules still require game validation
+47,Typhon,experimental_complete_ability_subset,false,Shared event/rounding rules still require game validation
+48,The Curse,unsupported,false,48 The Curse: complete ability is not implemented; no battle label generated
+49,Hades,unsupported,false,49 Hades: complete ability is not implemented; no battle label generated
+50,Judgement Day,experimental_complete_ability_subset,false,Shared event/rounding rules still require game validation
+51,Odin,experimental_complete_ability_subset,false,Shared event/rounding rules still require game validation
+52,Black Plague,unsupported,false,52 Black Plague: complete ability is not implemented; no battle label generated
+53,Chaos,unsupported,false,53 Chaos: complete ability is not implemented; no battle label generated
+54,Deus Ex,experimental_complete_ability_subset,false,Shared event/rounding rules still require game validation
+55,Siegfried,experimental_complete_ability_subset,false,Shared event/rounding rules still require game validation
+56,Astraeus,unsupported,false,56 Astraeus: complete ability is not implemented; no battle label generated
+57,Surtr,experimental_complete_ability_subset,false,Shared event/rounding rules still require game validation
+58,Cronus,experimental_complete_ability_subset,false,Shared event/rounding rules still require game validation
+59,Gilgamesh,experimental_complete_ability_subset,false,Shared event/rounding rules still require game validation
+60,Fafnir,experimental_complete_ability_subset,false,Shared event/rounding rules still require game validation
+61,Ragon,experimental_complete_ability_subset,false,Shared event/rounding rules still require game validation
+62,Serpent Mist,experimental_complete_ability_subset,false,Shared event/rounding rules still require game validation
+63,Yeti,experimental_complete_ability_subset,false,Shared event/rounding rules still require game validation
+64,Achyls,experimental_complete_ability_subset,false,Shared event/rounding rules still require game validation
+65,Parallax,experimental_complete_ability_subset,false,Shared event/rounding rules still require game validation
+66,Mummy,experimental_complete_ability_subset,false,Shared event/rounding rules still require game validation
+67,Dancer,experimental_complete_ability_subset,false,Shared event/rounding rules still require game validation
+68,Vizier,experimental_complete_ability_subset,false,Shared event/rounding rules still require game validation
+69,Black Cat,unsupported,false,69 Black Cat: complete ability is not implemented; no battle label generated
+70,Sekhmet,experimental_complete_ability_subset,false,Shared event/rounding rules still require game validation
+71,Amenhotep,experimental_complete_ability_subset,false,Shared event/rounding rules still require game validation
+72,Sphinx,experimental_complete_ability_subset,false,Shared event/rounding rules still require game validation
+73,Horus,experimental_complete_ability_subset,false,Shared event/rounding rules still require game validation
+74,Shu,experimental_complete_ability_subset,false,Shared event/rounding rules still require game validation
+75,Set,unsupported,false,75 Set: complete ability is not implemented; no battle label generated
+76,Anubis,unsupported,false,76 Anubis: complete ability is not implemented; no battle label generated
+77,Serket,unsupported,false,77 Serket: complete ability is not implemented; no battle label generated
+78,Hathor,experimental_complete_ability_subset,false,Shared event/rounding rules still require game validation
+79,Ra,unsupported,false,79 Ra: complete ability is not implemented; no battle label generated
+80,Sorceror,unsupported,false,80 Sorceror: complete ability is not implemented; no battle label generated
+81,Demon Hunter,experimental_complete_ability_subset,false,Shared event/rounding rules still require game validation
+82,Trainee,experimental_complete_ability_subset,false,Shared event/rounding rules still require game validation
+83,Gambler,unsupported,false,83 Gambler: complete ability is not implemented; no battle label generated
+84,Stone Scientist,experimental_complete_ability_subset,false,Shared event/rounding rules still require game validation
+85,Darling,experimental_complete_ability_subset,false,Shared event/rounding rules still require game validation
+86,Gunslinger,experimental_complete_ability_subset,false,Shared event/rounding rules still require game validation
+87,Artoria of Excalibur,experimental_complete_ability_subset,false,Shared event/rounding rules still require game validation
+88,Academy Student,experimental_complete_ability_subset,false,Shared event/rounding rules still require game validation
+89,Priest,experimental_complete_ability_subset,false,Shared event/rounding rules still require game validation
+90,Control Freak,unsupported,false,90 Control Freak: complete ability is not implemented; no battle label generated
+91,Vampire Lord,experimental_complete_ability_subset,false,Shared event/rounding rules still require game validation
+92,Admiral Ice,experimental_complete_ability_subset,false,Shared event/rounding rules still require game validation
+93,Nao Presence,experimental_complete_ability_subset,false,Shared event/rounding rules still require game validation
+94,Immortal Witch,experimental_complete_ability_subset,false,Shared event/rounding rules still require game validation
+95,Tornado,unsupported,false,95 Tornado: complete ability is not implemented; no battle label generated
+96,Failed Mage,experimental_complete_ability_subset,false,Shared event/rounding rules still require game validation
+97,Joe,experimental_complete_ability_subset,false,Shared event/rounding rules still require game validation
+98,Ultimate Brawler,unsupported,false,98 Ultimate Brawler: complete ability is not implemented; no battle label generated
+99,Cosmic Pop Star,unsupported,false,99 Cosmic Pop Star: complete ability is not implemented; no battle label generated
+100,Mastermind,experimental_complete_ability_subset,false,Shared event/rounding rules still require game validation
+101,Cat Lady,unsupported,false,101 Cat Lady: complete ability is not implemented; no battle label generated
+102,Domain Master,experimental_complete_ability_subset,false,Shared event/rounding rules still require game validation
+103,Kira,unsupported,false,103 Kira: complete ability is not implemented; no battle label generated
+104,Piccolo,experimental_complete_ability_subset,false,Shared event/rounding rules still require game validation
+105,Ninja,experimental_complete_ability_subset,false,Shared event/rounding rules still require game validation
+106,Samurai,unsupported,false,106 Samurai: complete ability is not implemented; no battle label generated
+107,Onmyoji,unsupported,false,107 Onmyoji: complete ability is not implemented; no battle label generated
+108,Kitsune,experimental_complete_ability_subset,false,Shared event/rounding rules still require game validation
+109,A0-ON1,unsupported,false,109 A0-ON1: complete ability is not implemented; no battle label generated
+110,AK4-ON1,unsupported,false,110 AK4-ON1: complete ability is not implemented; no battle label generated
+111,Shuten-dōji,unsupported,false,111 Shuten-dōji: complete ability is not implemented; no battle label generated
+112,River Dragon,experimental_complete_ability_subset,false,Shared event/rounding rules still require game validation
+113,Sasaki Kojiro,experimental_complete_ability_subset,false,Shared event/rounding rules still require game validation
+114,Inari,experimental_complete_ability_subset,false,Shared event/rounding rules still require game validation
+115,Yamato no Orochi,experimental_complete_ability_subset,false,Shared event/rounding rules still require game validation
+116,Susanoo,unsupported,false,116 Susanoo: complete ability is not implemented; no battle label generated
+117,Tsukuyomi,unsupported,false,117 Tsukuyomi: complete ability is not implemented; no battle label generated
+118,Amaterasu,experimental_complete_ability_subset,false,Shared event/rounding rules still require game validation
+119,Kuchisake-onna,unsupported,false,119 Kuchisake-onna: complete ability is not implemented; no battle label generated
+120,Demon Cultivator,unsupported,false,120 Demon Cultivator: complete ability is not implemented; no battle label generated
+121,Martial Artist,experimental_complete_ability_subset,false,Shared event/rounding rules still require game validation
+122,Heavenly Demon,unsupported,false,122 Heavenly Demon: complete ability is not implemented; no battle label generated
+123,Jiāngshī,experimental_complete_ability_subset,false,Shared event/rounding rules still require game validation
+124,Buddhist Monk,experimental_complete_ability_subset,false,Shared event/rounding rules still require game validation
+125,Divine Doctor,unsupported,false,125 Divine Doctor: complete ability is not implemented; no battle label generated
+126,Immortal Cultivator,unsupported,false,126 Immortal Cultivator: complete ability is not implemented; no battle label generated
+127,Qilin,experimental_complete_ability_subset,false,Shared event/rounding rules still require game validation
+128,The Jade Emporer,experimental_complete_ability_subset,false,Shared event/rounding rules still require game validation
+129,The Awakened One,unsupported,false,129 The Awakened One: complete ability is not implemented; no battle label generated
+130,Nüwa,unsupported,false,130 Nüwa: complete ability is not implemented; no battle label generated
+131,Shén Lóng,experimental_complete_ability_subset,false,Shared event/rounding rules still require game validation
+132,Xīfāng Báihü,experimental_complete_ability_subset,false,Shared event/rounding rules still require game validation
+133,Běi Fāng Xuán Wü,unsupported,false,133 Běi Fāng Xuán Wü: complete ability is not implemented; no battle label generated
+134,Dōng Fāng Qīng Lóng,experimental_complete_ability_subset,false,Shared event/rounding rules still require game validation
+135,Nán Fāng Zhū Què,experimental_complete_ability_subset,false,Shared event/rounding rules still require game validation
+136,Shennong,experimental_complete_ability_subset,false,Shared event/rounding rules still require game validation
+137,Fuxi,unsupported,false,137 Fuxi: complete ability is not implemented; no battle label generated
+138,Sun Wukong,unsupported,false,138 Sun Wukong: complete ability is not implemented; no battle label generated
+139,Buddha,unsupported,false,139 Buddha: complete ability is not implemented; no battle label generated
+140,Pangu,experimental_complete_ability_subset,false,Shared event/rounding rules still require game validation
+141,Ancient Egg,unsupported,false,141 Ancient Egg: complete ability is not implemented; no battle label generated
+142,Stegosaurus,experimental_complete_ability_subset,false,Shared event/rounding rules still require game validation
+143,Brachiosaurus,unsupported,false,143 Brachiosaurus: complete ability is not implemented; no battle label generated
+144,Tricerotops,unsupported,false,144 Tricerotops: complete ability is not implemented; no battle label generated
+145,Pterodactylus,experimental_complete_ability_subset,false,Shared event/rounding rules still require game validation
+146,Dilophosaurus,unsupported,false,146 Dilophosaurus: complete ability is not implemented; no battle label generated
+147,Mammoth,experimental_complete_ability_subset,false,Shared event/rounding rules still require game validation
+148,Umbrasaur,experimental_complete_ability_subset,false,Shared event/rounding rules still require game validation
+149,Sabertooth Tiger,experimental_complete_ability_subset,false,Shared event/rounding rules still require game validation
+150,Unicorn,experimental_complete_ability_subset,false,Shared event/rounding rules still require game validation
+151,Meteosaurus,unsupported,false,151 Meteosaurus: complete ability is not implemented; no battle label generated
+152,Marrowclaw,unsupported,false,152 Marrowclaw: complete ability is not implemented; no battle label generated
+153,Ankylosaurus,experimental_complete_ability_subset,false,Shared event/rounding rules still require game validation
+154,Velociraptor,unsupported,false,154 Velociraptor: complete ability is not implemented; no battle label generated
+155,Cyberdon,unsupported,false,155 Cyberdon: complete ability is not implemented; no battle label generated
+156,Behemoth,experimental_complete_ability_subset,false,Shared event/rounding rules still require game validation
+157,Tyrannosaurus Rex,unsupported,false,157 Tyrannosaurus Rex: complete ability is not implemented; no battle label generated
+158,Megalodon,experimental_complete_ability_subset,false,Shared event/rounding rules still require game validation
+159,Tyrannodon,unsupported,false,159 Tyrannodon: complete ability is not implemented; no battle label generated
+160,Hunter,experimental_complete_ability_subset,false,Shared event/rounding rules still require game validation
+161,Resolute Blade,experimental_complete_ability_subset,false,Shared event/rounding rules still require game validation
+162,Bacon Hair,experimental_complete_ability_subset,false,Shared event/rounding rules still require game validation
+163,Soft Paw,experimental_complete_ability_subset,false,Shared event/rounding rules still require game validation
+164,True Prophet,experimental_complete_ability_subset,false,Shared event/rounding rules still require game validation
+165,Cherub,experimental_complete_ability_subset,false,Shared event/rounding rules still require game validation
+166,Engineer,experimental_complete_ability_subset,false,Shared event/rounding rules still require game validation
+167,Volcano Spirit,experimental_complete_ability_subset,false,Shared event/rounding rules still require game validation
+168,Julius Leader,experimental_complete_ability_subset,false,Shared event/rounding rules still require game validation
+169,Noveau Riche,experimental_complete_ability_subset,false,Shared event/rounding rules still require game validation
+170,Robin Hood,experimental_complete_ability_subset,false,Shared event/rounding rules still require game validation
+171,Infected Maw,experimental_complete_ability_subset,false,Shared event/rounding rules still require game validation
+172,Seraphim,experimental_complete_ability_subset,false,Shared event/rounding rules still require game validation
+173,Terra's Aria,experimental_complete_ability_subset,false,Shared event/rounding rules still require game validation
+174,Count Muscula,experimental_complete_ability_subset,false,Shared event/rounding rules still require game validation
+175,Poison Witch,unsupported,false,175 Poison Witch: complete ability is not implemented; no battle label generated
+176,Skeleton King,experimental_complete_ability_subset,false,Shared event/rounding rules still require game validation
+177,Juggernoid,unsupported,false,177 Juggernoid: complete ability is not implemented; no battle label generated
+178,Zombie Dragon,unsupported,false,178 Zombie Dragon: complete ability is not implemented; no battle label generated
+179,Assassin King,experimental_complete_ability_subset,false,Shared event/rounding rules still require game validation
+180,Slum Dweller,experimental_complete_ability_subset,false,Shared event/rounding rules still require game validation
+181,Malakim,experimental_complete_ability_subset,false,Shared event/rounding rules still require game validation
+182,Hard Claws,experimental_complete_ability_subset,false,Shared event/rounding rules still require game validation
+183,Steven,unsupported,false,183 Steven: complete ability is not implemented; no battle label generated
+184,Hollow,unsupported,false,184 Hollow: complete ability is not implemented; no battle label generated
+185,Hell killer,experimental_complete_ability_subset,false,Shared event/rounding rules still require game validation
+186,The Sack,unsupported,false,186 The Sack: complete ability is not implemented; no battle label generated
+187,Creed,experimental_complete_ability_subset,false,Shared event/rounding rules still require game validation
+188,god-Slayer,experimental_complete_ability_subset,false,Shared event/rounding rules still require game validation
+189,Melanin,unsupported,false,189 Melanin: complete ability is not implemented; no battle label generated
+190,Necro-orc,experimental_complete_ability_subset,false,Shared event/rounding rules still require game validation
+191,NO. 2,experimental_complete_ability_subset,false,Shared event/rounding rules still require game validation
+192,Ice King,unsupported,false,192 Ice King: complete ability is not implemented; no battle label generated
+193,Heavenly father,experimental_complete_ability_subset,false,Shared event/rounding rules still require game validation
+194,Durante,unsupported,false,194 Durante: complete ability is not implemented; no battle label generated
+195,Fresno Nightcrawler,unsupported,false,195 Fresno Nightcrawler: complete ability is not implemented; no battle label generated
+196,Loch Ness,unsupported,false,196 Loch Ness: complete ability is not implemented; no battle label generated
+197,Loveland Frog,experimental_complete_ability_subset,false,Shared event/rounding rules still require game validation
+198,Chupcabra,experimental_complete_ability_subset,false,Shared event/rounding rules still require game validation
+199,Jersey Devil,unsupported,false,199 Jersey Devil: complete ability is not implemented; no battle label generated
+200,Mothman,experimental_complete_ability_subset,false,Shared event/rounding rules still require game validation
+201,Bigfoot,experimental_complete_ability_subset,false,Shared event/rounding rules still require game validation
+202,Wendigo,experimental_complete_ability_subset,false,Shared event/rounding rules still require game validation
+203,The Rake,unsupported,false,203 The Rake: complete ability is not implemented; no battle label generated
+204,Kraken,unsupported,false,204 Kraken: complete ability is not implemented; no battle label generated
+205,Chronus The Hoarder,experimental_complete_ability_subset,false,Shared event/rounding rules still require game validation
+206,Malik The Sovereign,experimental_complete_ability_subset,false,Shared event/rounding rules still require game validation
+207,Gideon The Insatiable,experimental_complete_ability_subset,false,Shared event/rounding rules still require game validation
+208,Lilith the Enchantress,experimental_complete_ability_subset,false,Shared event/rounding rules still require game validation
+209,Morpheus the Slumberer,experimental_complete_ability_subset,false,Shared event/rounding rules still require game validation
+210,Raze The Destroyer,experimental_complete_ability_subset,false,Shared event/rounding rules still require game validation
+211,Sable The Envious,unsupported,false,211 Sable The Envious: complete ability is not implemented; no battle label generated
+212,Mother of Beasts,unsupported,false,212 Mother of Beasts: complete ability is not implemented; no battle label generated
+213,100 Men,experimental_complete_ability_subset,false,Shared event/rounding rules still require game validation
+214,Naga,unsupported,false,214 Naga: complete ability is not implemented; no battle label generated
+215,Uncle Sam,unsupported,false,215 Uncle Sam: complete ability is not implemented; no battle label generated
+216,"Shay, Heart of the Cards",experimental_complete_ability_subset,false,Shared event/rounding rules still require game validation
+217,Gorilla,experimental_complete_ability_subset,false,Shared event/rounding rules still require game validation
+218,Valentine's Specter,unsupported,false,218 Valentine's Specter: complete ability is not implemented; no battle label generated
+219,Sisyphus,experimental_complete_ability_subset,false,Shared event/rounding rules still require game validation
+220,George Washington,experimental_complete_ability_subset,false,Shared event/rounding rules still require game validation
+221,Cave Goblin & Wind Spirit,experimental_complete_ability_subset,false,Shared event/rounding rules still require game validation
+222,Hera,experimental_complete_ability_subset,false,Shared event/rounding rules still require game validation
+223,Dad,experimental_complete_ability_subset,false,Shared event/rounding rules still require game validation
+224,Kid Gohan,unsupported,false,224 Kid Gohan: complete ability is not implemented; no battle label generated
+225,Milk,unsupported,false,225 Milk: complete ability is not implemented; no battle label generated
+226,Aphrodite,experimental_complete_ability_subset,false,Shared event/rounding rules still require game validation
+227,Frank,experimental_complete_ability_subset,false,Shared event/rounding rules still require game validation
+228,Eclipseborn Luminant,unsupported,false,228 Eclipseborn Luminant: complete ability is not implemented; no battle label generated
+229,Turkey,experimental_complete_ability_subset,false,Shared event/rounding rules still require game validation
+230,The Broken One,unsupported,false,230 The Broken One: complete ability is not implemented; no battle label generated
+231,Supreme Ozzy,experimental_complete_ability_subset,false,Shared event/rounding rules still require game validation
+232,Cave Goblin God,experimental_complete_ability_subset,false,Shared event/rounding rules still require game validation
+233,Anubis & Hades,unsupported,false,233 Anubis & Hades: complete ability is not implemented; no battle label generated
+234,Longmu,unsupported,false,234 Longmu: complete ability is not implemented; no battle label generated
+235,Star Eater,experimental_complete_ability_subset,false,Shared event/rounding rules still require game validation
+236,Eonus,unsupported,false,236 Eonus: complete ability is not implemented; no battle label generated
+237,Pestilence,unsupported,false,237 Pestilence: complete ability is not implemented; no battle label generated
+238,Ragon & Fafnir,experimental_complete_ability_subset,false,Shared event/rounding rules still require game validation
+239,Cthulu,unsupported,false,239 Cthulu: complete ability is not implemented; no battle label generated
+240,Fate Seamstress,unsupported,false,240 Fate Seamstress: complete ability is not implemented; no battle label generated
+241,Famine,experimental_complete_ability_subset,false,Shared event/rounding rules still require game validation
+242,War,experimental_complete_ability_subset,false,Shared event/rounding rules still require game validation
+243,Community,experimental_complete_ability_subset,false,Shared event/rounding rules still require game validation
+244,Azure Witch,experimental_complete_ability_subset,false,Shared event/rounding rules still require game validation
+245,Death,experimental_complete_ability_subset,false,Shared event/rounding rules still require game validation
+246,Memories,experimental_complete_ability_subset,false,Shared event/rounding rules still require game validation
+247,Legends,unsupported,false,247 Legends: complete ability is not implemented; no battle label generated
+248,Sarimanok,experimental_complete_ability_subset,false,Shared event/rounding rules still require game validation
+249,Bakunawa,experimental_complete_ability_subset,false,Shared event/rounding rules still require game validation
+250,Time Lord Stryx,unsupported,false,250 Time Lord Stryx: complete ability is not implemented; no battle label generated
+251,Frosty The Snowman,experimental_complete_ability_subset,false,Shared event/rounding rules still require game validation
+252,Old Man Winter,experimental_complete_ability_subset,false,Shared event/rounding rules still require game validation
+253,Rudolph,unsupported,false,253 Rudolph: complete ability is not implemented; no battle label generated
+254,Gingerbread Man,unsupported,false,254 Gingerbread Man: complete ability is not implemented; no battle label generated
+255,Dionysus,experimental_complete_ability_subset,false,Shared event/rounding rules still require game validation
+256,The Grinch,experimental_complete_ability_subset,false,Shared event/rounding rules still require game validation
+257,Krampus,experimental_complete_ability_subset,false,Shared event/rounding rules still require game validation
+258,Wandering Snowman,experimental_complete_ability_subset,false,Shared event/rounding rules still require game validation
+259,Mrs. Claus,experimental_complete_ability_subset,false,Shared event/rounding rules still require game validation
+260,Santa Claus,experimental_complete_ability_subset,false,Shared event/rounding rules still require game validation
+261,Toy Bear,experimental_complete_ability_subset,false,Shared event/rounding rules still require game validation
+262,Toy Car,experimental_complete_ability_subset,false,Shared event/rounding rules still require game validation
+263,The Jack-in-the-Box,experimental_complete_ability_subset,false,Shared event/rounding rules still require game validation
+264,Toy Nutcracker,experimental_complete_ability_subset,false,Shared event/rounding rules still require game validation
+265,Santa Claws,unsupported,false,265 Santa Claws: complete ability is not implemented; no battle label generated
+266,Zombie,experimental_complete_ability_subset,false,Shared event/rounding rules still require game validation
+267,Banshee,unsupported,false,267 Banshee: complete ability is not implemented; no battle label generated
+268,Witch,unsupported,false,268 Witch: complete ability is not implemented; no battle label generated
+269,Scarecrow,unsupported,false,269 Scarecrow: complete ability is not implemented; no battle label generated
+270,Bloody Mary,unsupported,false,270 Bloody Mary: complete ability is not implemented; no battle label generated
+271,Revenant,experimental_complete_ability_subset,false,Shared event/rounding rules still require game validation
+272,Dr. Frankenstein,unsupported,false,272 Dr. Frankenstein: complete ability is not implemented; no battle label generated
+273,Marionette,unsupported,false,273 Marionette: complete ability is not implemented; no battle label generated
+274,Ghoul,unsupported,false,274 Ghoul: complete ability is not implemented; no battle label generated
+275,Zombie Nurse,unsupported,false,275 Zombie Nurse: complete ability is not implemented; no battle label generated
+276,Night Witch,unsupported,false,276 Night Witch: complete ability is not implemented; no battle label generated
+277,The Hanged Man,unsupported,false,277 The Hanged Man: complete ability is not implemented; no battle label generated
+278,Walking Dead,unsupported,false,278 Walking Dead: complete ability is not implemented; no battle label generated
+279,Headless Horseman,experimental_complete_ability_subset,false,Shared event/rounding rules still require game validation
+280,The Blood Countess,experimental_complete_ability_subset,false,Shared event/rounding rules still require game validation
+281,The Composer,unsupported,false,281 The Composer: complete ability is not implemented; no battle label generated
+282,Dracula,experimental_complete_ability_subset,false,Shared event/rounding rules still require game validation
+283,Flying Dutchman,unsupported,false,283 Flying Dutchman: complete ability is not implemented; no battle label generated
+284,Hecate,unsupported,false,284 Hecate: complete ability is not implemented; no battle label generated
+285,Abomination,experimental_complete_ability_subset,false,Shared event/rounding rules still require game validation
+286,Sleep Paralysis,unsupported,false,286 Sleep Paralysis: complete ability is not implemented; no battle label generated
+287,Michael M.,experimental_complete_ability_subset,false,Shared event/rounding rules still require game validation
+288,Jason,experimental_complete_ability_subset,false,Shared event/rounding rules still require game validation
+289,Glamour,unsupported,false,289 Glamour: complete ability is not implemented; no battle label generated

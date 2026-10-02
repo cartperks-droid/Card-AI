@@ -1,0 +1,106 @@
+"""Label generation and the training loop (tiny runs)."""
+
+import random
+import tempfile
+import unittest
+from pathlib import Path
+
+import torch
+
+from card_engine.catalog import load_catalog
+from card_engine.model import BattleModel, load_model_data
+from card_engine.simulator import native
+from card_engine.training import labels
+from card_engine.training.train import Inputs, card_table, load_split, train
+
+
+class TrainingTests(unittest.TestCase):
+    def test_dropout_only_at_the_gelu_upscale(self):
+        from card_engine.training.train import set_dropout
+        from card_engine.model.networks import TransformerBlock
+        model = BattleModel()
+        set_dropout(model, 0.1)
+        for block in model.modules():
+            if isinstance(block, TransformerBlock):
+                self.assertEqual(block.feedforward[2].p, 0.1)
+                self.assertEqual((block.residual_dropout.p, block.attention.dropout), (0.0, 0.0))
+
+    @classmethod
+    def setUpClass(cls):
+        cls.catalog = load_catalog()
+        cls.temp = tempfile.TemporaryDirectory()
+        native.build_library()
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.temp.cleanup()
+
+    def test_random_specs_compile_and_label(self):
+        rng = random.Random(4)
+        specs = [labels.random_spec(rng, self.catalog) for _ in range(20)]
+        for spec in specs:
+            self.assertEqual([len(team) for team in spec["cards"]], [4, 4])
+            for side in (0, 1):
+                for card, mutation, art in zip(spec["cards"][side], spec["mutations"][side], spec["arts"][side]):
+                    self.assertTrue(mutation == 0 or self.catalog.card(card).weather_id == 1)  # weather cards never mutate
+                    self.assertEqual(art > 0, card == 56)
+            labels.compile_spec(self.catalog, spec)
+        probs, exact = labels.label_specs(self.catalog, specs[:6], seed=1, rollout_error=0.2, node_budget=500)
+        self.assertTrue(((probs.sum(1) - 1) ** 2 < 1e-9).all())
+        self.assertTrue(exact.any())  # most battles are deterministic
+
+    def test_tablebase_stores_exact_outcomes(self):
+        from card_engine.training.tablebase import Tablebase
+        rng = random.Random(8)
+        specs = [labels.random_spec(rng, self.catalog) for _ in range(6)]
+        base = Tablebase("test", root=Path(self.temp.name) / "tb")
+        probs, exact = labels.label_specs(self.catalog, specs, seed=1, tablebase=base, rollout_error=0.2, node_budget=500)
+        self.assertEqual(len(base), int(exact.sum()))
+        for spec, p, e in zip(specs, probs, exact):
+            if e:
+                self.assertEqual(tuple(round(x, 6) for x in base.get(spec)), tuple(round(float(x), 6) for x in p))
+        again, again_exact = labels.label_specs(self.catalog, specs, seed=2, tablebase=base, rollout_error=0.2, node_budget=500)
+        self.assertTrue((again[exact] == probs[exact]).all() and (again_exact == exact).all())  # exact rows come from the base
+
+    def test_support_tiers_and_astraeus_arts_reach_the_model(self):
+        data = load_model_data()
+        self.assertEqual(len(set(data.art_identity_keys[1:].tolist())), 7)
+        self.assertTrue(set(data.art_identity_keys[1:].tolist()).isdisjoint(data.identity_keys.tolist()))
+        model = BattleModel().eval()
+        rows = {"cards": torch.tensor([[[56, 3, 4, 5], [6, 7, 8, 9]]]), "borders": torch.ones(1, 2, 4, dtype=torch.long),
+                "mutations": torch.zeros(1, 2, 4, dtype=torch.long), "arts": torch.tensor([[[1, 0, 0, 0], [0] * 4]]),
+                "red": torch.tensor([[3, 3]]), "red_tier": torch.tensor([[1, 1]]), "blue": torch.tensor([[2, 2]]),
+                "blue_tier": torch.tensor([[1, 1]])}
+        inputs = Inputs("cpu")
+        with torch.no_grad():
+            table = card_table(model, inputs.data.description_tokens)
+            base = model(**inputs(rows, table))
+            rows["red_tier"] = torch.tensor([[5, 1]])
+            self.assertFalse(torch.allclose(base, model(**inputs(rows, table))))
+        self.assertEqual(int(inputs(rows, table)["identity_keys"][0, 0, 0]), int(data.art_identity_keys[1]))
+
+    def test_training_runs_and_resumes(self):
+        root = Path(self.temp.name) / "labels"
+        directory = root / "fingerprint"
+        directory.mkdir(parents=True)
+        for seed in (1, 25):  # 25 is a validation shard
+            labels._worker((seed, 6, str(directory), "test", Path(self.temp.name) / "tb2"))
+        train_rows, val_rows = load_split(directory, "cpu")
+        import json as _json
+        self.assertEqual((train_rows["target"].shape[1], val_rows["cards"].shape[1:]), (2, (2, 4)))  # A win, B win (no ties)
+        run = Path(self.temp.name) / "run"
+        train(steps=2, batch_size=4, warmup=1, eval_every=100, checkpoint_every=2, device="cpu", run_dir=run, label_root=root)
+        state = torch.load(run / "trainer.pt", weights_only=True)
+        self.assertEqual(state["step"], 2)
+        train(steps=4, batch_size=4, warmup=1, eval_every=100, checkpoint_every=2, device="cpu", run_dir=run, label_root=root)
+        self.assertEqual(torch.load(run / "trainer.pt", weights_only=True)["step"], 4)
+        from card_engine.model.checkpoint import load_checkpoint
+        before = {k: v.clone() for k, v in load_checkpoint(run / "model.checkpoint")[0].description.state_dict().items()}
+        train(steps=6, batch_size=4, warmup=1, eval_every=100, checkpoint_every=2, device="cpu", run_dir=run, label_root=root,
+              freeze_language_at=4)
+        after = load_checkpoint(run / "model.checkpoint")[0].description.state_dict()
+        self.assertTrue(all(torch.equal(before[k], after[k]) for k in before))  # frozen language transformer
+
+
+if __name__ == "__main__":
+    unittest.main()

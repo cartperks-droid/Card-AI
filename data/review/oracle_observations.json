@@ -1,0 +1,1658 @@
+{
+  "schema_version": 1,
+  "purpose": "User-reported true-game observations and rule clarifications. Confirmed statements are separated from unconfirmed formulas and proposed fixtures.",
+  "observations": [
+    {
+      "observation_id": "obs_20260926_good_boy_001",
+      "reported_on": "2026-09-26",
+      "case_id": "turn_entry_good_boy",
+      "variant_id": "mirror",
+      "source": "user_report_in_current_task",
+      "kind": "battle_report",
+      "status": "partial_observation",
+      "user_quote": "They both decreased the others damaged, my card activated first and attacked first, winning the battle.",
+      "actual_setup": {
+        "user_active_card": {
+          "card_id": 3,
+          "name": "Good Boy"
+        },
+        "opponent_active_card": {
+          "card_id": 3,
+          "name": "Good Boy"
+        },
+        "full_lineups": null,
+        "borders": null,
+        "red_supports": null,
+        "blue_supports": null,
+        "mode": null,
+        "note": "The report answers the requested Good Boy mirror, but does not independently enumerate every proposed setup field."
+      },
+      "confirmed_for_this_report": {
+        "both_cards_reduced_opponent_damage": true,
+        "first_ability_activation_side": "user",
+        "first_ordinary_attack_side": "user",
+        "winner": "user"
+      },
+      "observed_numeric_stats": null,
+      "full_event_trace": null,
+      "scope_limit": "One reported battle. Do not infer a universal user-side initiative rule or exact numerical reductions/rounding.",
+      "still_unknown": [
+        "How the initial side is selected in general.",
+        "Exact HP, max HP, ATK and damage values.",
+        "Whether both entry effects completed before the first ordinary attack.",
+        "Subsequent turn order and turn ownership after replacement.",
+        "Actual full lineup, borders, supports and mode."
+      ]
+    },
+    {
+      "observation_id": "rules_20260926_intrinsic_weather_border_001",
+      "reported_on": "2026-09-26",
+      "source": "user_clarification_in_current_task",
+      "kind": "rule_clarification",
+      "status": "concepts_confirmed_formula_pending",
+      "user_quote": "That is a mistake; weather cards inherently have more stats than their rarity suggests hence the weather multiplier, borders increase stats by how rare they make the card.",
+      "confirmed_concepts": [
+        {
+          "rule_id": "intrinsic_weather_stats",
+          "statement": "Weather is an intrinsic card category/stat property. Weather cards receive higher inherent stats than card rarity alone would suggest, represented by the weather multiplier. It is not a runtime weather bonus."
+        },
+        {
+          "rule_id": "border_stats_via_rarity",
+          "statement": "Borders increase combat stats through the rarity they give the card. Treat border rarity as relevant to the card stat calculation; the exact numerical effective-rarity formula remains unconfirmed."
+        }
+      ],
+      "formula_awaiting_user_confirmation": {
+        "status": "superseded_by_card_modifier_correction",
+        "effective_rarity": "card_rarity * border_rarity",
+        "d": "5 * intrinsic_weather_multiplier * effective_rarity ** log10(2)",
+        "max_hp": "ceil(2 * d)",
+        "attack": "ceil(d * damage_modifier)",
+        "superseded_by": "rules_20260927_card_modifier_001"
+      },
+      "still_unknown": [
+        "Exact combination of card rarity and border rarity.",
+        "Exact rounding order and precision; see later Card Modifier clarification for both-stat application."
+      ]
+    },
+    {
+      "observation_id": "rules_20260927_card_modifier_001",
+      "reported_on": "2026-09-27",
+      "source": "user_clarification_in_current_task_relayed_by_parent",
+      "kind": "rule_and_stat_clarification",
+      "status": "both_stat_application_and_two_snapshots_confirmed",
+      "source_summary": "User calls this Card Modifier, not Damage Modifier; it applies to BOTH HP and ATK. Hell's Army and Heaven's Armor are 2560 HP / 1280 damage. Weather is intrinsic and borders amplify rarity.",
+      "confirmed_concepts": [
+        {
+          "rule_id": "card_modifier_both_stats",
+          "statement": "The corrected field is Card Modifier. Apply it to both HP and ATK, not only attack damage."
+        }
+      ],
+      "confirmed_stat_snapshots": [
+        {
+          "card_id": 33,
+          "name": "Hell's Army",
+          "max_hp": 2560,
+          "attack_damage": 1280
+        },
+        {
+          "card_id": 38,
+          "name": "Heaven's Armor",
+          "max_hp": 2560,
+          "attack_damage": 1280
+        }
+      ],
+      "snapshot_context": "Reported in response to requested borderless starting stats; complete support/mode details were not independently enumerated.",
+      "current_formula_candidate": {
+        "status": "partially_supported_not_general_rounding_proof",
+        "effective_rarity": "card_rarity * border_rarity",
+        "d": "5 * intrinsic_weather_multiplier * card_modifier * effective_rarity ** log10(2)",
+        "max_hp": "ceil(2 * d)",
+        "attack": "ceil(d)"
+      },
+      "still_unknown": [
+        "General numerical rounding/order and exact border-rarity combination have not been independently exercised by these two equal-rarity examples."
+      ]
+    },
+    {
+      "observation_id": "rules_20260927_training_dummy_001",
+      "reported_on": "2026-09-27",
+      "source": "user_clarification_in_current_task_relayed_by_parent",
+      "kind": "testing_capability",
+      "status": "user_confirmed",
+      "source_summary": "The user can play lit cards themselves, while the Training Dummy can use any opposing card.",
+      "confirmed_concepts": [
+        {
+          "rule_id": "user_card_availability",
+          "statement": "User-side test cards must be lit/available in the user inventory."
+        },
+        {
+          "rule_id": "dummy_card_availability",
+          "statement": "The Training Dummy opponent can use any card."
+        }
+      ],
+      "implication": "Validate user-side ownership before requesting a proposed variant; unrestricted enemy selection does not authorize or enable an unowned user-side card."
+    },
+    {
+      "observation_id": "obs_chronus_poseidon_initial",
+      "source": "user_report_in_current_task",
+      "kind": "battle_report",
+      "user_quote": "Poseidon's stats increase first, then Chronus steals 10%, Poseidon won this fight with neutral borders and no supports.",
+      "actual_setup": {
+        "user_team": [
+          205
+        ],
+        "opponent_team": [
+          44
+        ],
+        "borders": "none",
+        "supports": "none"
+      },
+      "confirmed_for_this_report": {
+        "entry_order": [
+          "Poseidon self boost",
+          "Chronus theft"
+        ],
+        "winner": "Poseidon"
+      },
+      "scope_limit": "Does not establish general ordering of all reaction classes or exact HP arithmetic."
+    },
+    {
+      "observation_id": "rules_round_up",
+      "source": "user_report_in_current_task",
+      "kind": "rule_clarification",
+      "user_quote": "Always round up",
+      "interpretation": "Attack damage uses ceil. Immediate ceil after each percentage stat operation was superseded by the later 531 ATK observation."
+    },
+    {
+      "observation_id": "obs_chronus_own_entry",
+      "source": "user_report_in_current_task",
+      "kind": "battle_report",
+      "user_quotes": [
+        "No theft occured, Poseidon's stats ended at 531.",
+        "531 was attack ended at 531, Good boy's effect activated before Poseidon's stat boost. Health is unknown or determined by the red bar."
+      ],
+      "actual_setup": {
+        "user_team": [
+          3,
+          205
+        ],
+        "opponent_team": [
+          44
+        ],
+        "borders": "none requested",
+        "supports": "none requested"
+      },
+      "confirmed_for_this_report": {
+        "chronus_own_entry_theft": false,
+        "poseidon_displayed_attack": 531,
+        "poseidon_hp": null,
+        "order": [
+          "Good Boy attack reduction",
+          "Poseidon self boost"
+        ]
+      },
+      "working_interpretation": {
+        "retain_fractional_intermediate_stats": true,
+        "ceil_attack_damage": true,
+        "status": "consistent with observation; internal engine representation not directly measured"
+      },
+      "scope_limit": "HP is unobserved. Fractional storage and equivalent modifier composition are not distinguished."
+    },
+    {
+      "observation_id": "obs_20260928_dancer_horus",
+      "source": "user_report_in_current_task",
+      "kind": "battle_report",
+      "case_id": "multihit_block",
+      "user_quote": "Only the first attack from Dancer is blocked, all follow-ups are calculated normally.",
+      "actual_setup": {
+        "requested_player_card": 67,
+        "requested_opponent_card": 73,
+        "requested_borders": "none",
+        "requested_supports": "none"
+      },
+      "confirmed_for_this_report": {
+        "block_consumed_per_individual_hit": true,
+        "dancer_followup_hits_calculated_normally": true
+      },
+      "scope_limit": "No KO during the multi-hit action was reported; retargeting after a mid-action death remains unknown. Independent dodge rolls on each hit remain a working interpretation."
+    },
+    {
+      "observation_id": "obs_20260928_multihit_ko",
+      "kind": "battle_report",
+      "requested_setup": {
+        "player_team": [
+          3,
+          44
+        ],
+        "dummy_team": [
+          67
+        ],
+        "bonuses": "none"
+      },
+      "user_quote": "Dancer’s turn ends on the knockout",
+      "confirmed_for_this_report": {
+        "remaining_hits_after_ko": "cancelled"
+      },
+      "scope_limit": "Next normal attacker was not separately reported.",
+      "source": "user_report_in_current_task"
+    },
+    {
+      "observation_id": "obs_20260928_raze_no_chain",
+      "kind": "battle_report",
+      "requested_setup": {
+        "player_team": [
+          210
+        ],
+        "dummy_team": [
+          210
+        ],
+        "bonuses": "none"
+      },
+      "user_quote": "Only one counterattack occurs",
+      "confirmed_for_this_report": {
+        "counter_triggers_counter": false
+      },
+      "source": "user_report_in_current_task"
+    },
+    {
+      "observation_id": "rules_20260928_initiator",
+      "kind": "rule_clarification",
+      "user_quote": "The person who initiates the battle and their Raze attacks first and thus receives a counterattack first and must defeat all cards with atleast one card left, else they lose. I lost because the enemy Raze counterattacked.",
+      "confirmed_concepts": {
+        "initiator_attacks_first": true,
+        "initiator_needs_survivor_to_win": true,
+        "raze_mirror_winner": "defender"
+      },
+      "source": "user_report_in_current_task"
+    },
+    {
+      "observation_id": "obs_20260928_raze_interrupt",
+      "kind": "battle_report",
+      "requested_setup": {
+        "player_team": [
+          67
+        ],
+        "dummy_team": [
+          210
+        ],
+        "bonuses": "none"
+      },
+      "user_quote": "Counter immediately after the first hit",
+      "confirmed_for_this_report": {
+        "counter_timing": "after each damaging hit, before next hit"
+      },
+      "source": "user_report_in_current_task"
+    },
+    {
+      "observation_id": "obs_20260928_raze_lethal",
+      "kind": "battle_report",
+      "requested_setup": {
+        "player_team": [
+          210
+        ],
+        "dummy_team": [
+          140
+        ],
+        "bonuses": "none"
+      },
+      "user_quote": "No counter after the lethal hit",
+      "confirmed_for_this_report": {
+        "lethal_target_counters": false
+      },
+      "source": "user_report_in_current_task"
+    },
+    {
+      "observation_id": "rules_20260928_weather_eligibility",
+      "kind": "rule_clarification",
+      "user_quotes": [
+        "No, weather cards are already considered mutated cards.",
+        "Wait, weather cards get their weather multiplier, I mislead you by saying they are mutated, thats just a convenient way to think of them not being qualified for mutations"
+      ],
+      "latest_interpretation": {
+        "weather_multiplier_is_separate": true,
+        "weather_cards_are_mutations": false,
+        "weather_cards_eligible_for_mutations": false
+      },
+      "supersedes": "Earlier interpretation that intrinsic weather should be encoded as the card mutation identity.",
+      "source": "user_report_in_current_task"
+    },
+    {
+      "observation_id": "rules_20260928_weather_mapping",
+      "kind": "rule_clarification",
+      "user_quote": "Not necessary, the mappings are accurate, unless sorting creates a speedup",
+      "action": "Preserve original weather IDs and all mappings; indexed lookup gains nothing from sorting.",
+      "source": "user_report_in_current_task"
+    },
+    {
+      "observation_id": "obs_20260928_arthur_lethal",
+      "kind": "battle_report",
+      "requested_setup": {
+        "player_team": [
+          10
+        ],
+        "dummy_team": [
+          44
+        ],
+        "bonuses": "none"
+      },
+      "user_quote": "One lethal attack; the next kills him",
+      "confirmed_for_this_report": {
+        "survive_at_one_hp_uses": 1
+      },
+      "source": "user_report_in_current_task"
+    },
+    {
+      "observation_id": "obs_20260928_knightmare_mirror",
+      "requested_setup": {
+        "player_team": [
+          14
+        ],
+        "dummy_team": [
+          14
+        ],
+        "bonuses": "none"
+      },
+      "question_options": {
+        "1": "Your entry hit → enemy entry hit → your normal attack",
+        "2": "Your entry hit → your normal attack → enemy entry hit",
+        "3": "Something else"
+      },
+      "user_quote": "1.",
+      "confirmed_for_this_report": {
+        "opening_order": [
+          "player_entry_hit",
+          "enemy_entry_hit",
+          "player_normal_attack"
+        ]
+      },
+      "not_reported": [
+        "winner"
+      ],
+      "kind": "battle_report",
+      "source": "user_report_in_current_task"
+    },
+    {
+      "observation_id": "obs_20260928_knightmare_raze_entry",
+      "requested_setup": {
+        "player_team": [
+          14
+        ],
+        "dummy_team": [
+          210
+        ],
+        "bonuses": "none"
+      },
+      "user_quote": "Yes, Raze counters the entry hit immediately",
+      "confirmed_for_this_report": {
+        "entry_hit_counter_before_normal_attack": true
+      },
+      "kind": "battle_report",
+      "source": "user_report_in_current_task"
+    },
+    {
+      "observation_id": "obs_20260928_knightmare_replacement_entry",
+      "requested_setup": {
+        "player_team": [
+          3,
+          14
+        ],
+        "dummy_team": [
+          14
+        ],
+        "bonuses": "none"
+      },
+      "user_quote": "Good boy activates, then Knightmare activates knocking Good boy out with its entry hit, My Knightmare enters and hits twice for entry hit and normal attack.",
+      "confirmed_for_this_report": {
+        "opening_order": [
+          "Good Boy debuff",
+          "enemy Knightmare entry hit kills Good Boy",
+          "player Knightmare enters",
+          "player Knightmare entry hit",
+          "player Knightmare normal attack"
+        ]
+      },
+      "kind": "battle_report",
+      "source": "user_report_in_current_task"
+    },
+    {
+      "observation_id": "obs_20260928_inari_lifetime",
+      "requested_setup": {
+        "player_team": [
+          114
+        ],
+        "dummy_team": [
+          38
+        ],
+        "bonuses": "none"
+      },
+      "user_quote": "Inari takes no damage and dies after its third attack",
+      "confirmed_for_this_report": {
+        "takes_damage": false,
+        "own_attacks_before_death": 3,
+        "death_after_own_attack": true
+      },
+      "kind": "battle_report",
+      "source": "user_report_in_current_task"
+    },
+    {
+      "observation_id": "obs_20260928_inari_counter_expiration",
+      "kind": "battle_report",
+      "source": "user_report_in_current_task",
+      "requested_setup": {
+        "player_team": [
+          114
+        ],
+        "dummy_team": [
+          210
+        ],
+        "bonuses": "none"
+      },
+      "user_quote": "Raze counters, then Inari disappears",
+      "confirmed_for_this_report": {
+        "third_attack_counter_before_lifetime_death": true
+      }
+    },
+    {
+      "observation_id": "obs_20260928_wind_spirit_extra_turns",
+      "requested_setup": {
+        "player_team": [
+          19
+        ],
+        "dummy_team": [
+          73
+        ],
+        "bonuses": "none"
+      },
+      "user_quote": "Wind Spirit attacks twice, only the first hit is blocked, horus attacks, then wind spirit attacks twice again.",
+      "confirmed_for_this_report": {
+        "normal_attack_sides": [
+          "player",
+          "player",
+          "enemy",
+          "player",
+          "player"
+        ],
+        "only_first_hit_blocked": true,
+        "extra_turn_recurs_each_cycle": true
+      },
+      "kind": "battle_report",
+      "source": "user_report_in_current_task"
+    },
+    {
+      "observation_id": "obs_20260928_wind_spirit_ko_extra_turn",
+      "requested_setup": {
+        "player_team": [
+          3,
+          44
+        ],
+        "dummy_team": [
+          19
+        ],
+        "bonuses": "none"
+      },
+      "user_quote": "Wind Spirit immediately attacks Poseidon",
+      "confirmed_for_this_report": {
+        "unused_extra_turn_carries_to_enemy_replacement": true
+      },
+      "kind": "battle_report",
+      "source": "user_report_in_current_task"
+    },
+    {
+      "observation_id": "obs_20260928_martial_artist_growth",
+      "requested_setup": {
+        "player_team": [
+          121
+        ],
+        "dummy_team": [
+          73
+        ],
+        "bonuses": "none"
+      },
+      "user_quote": "ATK increases before Horus attacks back\n260 > 338\n338 > 440",
+      "confirmed_for_this_report": {
+        "displayed_attack": [
+          260,
+          338,
+          440
+        ],
+        "boost_before_enemy_normal_attack": true,
+        "boost_after_blocked_first_attack": true
+      },
+      "interpretation": "Repeated 1.3 scaling of current attack fits both observations; these displays do not determine whether intermediate fractions are retained.",
+      "kind": "battle_report",
+      "source": "user_report_in_current_task"
+    },
+    {
+      "observation_id": "obs_20260928_martial_artist_counter",
+      "requested_setup": {
+        "player_team": [
+          121
+        ],
+        "dummy_team": [
+          210
+        ],
+        "bonuses": "none"
+      },
+      "user_quote": "It dies without receiving the boost",
+      "confirmed_for_this_report": {
+        "lethal_raze_counter_prevents_turn_end_boost": true
+      },
+      "kind": "battle_report",
+      "source": "user_report_in_current_task"
+    },
+    {
+      "observation_id": "obs_20260928_immortal_witch_heal_start",
+      "requested_setup": {
+        "player_team": [
+          94
+        ],
+        "dummy_team": [
+          73
+        ],
+        "bonuses": "none"
+      },
+      "user_quote": "Before, she healed at full health at the start of the turn",
+      "confirmed_for_this_report": {
+        "healing_before_normal_attack": true,
+        "healing_activates_at_full_health": true
+      },
+      "kind": "battle_report",
+      "source": "user_report_in_current_task"
+    },
+    {
+      "observation_id": "rules_20260928_healing_cap",
+      "user_quote": "Healing is capped at maximum HP",
+      "confirmed_for_this_report": {
+        "healing_capped_at_max_hp": true
+      },
+      "kind": "rule_clarification",
+      "source": "user_report_in_current_task"
+    },
+    {
+      "observation_id": "obs_20260928_witch_mirror_video",
+      "kind": "video_and_user_report",
+      "source": "user_video_and_current_task",
+      "video": {
+        "path": "/Users/xavier.vallee/Downloads/IMG_0289.MOV",
+        "sha256": "384e908d9d2764908eb44fd29666f9f8d1e374f98d06c9022005f6c3a267f3ca",
+        "duration_seconds": 24.37166666666667
+      },
+      "user_quote": "I counted 100 turns or 50 rounds before both cards fell out.",
+      "confirmed_for_this_report": {
+        "user_counted_turns": 100,
+        "user_counted_rounds": 50,
+        "both_active_cards_fall": true,
+        "visually_read_displayed_attack": [
+          290,
+          290
+        ]
+      },
+      "not_reported_or_not_visible": [
+        "numeric maximum HP",
+        "confirmed bonus setup",
+        "explicit winner banner"
+      ],
+      "unresolved": [
+        "Catalogue formula predicts 362 ATK for card 94, but both cards display 290.",
+        "Stalemate does not yet distinguish maximum/current HP healing without correct starting stats."
+      ],
+      "review_metadata": "data/review/video_0289/metadata.json"
+    },
+    {
+      "observation_id": "obs_20260928_witch_border_and_hp_visibility",
+      "kind": "user_clarification",
+      "source": "user_report_in_current_task",
+      "user_quote": "no borders hp is only a bar I can see health on the card but not during fights",
+      "confirmed_for_this_report": {
+        "border": "none",
+        "numeric_hp_visible_in_fight": false,
+        "numeric_hp_available_on_card": true
+      }
+    },
+    {
+      "observation_id": "obs_20260928_witch_card_hp",
+      "kind": "user_card_stat_report",
+      "source": "user_report_in_current_task",
+      "question": "What HP does Immortal Witch show on her card outside battle?",
+      "user_quote": "868",
+      "confirmed_for_this_report": {
+        "card_id": 94,
+        "card_hp": 868
+      },
+      "interpretation": "Together with recorded 290 ATK, matches the wiki-sourced separate HP 1.2 and ATK 0.8 stat ratios. Maximum-HP healing reproduces 100-turn mirror; current-HP healing predicts a turn-9 finish with these starting stats."
+    },
+    {
+      "observation_id": "obs_20260928_stat_weather_corrections",
+      "kind": "user_card_stat_and_metadata_report",
+      "source": "user_report_in_current_task",
+      "user_quotes": [
+        "Bad Boys might be a weather multiplier mismatch it has no weather multiplier\nCorrections dmg, health:\nBad Boy: 320,  640\nChronus (2x Boss Multiplier): 160, 320\nRaze (2x Boss Multiplier): 2078, 4156\nToy Bear: 1943, 3886, (In case of a weather shift mismatch, santa claus is an aurora weather card, wandering snow man is a snow card, santa Claws is a snow card)\nJason: 4788, 9575 (The Blood Countess is a blood rain card)",
+        "Every card in the Bosses pack",
+        "Toy bear should be snow",
+        "Pandora is an eclipse card adjacent to bad boy, heaven's armor is a rapture card",
+        "It could be a rarity mismatch: Toy bear is 400m, immortal witch is 1.5m rarity"
+      ],
+      "confirmed_for_this_report": {
+        "baseline_attack_hp": {
+          "36": [
+            320,
+            640
+          ],
+          "205": [
+            160,
+            320
+          ],
+          "210": [
+            2078,
+            4156
+          ],
+          "261": [
+            1943,
+            3886
+          ],
+          "288": [
+            4788,
+            9575
+          ]
+        },
+        "all_bosses_stat_multiplier": 2,
+        "weather": {
+          "36": "Base",
+          "37": "Eclipse",
+          "38": "Rapture",
+          "258": "Snow",
+          "260": "Aurora",
+          "261": "Snow",
+          "265": "Snow",
+          "280": "Blood Rain"
+        },
+        "rarity": {
+          "261": 400000000,
+          "94": 1500000
+        }
+      },
+      "interpretation": {
+        "toy_bear": "Retain confirmed Snow and 400M rarity. Fit shared 2/3 modifier against source 1.5 Snow factor; underlying cause not independently confirmed.",
+        "jason": "Shared 2x modifier before rounding fits baseline; cause not specified.",
+        "bosses": "Apply 2x shared modifier to all eight Bosses pack cards; only Chronus and Raze have numeric user snapshots."
+      }
+    },
+    {
+      "observation_id": "obs_20260928_surtr_cronus_weather",
+      "kind": "user_metadata_confirmation",
+      "source": "user_report_in_current_task",
+      "user_quote": "Surtr should be armageddon and Cronus should be time storm for consistency",
+      "confirmed_for_this_report": {
+        "57": "Armageddon",
+        "58": "Time Storm"
+      },
+      "resolution": "Existing assignments already match. Cronus #58 is distinct from Chronus The Hoarder #205."
+    },
+    {
+      "observation_id": "obs_20260928_forest_spirit_before_counter",
+      "kind": "battle_report",
+      "source": "user_report_in_current_task",
+      "requested_setup": {
+        "player_team": [
+          7
+        ],
+        "dummy_team": [
+          210
+        ],
+        "bonuses": "none"
+      },
+      "user_quote": "Heal first then counter attack",
+      "confirmed_for_this_report": {
+        "heal_before_counter": true
+      },
+      "scope": "Single normal attack; percentage basis, multi-hit and blocked-hit behavior not settled."
+    },
+    {
+      "observation_id": "obs_20260928_count_muscula_before_counter",
+      "kind": "battle_report",
+      "source": "user_report_in_current_task",
+      "requested_setup": {
+        "player_team": [
+          174
+        ],
+        "dummy_team": [
+          210
+        ],
+        "bonuses": "none"
+      },
+      "user_quote": "Lifesteals before counterattack",
+      "confirmed_for_this_report": {
+        "lifesteal_before_counter": true
+      },
+      "scope": "Normal damaging hit; overkill basis and exact amount not settled."
+    },
+    {
+      "observation_id": "obs_20260928_shu_lethal_raze_hit",
+      "kind": "battle_report",
+      "source": "user_report_in_prior_codex_thread_handoff",
+      "requested_setup": {
+        "player_team": [
+          74
+        ],
+        "dummy_team": [
+          210
+        ],
+        "bonuses": "none"
+      },
+      "user_quote": null,
+      "confirmed_for_this_report": {
+        "shu_dies_to_lethal_hit": true,
+        "damage_recovery_after_lethal_hit": false
+      },
+      "scope": "Summarized in the handoff note, not quoted. Percentage basis of the surviving recovery remains unverified."
+    },
+    {
+      "observation_id": "obs_20260928_piccolo_intercepts_raze_counter",
+      "kind": "battle_report",
+      "source": "user_report_in_current_task",
+      "requested_setup": {
+        "player_team": [
+          7,
+          104
+        ],
+        "dummy_team": [
+          210
+        ],
+        "bonuses": "none"
+      },
+      "user_quote": "Piccolo intercepts it, blocks the counterattack, then takes a normal attack from Raze, Piccolo attacks back at kills Raze.",
+      "confirmed_for_this_report": {
+        "piccolo_intercepts_lethal_counter": true,
+        "intercepted_hit_blocked": true,
+        "raze_normal_attack_follows": true,
+        "piccolo_kills_raze_next_turn": true
+      },
+      "scope": "Killing Raze (4137 HP left) requires Piccolo's attack to rise from 2560 by at least 1.62x, consistent with 2x. The displaced Forest Spirit's position was not reported."
+    },
+    {
+      "observation_id": "obs_20260928_arthur_two_piccolos",
+      "kind": "battle_report",
+      "source": "user_report_in_current_task",
+      "requested_setup": {
+        "player_team": [
+          10,
+          104,
+          104
+        ],
+        "dummy_team": [
+          44
+        ],
+        "dummy_borders": [
+          16
+        ],
+        "bonuses": "none reported"
+      },
+      "user_quote": "Arthur survives at 1 HP, then the cards swap and piccolo plays until piccolo dies, the original card comes back in and the piccolo in the third slot swaps again, repeating the process.",
+      "confirmed_for_this_report": {
+        "own_lethal_survival_before_interception": true,
+        "displaced_card_swaps_behind_piccolo": true,
+        "displaced_card_returns_after_piccolo_dies": true,
+        "next_piccolo_intercepts_after_return": true,
+        "poseidon_border16_displayed_attack_after_entry_boost": 81736447
+      },
+      "scope": "Arthur has no entry effects, so whether a returning card repeats entry effects is still unobserved. Formula: ceil(border-16 base ATK) = 58,383,176, times 1.4 = 81,736,446.4, displayed rounded up; exact match.",
+      "follow_up_quote": "I used a perfect gem (all borders stacked) poseidon which has an attack of 81,736,447 after its attack boost"
+    },
+    {
+      "observation_id": "obs_20260928_poseidon_no_reboost_on_return",
+      "kind": "battle_report",
+      "source": "user_report_in_current_task",
+      "requested_setup": {
+        "player_team": [
+          44,
+          104
+        ],
+        "dummy_team": "not reported",
+        "bonuses": "not reported"
+      },
+      "user_quote": "Poseidon ahead of Piccolo doesn't re-boost when it comes back",
+      "confirmed_for_this_report": {
+        "returning_card_repeats_own_entry_boost": false
+      },
+      "scope": "Own-stat entry boost only. Entry hits, enemy-affecting entry effects, and enemy-entry theft on return remain unobserved."
+    },
+    {
+      "observation_id": "obs_20260928_true_prophet_shu_lethal_dodge",
+      "kind": "battle_report",
+      "source": "user_report_in_current_task",
+      "requested_setup": {
+        "player_team": [
+          164,
+          74
+        ],
+        "dummy_team": [
+          210
+        ],
+        "bonuses": "none"
+      },
+      "user_quote": "Shu dodges the first lethal hit then recovers.",
+      "confirmed_for_this_report": {
+        "next_card_dodges_first_lethal_hit": true,
+        "damage_recovery_after_lethal_dodge": true
+      },
+      "scope": "Recovery amount on a dodge is not established; Shu is at full HP when dodging, so a capped recovery heals nothing visible."
+    },
+    {
+      "observation_id": "obs_20260928_knightmare_good_boy_no_repeat_on_return",
+      "kind": "battle_report",
+      "source": "user_report_in_current_task",
+      "requested_setup": {
+        "player_team": "[14, 104] and [3, 104]",
+        "dummy_team": "not reported",
+        "bonuses": "not reported"
+      },
+      "user_quote": "Neither Knightmare or Good Boy repeated their on entry ability",
+      "confirmed_for_this_report": {
+        "returning_entry_hit_repeats": false,
+        "returning_enemy_attack_reduction_repeats": false
+      },
+      "scope": "Enemy-entry theft (Chronus) against a returning card remains unobserved."
+    },
+    {
+      "observation_id": "obs_20260928_true_prophet_on_death_and_mirror",
+      "kind": "battle_report_and_rule_statement",
+      "source": "user_report_in_current_task",
+      "requested_setup": {
+        "player_team": [
+          164,
+          74
+        ],
+        "dummy_team": [
+          164,
+          74
+        ],
+        "bonuses": "none reported"
+      },
+      "user_quotes": [
+        "Recover looks like a healing effect, the HP is listed on the card before the battle, it can only be inferred by a red bar during battle.",
+        "Recovery never exceeds Max HP unless explicitly mentioned.",
+        "its recovery is proportional to damage taken, when it dodges",
+        "it dodged damage that wasnt lethal..",
+        "prophet has an on death ability that makes the next card dodge a lethal hit",
+        "both shu's dodged the first hit"
+      ],
+      "confirmed_for_this_report": {
+        "recovery_capped_at_max_hp": true,
+        "recovery_shows_on_dodge": true,
+        "true_prophet_trigger": "on death",
+        "grant": "next card dodges a lethal hit",
+        "mirror_shus_dodged_nonlethal_damage": true,
+        "mirror_shus_dodged_first_hit": true
+      },
+      "scope": "With the user-corrected Shu stats (1230 HP / 362 ATK), each Shu's first hit (362) is not lethal, but both were dodged. Implemented as: on the Prophet's death, the next card dodges its next hit, lethal or not, despite the 'lethal' card text."
+    },
+    {
+      "observation_id": "obs_20260928_true_prophet_platinum_witch_raze",
+      "kind": "battle_report",
+      "source": "user_report_in_current_task",
+      "requested_setup": {
+        "player_team": [
+          164,
+          94
+        ],
+        "player_borders": [
+          1,
+          2
+        ],
+        "dummy_team": [
+          210
+        ],
+        "bonuses": "none reported"
+      },
+      "user_quotes": [
+        "the immortal witch dodged the first hit then attacked, Raze's counterattack could not kill the witch, but its normal attack afterwards did.",
+        "I used platinum witch",
+        "3471*"
+      ],
+      "confirmed_for_this_report": {
+        "witch_border2_hp": 3471,
+        "prophet_dodge_on_first_hit": true,
+        "witch_survives_counter": true,
+        "raze_next_normal_attack_kills": true
+      },
+      "scope": "Confirms the Witch's HP 1.2 ratio scales with borders: ceil(3470.80) = 3471."
+    },
+    {
+      "observation_id": "obs_20260928_chronus_piccolo_swap",
+      "kind": "rule_statement",
+      "source": "user_report_in_current_task",
+      "user_quote": "Chronus does not steal from the same card twice, it did steal from piccolo when it swapped.",
+      "confirmed_for_this_report": {
+        "steals_on_piccolo_swap_in": true,
+        "steals_from_same_card_twice": false
+      },
+      "scope": "Order of Piccolo's 2x versus the theft is not stated; implemented as 2x first (Poseidon precedent). A returning card never stolen from is assumed to be stolen from."
+    },
+    {
+      "observation_id": "obs_20260928_protection_order",
+      "kind": "rule_statement",
+      "source": "user_report_in_current_task",
+      "user_quote": "Protection: Prophet > Survive at 1 HP > Piccolo Swaps",
+      "confirmed_for_this_report": {
+        "order": [
+          "true_prophet_dodge",
+          "lethal_survival",
+          "piccolo_interception"
+        ]
+      }
+    },
+    {
+      "observation_id": "obs_20260929_status_ticks_100_men",
+      "kind": "battle_report",
+      "source": "user_report_in_current_task",
+      "requested_setup": {
+        "tests": [
+          "Cr Ankylosaurus (153) vs Ru 100 Men (213)",
+          "Ru 100 Men vs PlRu Volcano Spirit (167)",
+          "Cr Dilophosaurus (146) vs Ru 100 Men"
+        ]
+      },
+      "user_quotes": [
+        "Crystal Ankylosaurus kills Ruby 100x Men after the 6th bleed effect I think bleed deals around 15% damage",
+        "Ru 100x Men kills PlRu Volcano Spirit, nearly dying after 8 burns which I believe deal around 10% dmg",
+        "Poison is not percent based ... it got Ru 100x Men to half health before dying",
+        "Previous test may have been corrupted with a support card I left active (Guardian Angel)",
+        "100x Men's baseline HP is boosted before battle"
+      ],
+      "confirmed_for_this_report": {
+        "bleed_kill_tick": 6,
+        "burn_ticks_near_death": 8,
+        "poison_percent_based": false
+      },
+      "scope": "Fit: statuses tick at every turn end (both sides). Bleed 15.5-18.5% max HP (16% used), burn about 10%. Guardian Angel may have affected one test."
+    },
+    {
+      "observation_id": "obs_20260929_status_rules",
+      "kind": "rule_statement",
+      "source": "user_report_in_current_task",
+      "user_quotes": [
+        "Ice Queen Froze razor on hit, Razor attacked once, then Ice Queen killed Razor. It froze the counterattack but Razor's turn was still in play for its normal attack.",
+        "A status refresh's its duration, but different status' stack",
+        "Slow makes targets lose a turn before attacking, confusion makes the target attack themself at around a 50% chance"
+      ],
+      "confirmed_for_this_report": {
+        "freeze_blocks_counter": true,
+        "freeze_1_turn_expires_before_next_turn": true,
+        "same_status_refreshes": true,
+        "different_statuses_stack": true,
+        "slow": "lose a turn before attacking",
+        "confusion": "self-attack at about 50%"
+      }
+    },
+    {
+      "observation_id": "obs_20260929_frostbite_video_0290",
+      "kind": "video_review",
+      "source": "data/raw/IMG_0290.MOV",
+      "user_quote": "It varies in effect each instance",
+      "confirmed_for_this_report": {
+        "rounds": 33,
+        "loss_rounds": 18,
+        "no_effect_rounds": 15
+      },
+      "scope": "See data/review/video_0290/metadata.json. Frostbite: about 50% chance of 20% max HP damage plus a lost turn, at most once from Frosty's frostbite."
+    },
+    {
+      "observation_id": "obs_20260929_frostbite_poison_followups",
+      "kind": "battle_report",
+      "source": "user_report_in_current_task",
+      "user_quotes": [
+        "No-Border Dilophosaurus does no damage.",
+        "Results with Yeti (#63) is inconclusive but it does deal 20% Max HP damage with around a 50% chance.",
+        "Mist Serpent is #62 a shroud card like #64 Achyls.",
+        "Old Man Winter got a Platinum budda to around 55% HP from its first and third attacks on one instance.",
+        "the 55% figure isnt exact",
+        "I can only estimate health"
+      ],
+      "confirmed_for_this_report": {
+        "borderless_dilophosaurus_poison_visible": false,
+        "yeti_frostbite_20pct_about_half": true,
+        "multi_turn_frostbite_can_proc_more_than_once": true
+      },
+      "scope": "Supports frostbite = a 50% roll per tick for 20% max HP plus a lost turn. Poison appears to scale with the poisoner's attack; amount still unknown."
+    },
+    {
+      "observation_id": "obs_20260929_bench_damage_tests",
+      "kind": "battle_report",
+      "source": "user_report_in_current_task",
+      "requested_setup": {
+        "test_1": {
+          "ally": [
+            10,
+            164,
+            93,
+            104
+          ],
+          "enemy": [
+            88
+          ],
+          "enemy_border": 16
+        },
+        "test_2": {
+          "allies": [
+            [
+              10,
+              164,
+              93,
+              104
+            ],
+            [
+              10,
+              164,
+              93,
+              206
+            ],
+            [
+              10,
+              93,
+              104
+            ],
+            [
+              10,
+              93,
+              206
+            ],
+            [
+              93,
+              104
+            ]
+          ],
+          "enemy": [
+            172
+          ],
+          "enemy_border": 16
+        }
+      },
+      "user_quotes": [
+        "The Ally team loses after Arthur survives a lethal hit and dies.",
+        "Nao dodges a lethal hit but loses her percent dodge every turn, instead Piccolo inherits it and dodges the first lethal attack and also dodges with a 60% chance.",
+        "Malik inherits her ability but does not dodge the first lethal hit.",
+        "I think it might actually be a bug in showing which card is displayed, so the cards swapped but their pictures didnt change."
+      ],
+      "confirmed_for_this_report": {
+        "academy_splash_kills_bench_despite_arthur_survival": true,
+        "bench_cards_can_dodge_seraphim_entry": true,
+        "bench_on_death_effects_fire": true,
+        "abilities_appear_to_shift_after_bench_death": true
+      },
+      "scope": "Hypothesis (unconfirmed): after a bench death the game removes the card but not its ability slot, so each card behind uses the ability of the card that was ahead of it. Proposed check: [Arthur, Forest Spirit, Inari] vs PG Seraphim."
+    },
+    {
+      "observation_id": "obs_20260929_bench_followup",
+      "kind": "battle_report",
+      "source": "user_report_in_current_task",
+      "user_quotes": [
+        "Academy student loses HP equal to 30% of damage dealt, not a 40% splash",
+        "Nao Presence doesn't die immediately and blocks a lethal hit, transfering dodge ability to Malik, or she dies immediately and Malik survives a lethal hit but doesn't dodge",
+        "[Arthur, Forest Spirit, Inari] vs PG Seraphim: Deterministic; Arthur survives 1 lethal and dies, interestingly Forest Spirit didnt die and attacked for 1 turn before dying on the next attack, and Inari behaved, dying on its third attack."
+      ],
+      "confirmed_for_this_report": {
+        "academy_student_self_damage_fraction": 0.3,
+        "seraphim_entry_spares_waiting_cards": true,
+        "ability_shift_bug": false
+      },
+      "scope": "Implemented: recoil 30% (basis: HP removed, unverified). Seraphim hits only the active card. A chance dodger cannot use a Prophet grant; unused grants pass on at death. Open: Result 0 Piccolo did not swap for Nao, and Arthur sometimes died instantly."
+    },
+    {
+      "observation_id": "obs_20260929_seraphim_videos",
+      "kind": "video_review_and_battle_report",
+      "source": "IMG_0291-0293 and user report",
+      "user_quotes": [
+        "arthur was eclipse, nao, true prophet, and piccolo were normal, Malik was PlCrRu. Forest Spirit's HP bar looked empty",
+        "Interestingly PlCrRu Seraphim behaves normally, True Prophet enters with empty health, dodges a lethal hit and does, Nao Dodges as normal, and Malik attacks normally",
+        "Note that inari didn't transfer its invincibility when there were no cards behind it",
+        "correction a PG seraphim has 41943040 attack"
+      ],
+      "confirmed_for_this_report": {
+        "waiting_cards_can_reach_zero_hp_without_dying": true,
+        "pg_seraphim_attack": 41943040
+      },
+      "scope": "See data/review/video_0291_0293/metadata.json."
+    },
+    {
+      "observation_id": "obs_20260929_piccolo_stats_inari_carryover",
+      "kind": "battle_report",
+      "source": "user_report_in_current_task",
+      "user_quotes": [
+        "Piccolo's stats show an ATK of 3072",
+        "Inari dies on its 3rd turn after raze attacks",
+        "it dies on Raze's first attack"
+      ],
+      "confirmed_for_this_report": {
+        "piccolo_base_attack": 3072,
+        "inari_invincibility_carries_over": false
+      },
+      "scope": "Piccolo's HP (6,144) is assumed from the same 1.2 ratio. [Inari, Forest Spirit] vs Raze: Forest Spirit dies to Raze's first attack after Inari expires."
+    },
+    {
+      "observation_id": "obs_20260929_pg_regime_tests",
+      "kind": "battle_report_and_video_review",
+      "source": "user tests and IMG_0295/IMG_0296",
+      "requested_setup": {
+        "border_tests": "[Arthur, Forest Spirit, Inari, Infected Maw] vs Seraphim GaCrPl / GaRuCr / PG",
+        "IMG_0295": "[Arthur, Forest Spirit, Inari] vs PG Seraphim",
+        "IMG_0296": "[Inari, Forest Spirit, Infected Maw] vs PG Seraphim",
+        "test_1": "[Forest Spirit, Inari, Infected Maw] vs PG Seraphim",
+        "test_2": "[Arthur, Forest Spirit, Infected Maw, Inari] vs PG Seraphim"
+      },
+      "user_quotes": [
+        "GaCrPl: 1. No, 2. No, 3. Inari survives the entry ability but dies on the first attack",
+        "GaRuCr: Same Result",
+        "PG: Same Result",
+        "Yes Inari loses her invincibility without arthur",
+        "Firist spirit still dies on arrival, but infected maw doesn't die on arrival yet gets killed at the first normal attack from Seraphim, Inari behaves normally",
+        "arthur never passed its 1 hp rule to the 2nd card",
+        "Except maybe in IMG 0295"
+      ],
+      "confirmed_for_this_report": {
+        "regime_from": "GaCrPl (entry damage 655,360)",
+        "normal_up_to": "RuCrPl (163,840)"
+      },
+      "scope": "Implemented PG rules: entry kills the first card through any protection; before any normal action a 0-HP card dies on arrival while another 0-HP card waits behind it; entry/arrival deaths pass the dead card's current ability to the next card, cascading through healthy receivers and stopping after a 0-HP receiver; a used-up survival passes nothing (IMG_0295 may be an exception). Seraphim strengths between the regimes are refused."
+    },
+    {
+      "observation_id": "obs_20260929_parallax_pg_knightmare",
+      "kind": "battle_report",
+      "source": "user_report_in_current_task",
+      "user_quotes": [
+        "I can't test mutations that I don't have.",
+        "Arthur, Inari, Parallax: Arthur survives at 1 HP when PG Seraphim dies",
+        "Arthur, Inari, Parallax, Malik: Athur appears to survive at 1 HP, but dies before Seraphim dies, (transitions to alive Inari before ending battle)",
+        "Arthur, Inari, Malik, Parallax: Arthur fully dies straightforwardly, though the health seems erratic but it happens too fast to tell.",
+        "It seems like PG Knightmare gets arthur to 1 HP but arthur survives long enough to attack back, so it didn't attack him twice or past his survive at 1 HP ability, it attacks all the other cards normally"
+      ],
+      "confirmed_for_this_report": {
+        "parallax_fires_in_deck_against_seraphim": true,
+        "pg_knightmare_normal": true
+      },
+      "scope": "Parallax implemented for normal hits (one reflect; the attacker dies). Parallax facing deck damage is refused until the Seraphim ordering is known. PG rules remain Seraphim-only."
+    },
+    {
+      "observation_id": "obs_20260929_pg_parallax_resolved",
+      "kind": "battle_report",
+      "source": "user_report_in_current_task",
+      "user_quotes": [
+        "In Test 3 Seraphim died, thats why I didn't explain further card interactions, there should be no card refusals the interactions must be resolved.",
+        "On Test 2, Arthur dies but it showed Arthur at 1 HP and does the death animation, in Test 3 it simply depletes Arthurs health and the card falls out before I can discern Arthur's endpoint health. In Test 2 Seraphim falls before Arthur falls, in Test 3, Seraphim falls after Inari arrives. I won all battles here.",
+        "Inari and Parallax defeat PG seraphim"
+      ],
+      "confirmed_for_this_report": {
+        "parallax_reflect_in_deck_kills_seraphim": true,
+        "all_won": true
+      },
+      "scope": "Rule revision: the PG entry kills the first card only when a 0-HP card waits behind it. Animation timing (Seraphim falling after Inari arrives in test 3) is not modelled; outcomes match."
+    },
+    {
+      "observation_id": "obs_20260929_seraphim_rules_general",
+      "kind": "battle_report",
+      "source": "user_report_in_current_task",
+      "requested_setup": "[Crystal Arthur, Forest Spirit, Inari, Infected Maw] vs [Stone Scientist #84 | none | Mrs. Claus #259, GaCrPl Seraphim]",
+      "user_quotes": [
+        "Arthur dies immediately, forest spirit doesn't even get a turn since its already dead, inari survived but dies after an attack, maw behaves like inari. This is the same when the buff is removed or when replaced with Mrs. Claus. Entry hit takes effect even whilst frozen.",
+        "Its not really specific to PG anymore",
+        "maw inherited inari's signature ability"
+      ],
+      "confirmed_for_this_report": {
+        "mid_battle_entry_triggers_rules": true,
+        "entry_hit_ignores_freeze": true,
+        "border_threshold": null,
+        "mid_battle_ability_passing": true
+      },
+      "scope": "Entry kill, arrival deaths and entry-death ability passing apply to every all-enemy entry (Seraphim) at any strength and at any point in the battle; the strength threshold and its refusal were removed. The earlier RuCrPl run still fits (Prophet enters empty and plays, Nao dodges, Malik attacks). User confirmed Maw inherited Inari's signature ability, as in IMG_0293/0296."
+    },
+    {
+      "observation_id": "obs_20260929_seraphim_display_shift",
+      "kind": "battle_report",
+      "source": "user_report_in_current_task",
+      "user_quotes": [
+        "Arthur, True prophet, Deus ex, Infected maw: first two cards die immediately, deus ex survives and dodges the first hit, dies on the second, maw survived the entry hit but dies on the first attack from seraphim.",
+        "Arthur, True prophet, Deus ex, Infected maw: First 3 die immediately, maw survives and dodges 1 lethal hit before dying.",
+        "Arthur, Deus ex, Infected maw: First 3 die, Maw survives then dies on the first attack",
+        "Arthur, Deus ex, Infected maw: Arthur dies immediately, Deus ex survives and dies on the first attack, same with maw",
+        "Arthur, Deus ex, Infected maw, Piccolo: Arthur and Deus Ex die immediately, Maw and Piccolo survive but die on the first hit.",
+        "PlCrGa Seraphim: Arthur dies immediately, Raze survives, attacks, gets attacked then dies, Noveau is defeated two times on screen then dies, exchanges with Malik normally",
+        "PG Seraphim: First two die immediately, Noveau survives, attacks, then is defeated, Malik has an empty health bar and revives 2 times before dying",
+        "Arthur, Raze, Noveau, Judgement Day + Ga Fate (Support): First 2 die, \"Noveau\" survives attacks dies, \"Judgement Day\" revives 2 times but its infinite damage never procs.",
+        "the game always displays the cards sequentially by their order in the team unless there is a shuffling event. Arthur does not die but Seraphim's entry effect calculates it dies so it switches to Raze..."
+      ],
+      "confirmed_for_this_report": {
+        "deck_deaths_real": true,
+        "display_drops_front_card_per_deck_death": true,
+        "ability_passing": false,
+        "noveau_revives": 3,
+        "prophet_grant_from_deck_goes_to_front": true,
+        "deus_ex_deck_dodge": "3 of 5 runs"
+      },
+      "scope": "Replaced the entry-kill / arrival-death / ability-passing rules with real deck deaths plus the user's display-shift theory; all recorded Seraphim runs reproduce. Blue Fate support (retry failed ability) is not modelled; the JD run is checked without it."
+    },
+    {
+      "observation_id": "obs_20260929_deus_ex_heir_rule",
+      "kind": "user_clarification",
+      "source": "user_report_in_current_task",
+      "user_quotes": [
+        "The 2nd and third cards always survive, they are likely arthur and deus ex in the game logic while infected maw's death induced the glitch because when I removed infected maw arthur appears to survive at 1 HP",
+        "The next card dead or alive, so wasting true prophets, stone scientists, or Ms Clause on a card that died is possible"
+      ],
+      "confirmed_for_this_report": {
+        "deus_ex_always_dodges_deck_entry": true,
+        "front_death_heir": "next card in lineup, dead or alive"
+      },
+      "scope": "Deck deaths still hand effects to the card playing (Arthur used Prophet's grant in the Deus Ex and RuCrPl runs)."
+    },
+    {
+      "observation_id": "obs_20260929_mrs_claus_deck_gift",
+      "kind": "battle_report",
+      "source": "user_report_in_current_task",
+      "requested_setup": "[Arthur, Mrs. Claus, Infected Maw, Noveau] vs Seraphim",
+      "user_quotes": [
+        "Arthur died Mr Claus stats doubled yet changed from 1.4k to 66, infected Maw (we know this is 1 HP arthur) survived attacks dies, the display re-aligns ending with noveau reviving twice before dying",
+        "66 is double of arthur's ATK"
+      ],
+      "confirmed_for_this_report": {
+        "deck_death_gift_goes_to_playing_card": true
+      },
+      "scope": "Resolves the open heir question: on-death effects of cards killed in the deck go to the card still playing; front deaths go to the next card, dead or alive."
+    },
+    {
+      "observation_id": "obs_20260929_class_stat_corrections",
+      "kind": "user_clarification",
+      "source": "user_report_in_current_task",
+      "user_quotes": [
+        "RNG: Pandora, Chaos, Gambler (this one should be obvious), Nuwa, Shay, Old Man Winter",
+        "NOT RNG: Ultimate Brawler",
+        "NOT Undead: The Blood Countess, Abomination, Sleep Paralysis",
+        "Yamato has 446 atk and 4455 hp, pangu has 5270 atk and 21077 hp"
+      ],
+      "confirmed_for_this_report": {
+        "yamato_borderless": [
+          446,
+          4455
+        ],
+        "pangu_borderless": [
+          5270,
+          21077
+        ],
+        "rng_count": 34
+      },
+      "scope": "Stat ratio profiles: Yamato HP x5, Pangu HP x2 (before rounding). Class lists in card_engine/data_corrections.py."
+    },
+    {
+      "observation_id": "obs_20260929_img0297_poison",
+      "kind": "video_review",
+      "source": "IMG_0297.MOV",
+      "setup": "Dilophosaurus (146, 1,559 ATK, 3,117 HP) vs Heaven's Armor (38, 1,280 ATK, 2,560 HP, -75% damage taken), borderless",
+      "measurements": {
+        "heavens_armor_bar": {
+          "2.3-2.6s": 0.711,
+          "2.7-3.7s": 0.086,
+          "3.8s": "dead"
+        },
+        "dilophosaurus_bar": {
+          "before_3.0s": 1.0,
+          "after_3.1s": 0.584
+        },
+        "method": "red fill / bar container width, 10 fps, 720x1280"
+      },
+      "interpretation": "Best fit: two reduced Dilophosaurus hits (2 x 390) then a purple poison tick at ~2.7 s of about 1,559 (Dilophosaurus's ATK), not reduced by Heaven's Armor: 2,560 - 780 - 1,559 = 221 HP = 0.086 of max, matching the bar. Heaven's Armor hits back for 1,280 (Dilophosaurus 1.0 -> 0.589 predicted, 0.584 measured) and dies at ~3.7 s with no Dilophosaurus attack, consistent with a second poison tick at the next turn end.",
+      "open": [
+        "poison duration",
+        "whether the 2.0 s drop is the entry attack plus a normal attack, or one hit",
+        "stacking/refresh"
+      ]
+    },
+    {
+      "observation_id": "obs_20260929_videos_0299_0304",
+      "kind": "video_review_and_battle_report",
+      "source": "IMG_0299, IMG_0300, IMG_0303, IMG_0304 and user answers",
+      "user_quotes": [
+        "Kira Kills in the same fashion Onmyoji damages.",
+        "Steve Won the final battle",
+        "Fossils are counted per team, stun disables attacking but not abilities",
+        "Gambler boosts randomly even negatively the draws are (-0.1, 0.15, 0.3) ATK"
+      ],
+      "findings": {
+        "IMG_0299": "Platinum Raze (8,312 ATK) vs Rudolph (117): every Raze attack showed a red X and Rudolph never took damage over ~20 exchanges (50 s); blind makes the blinded card's attacks miss, permanently.",
+        "IMG_0300": "Crystal Platinum Ancient Egg (3,154 ATK / 6,308 HP) vs Pestilence (2,560 / 5,120): Egg hit first with no poison tick after its turn; Pestilence's hit (2,560) was followed by a 2,560 tick; the Egg then killed Pestilence. Pestilence poisons on dealing damage only; tick = poisoner ATK.",
+        "IMG_0303": "[Dilophosaurus, Onmyoji, Gambler, Zombie Dragon] vs [Buddha, The Rake, Loch Ness]: Dilophosaurus dodged a lethal hit and swapped in Onmyoji; Gambler 12,343 -> 16,045 (x1.3); Onmyoji's DIVINATION strike landed on The Rake about six turns after Onmyoji entered, after Onmyoji died; Loch Ness 14,126 -> 20,682 (x1.1^4) while waiting.",
+        "IMG_0304": "[Dilophosaurus, Onmyoji, Tsukuyomi, Steve] vs [Buddha, Crystal Platinum Inari (5,120 ATK)]: Buddha alternates with Inari (moving to the back when fully healed, reviving Inari); Steve held the front from ~24 s to the end with blocks and won."
+      },
+      "scope": "Implemented: blind, Pestilence hit-only poison, Gambler draws, Loch Ness growth, Onmyoji/Kira delayed effects, Steve blocks, Ghoul, Zombie Nurse, Zombie Dragon, Banshee stun. Not yet: Buddha, Tsukuyomi, fossils."
+    },
+    {
+      "observation_id": "obs_20260930_img0305_0306",
+      "kind": "video_review",
+      "source": "IMG_0305 (Ghoul), IMG_0306 (Gambler)",
+      "user_quotes": [
+        "Onmyoji isn't what activates divination alone, it could be any ally card after its played",
+        "Video for Gambler rates",
+        "Ghoul has a video for it"
+      ],
+      "findings": {
+        "IMG_0306": "Gambler vs Buddha (Buddha only heals): ~50 ATK draws read from the card, each step exactly x0.9, x1.15 or x1.3 (two-draw steps x1.17 = 1.3 x 0.9 and x1.69 = 1.3^2). Counts: x0.9 22, x1.15 13, x1.3 15 - consistent with equal thirds (chi-square p ~ 0.26).",
+        "IMG_0305": "RuCrPl Malik (655,360 ATK, 1,310,720 HP) vs [Shining Armor, Ghoul (285 ATK), Inari (1,140)]: after Ghoul's hit, purple poison ticks on Malik continued until the end (6-14 s, >= 5 ticks, roughly one per round), each about 15% of Malik's max HP (18/11/19/16/13% measured; camera movement adds noise)."
+      },
+      "hypothesis": "A poison tick may be max(poisoner ATK x effectiveness, 15% of the target's max HP): fits Dilophosaurus (1,559 > 384), Pestilence (2,560 > 946) and Ghoul (196,608 > 285). Not yet implemented as a general rule; Ghoul mapped to 15% max-HP permanent poison.",
+      "open": [
+        "general poison formula",
+        "tick frequency (once per round in IMG_0305 vs every turn end in IMG_0297)"
+      ]
+    },
+    {
+      "observation_id": "obs_20260930_description_review",
+      "kind": "user_clarification",
+      "source": "user_report_in_current_task",
+      "user_quotes": [
+        "Infected Maw was right it was just a display bug, academy student was nerfed so change its description/token-sequence, True Prophet observation holds true, recharge doesn't mean it skips its attacks that learnable, failed mage does skip its turn. Correct the required descriptions in a token efficient manner",
+        "don't conflate the bugged gui with inferences on bugged game logic, the game logic may have always been consistent, I would even remove the clarification embeddings they're unnecessary now"
+      ],
+      "changes": {
+        "clarification_embedding": "removed",
+        "88 Academy Student": "description 40 % -> 30 % (one token)",
+        "164 True Prophet": "description -> 'on death, the next card will dodge an attack'",
+        "171 Infected Maw": "enemy loses 25% of max HP at the start of each of its turns (text was right)",
+        "96 Failed Mage": "3x damage, then skips its next turn",
+        "24/42 Leviathan, Thor": "unchanged: recharge turns attack normally (learnable)"
+      }
+    },
+    {
+      "observation_id": "obs_20260930_test_plan_battles_1_9",
+      "kind": "video_review",
+      "source": "IMG_0310, 0311, 0314-0317, 0319, 0324, 0325 (test plan battles 1-9)",
+      "user_quotes": [
+        "Priest has 30% more hp",
+        "All halloween cards are 2x stats",
+        "The halloween weather cards uses weather multi instead of halloween multi, hectate has a 5x stat multi, Glamour has a 3x multi instead of 2x",
+        "2x multi only applied to halloween 2025, halloween cards have normal stats",
+        "the 9th test was anomalous"
+      ],
+      "stat_findings": {
+        "Halloween 2025": "2x (The Hanged Man 320, Walking Dead 520); Hecate 5x, Glamour 3x (user); Blood Rain cards use weather only",
+        "Time Lord Stryx": "15,360 vs formula 10,240 (x1.5), applied",
+        "Priest": "+30% HP (user), applied",
+        "Buddha": "5,241 vs 5,120 (x1.0236); IMG_0303 showed 335,361 vs 327,680 (same x1.0235) - unexplained",
+        "Legends": "6,144 vs 5,120 (x1.2) in IMG_0319 - unverified",
+        "T-Rex": "2,873 vs 2,394 (x1.2) in IMG_0314 - maybe a fossil effect",
+        "weather cards": "Nao Pl 4,156 vs 4,155 and The Curse Pl 22,653 vs 22,652: +1 on weather cards (precision)"
+      },
+      "battle_findings": {
+        "3 (IMG_0314)": "Egg (+3 fossils) and Meteosaurus (10x hit killed Platinum Raze, then died, +2) -> Tyrannodon 8,678 then 148,272 = 5,785 x 1.5^8 (8 fossils?); Parallax's reflect killed Tyrannodon; T-Rex then killed Parallax.",
+        "4 (IMG_0315)": "Meteosaurus's 10x hit killed Heaven's Armor (through 75% reduction); Steve showed BLOCK 1/3 after attacking; Arthur lasted ~2 s vs Velociraptor; Cyberdon beat Raze.",
+        "5 (IMG_0316)": "Hell's Army's entry disabled Inari (card text 'No Ability'); Set disabled Raze on its first damaging hit, permanently (still disabled vs Samurai and Fuxi); Fuxi beat Raze, Nao, Arthur.",
+        "6 (IMG_0317)": "Hecate's text became 'Hatred' (stole Raze's counter); Loki's entry gave Nao a random ability (ratio kill text); Mother of Beasts stole 15% of Inari's ATK per turn (20,480 -> 17,409 -> 14,797; MoB 33,247 -> 36,319 -> 38,931).",
+        "7 (IMG_0319)": "Hades showed Raze's 'Hatred' after Raze fell (copied a fallen ally's ability); long 59 s fight with Marrowclaw ('cannot be killed by abilities').",
+        "8 (IMG_0324)": "Black Cat: Nao died without dodging; Judgement Day (3,562 HP) died to one 2,266 hit (2x vs RNG); Heavenly Demon killed two Night Witches with plain hits (no swap).",
+        "9 (IMG_0325)": "Ra's entry hit the next (waiting) card, killing Arthur in the deck: display shift - the card shown as 'Arthur' from 5.2 s is Parallax (kills The Curse 22,653 ATK; 'Para' label visible at 6.8 s), realigning at 8.0 s. User team won.",
+        "2 (IMG_0311)": "Anubis & Hades returned at 1,700 ATK (75% of 2,266) after Raze killed it; order of revivals unclear.",
+        "1 (IMG_0310)": "Revive loop over 48 s (Bloody Mary 1,447, Walking Dead 520, Time Lord Stryx 15,360 'On death, revive your party')."
+      }
+    },
+    {
+      "observation_id": "obs_20260930_user_answers_battles_1_4",
+      "kind": "user_clarification",
+      "source": "user_report_in_current_task",
+      "user_quotes": [
+        "Buddha has around a 1.0235 multi considering health is doubled before ceiling.",
+        "If you see that a card has different stats regardless of border/support than apply that stat multiplier, I never did a thorough run through of every card.",
+        "In Battle 2, Anubis & Hades revived itself because it had defeated an enemy, at the back of the deck, all cards were alive so budda moved to the back of the deck behind anubis where it later revived the divine doctor.",
+        "Any dying dinosaur adds one fossil, the egg contributed 3 fossils from its ability and 1 from its death (total 4), the meteorosaur contributed 2 from its ability and 1 from its death (total 7), the tyrannadon contributed one from its death (total 8) and the trex contributed one from its death (total 9)",
+        "Bloody Marry probabilistic recurred around Time Lord's death do to its revival being contingent on ally's death, time lord revived the entire party in their initial order while a display shift may have concealed the real marry"
+      ],
+      "implemented": {
+        "observed_modifiers": "Buddha 1.02344, Legends 1.2, T-Rex 1.2, Tyrannodon 1.5, Time Lord Stryx 1.5",
+        "fossils": "team counter; dinosaurs (Prehistoric) +1 on death; Egg +3, Meteosaurus +2; Tyrannodon x1.5 ATK per fossil on entry; T-Rex counters at 3+; Velociraptor timer 5 - min(fossils, 2); Cyberdon charge turn, 75%, deck hits fossils+1 (max 3). IMG_0314 replay gives 4/7/8/9 fossils and Tyrannodon 148,272."
+      },
+      "pending": [
+        "Anubis & Hades self-revive at the back after a kill",
+        "Buddha move-to-back and revive",
+        "Time Lord Stryx party revive in initial order",
+        "Bloody Mary 50% return on ally death"
+      ]
+    },
+    {
+      "observation_id": "obs_20260930_part_a_answers",
+      "kind": "user_clarification",
+      "source": "user_report_in_current_task",
+      "user_quotes": [
+        "Base dutchman has 1782 attack and 7127 health and it lets the swapped ally tank the attack, the ally gets 1 turn and swaps back to dutchman before the next attack or if they die. Dutchman can swap a maximum of 2 times.",
+        "Chaos affects all 4 enemies independently, attacking one time when successful.",
+        "overkill carries to the next card.",
+        "Bei works as you described.",
+        "Milk only pairs with Dad, but it wont die and attacks if dad is not present.",
+        "Anubis revives at the back.",
+        "Walking dead is on borrowed time for 1 turn when it dies, it has to kill an enemy each turn to live.",
+        "Copies of Fresno do not summon.",
+        "nuwa can summon any card from any card pack except limited pack and glamour.",
+        "Pandora can use every ability in the game except its own (max 2 abilities).",
+        "Sable copies the enemy card in play.",
+        "Test A, B, C confirmed.",
+        "Safegaurding: Block first attack; each turn in your deck dragons get 20% stats",
+        "Mother of Dragons: Shield all dragons in your deck from 2 attacks",
+        "sekhmet: 1188,4039",
+        "susanoo: 833, 3331",
+        "After this I will add 32 rounds of 4 Nuwa's so you can observe random card stats"
+      ],
+      "rule": "Part A readings not corrected by the user are accepted as stated in the assistant's question list (2026-09-30).",
+      "implemented_now": {
+        "stat_profiles": "Sekhmet HP x1.7; Susanoo HP x1.2, ATK x0.6; Flying Dutchman HP x2"
+      }
+    },
+    {
+      "observation_id": "obs_20261001_forms_answers",
+      "kind": "user_clarification",
+      "source": "user_report_in_current_task",
+      "user_quotes": [
+        "Six Realms Staff is the base text only unless the description changed and the name remained.",
+        "Ally and Enemy team start with 1-4 cards with no known card count limit.",
+        "Glamour changes at the start of its turn.",
+        "Astraeus only has 5 signs as far as I know and taurus is more damage the lower the hp.",
+        "Immortal's awakened form takes half damage and increases stats by 50% each kill.",
+        "Naga's transformation leaves a curse dealing 25% max hp for 4 turns on death."
+      ]
+    },
+    {
+      "observation_id": "obs_20261001_ability_batch",
+      "kind": "implementation_note",
+      "source": "battles 5-9 videos and user answers",
+      "implemented": [
+        "Hell's Army 33: entry halves the enemy's HP and removes its ability",
+        "Set 75: removes the ability of cards it damages",
+        "Samurai 106: cancels every other card's ability while in play",
+        "Fuxi 137: enemy abilities stop for 3 turns",
+        "Hecate 284: takes the first damaged card's ability (victim loses it)",
+        "Mother of Beasts 212: 15% stat steal per turn; first victim's ability",
+        "Hades 49 / Legends 247: copy the most recently fallen ally's ability on entry",
+        "Black Cat 69: enemy RNG cards' abilities fail while it is in play; 2x vs RNG",
+        "Night Witch 276: entry hex removes an RNG card's ability",
+        "Sable 211: copies the enemy card in play",
+        "Ra 79: entry hit on the card behind, ignoring survival, reflection and on-death effects (IMG_0325)"
+      ],
+      "provisional": [
+        "Set's disabling hit can still be countered",
+        "Hades/Legends copy on entry only",
+        "Samurai cancels both sides",
+        "Hecate's victim loses its ability"
+      ]
+    },
+    {
+      "observation_id": "obs_20261001_nuwa_img0336",
+      "kind": "video_observation",
+      "source": "IMG_0336.MOV: 4 Nuwa vs 4 Nuwa, 20 rounds (user: abilities only, not stats)",
+      "summon_pool_seen": [
+        "Frankenstein",
+        "Hathor",
+        "Wizard",
+        "Jason",
+        "Phoenix",
+        "Limitless Rivals",
+        "Hades",
+        "Ameonna",
+        "Demon Hunter",
+        "Yamata no Orochi",
+        "Jiangshi",
+        "Abomination",
+        "Behemoth",
+        "Ghoul",
+        "Count Musculus",
+        "Arthur",
+        "Sciron",
+        "Loch Ness",
+        "Gunslinger",
+        "Ancient Egg",
+        "General (Art of War)",
+        "Cat Lady",
+        "Zombie",
+        "Shenlong",
+        "Sphinx",
+        "Chupacabra",
+        "Marionette",
+        "Titan",
+        "Tornado",
+        "Hoarfrost Phoenix",
+        "Arcane Avian",
+        "Poison Witch",
+        "Archer",
+        "Samurai",
+        "Kitsune",
+        "Umbrasaur",
+        "Cherub",
+        "Pterodactylus",
+        "Witch",
+        "Dionysus",
+        "Mary",
+        "Deus Ex",
+        "Sorcerer",
+        "Raze The Destroyer",
+        "Dancer",
+        "Ultimate Brawler",
+        "Beelzebub",
+        "Seraphim",
+        "Onmyoji",
+        "Boreas",
+        "Dilophosaurus",
+        "Jersey Devil",
+        "Brachiosaurus",
+        "Tartarus",
+        "Knightmare",
+        "Gideon The Insatiable",
+        "Bacon Hair",
+        "NO.2",
+        "Terra's Aria",
+        "Domain Master",
+        "AK4-ON1",
+        "Vampire Lord",
+        "Stone Scientist",
+        "Hecate",
+        "Ninja",
+        "Trainee",
+        "Admiral Ice",
+        "Anubis",
+        "Savior",
+        "Inari",
+        "Control Freak",
+        "Susanoo",
+        "Gingerbread Man",
+        "Demonic Cultivator",
+        "Bigfoot",
+        "The Blood Countess",
+        "Greedy Belly",
+        "Morpheus the Slumberer",
+        "Soft Paw",
+        "Night Witch",
+        "Zeus",
+        "Darling",
+        "Shining Armor",
+        "Typhon",
+        "Steven",
+        "Hunter",
+        "Cosmic Pop Star",
+        "Ice Queen",
+        "Dracula"
+      ],
+      "findings": [
+        "Summons enter at Nuwa's 2,705 ATK; entry/stat abilities apply on top (Abomination 10,820 = x4, Titan 3,382 = x1.25, Demonic Cultivator 4,328 = x1.6)",
+        "Pool includes Prehistoric, Halloween, seasonal (Gingerbread Man) and boss cards (Beelzebub, Gideon, Morpheus); no Limited or Glamour seen - consistent with the user's rule",
+        "Vampire Lord: the target loses ATK equal to damage dealt, floored at 0; Vampire Lord gains only what was removed (5,410 -> 8,115 after hitting a 2,705 card; Gunslinger, AK4-ON1, Stone Scientist left at 0 ATK) - implemented as hit_attack_drain_fraction",
+        "Hades copied a fallen Phoenix's 'Eternity' (copy_fallen_ally confirmed)",
+        "Hecate took Cosmic Pop Star's 'Stolen Spotlight'; the victim then showed 'Nil: Does something funny' (victim loses its ability - confirms the provisional rule)",
+        "Gunslinger: Sorcerer 2,705 -> 1,624 and Loch Ness 5,272 -> 4,190, both -40% of 2,705 damage dealt (confirmed)",
+        "Multipliers matched the mapped rules: Hunter x1.3/x1.69, Beelzebub x1.25, Kitsune x1.44, Gideon x1.2/x1.44, Morpheus x0.9^n, Trainee x1.1, Greedy Belly x1.3, Boreas -25% (Onmyoji 2,029), Marionette -15% per swap (2,300), Loch Ness 1.1^7 (5,272), Terra's Aria 3.1 = 1 + 0.3 x 7 fallen",
+        "Limitless Rivals (user): fixed gain per turn, sized by buffs/debuffs taken before - stats x(1+0.1(t+1))/(1+0.1t) and damage reduction +10% per turn (additive), via action_end_stat_add_base / action_end_incoming_reduction",
+        "Round 8 (167-169 s): Witch's Sap took 50% of Pterodactylus's ATK on entry (Pterodactylus 2,705 -> 1,353, Witch 2,705 -> 4,058); Witch 268 mapped with the user's 50% chance (entry_steal_attack_chance)",
+        "Round breaks at 21, 39, 58, 78, 100, 128, 150, 172, 194, 216, 242, 262, 283, 304, 325, 348, 371, 393, 410 s"
+      ]
+    },
+    {
+      "observation_id": "obs_20261001_vampire_limitless",
+      "kind": "video_observation",
+      "source": "IMG_0337 (Nao Presence team vs Limitless Rivals), IMG_0338 (Immortal Witch vs Vampire Lord), user answers",
+      "findings": [
+        "Vampire Lord (IMG_0338): 8,312 hit took 18,511 -> 10,199 ATK and Vampire Lord went 8,312 -> 16,624; its 16,624 hit took only the remaining 10,199 (-> 0) and it went to 26,823. ATK steal = min(HP removed, target ATK). User: HP is stolen too (target max HP lowered by the HP removed; Vampire Lord gains it)",
+        "Limitless Rivals (IMG_0336, IMG_0337): ATK +10% of pre-growth stats at the start of each of its turns (4,666 + 466.6 per turn up to 13,532 after 19 turns; 2,705 -> 2,976 just before its first attack); the max HP gain also raises current HP (IMG_0336 bar rises fit exactly)",
+        "Limitless Rivals damage reduction: +10% per turn, capped at 50% (user: it caps). IMG_0337 fit (H0 ~9,350 from the first step): Nao's 1,039 hits at x0.90, 0.72, 0.59, 0.55, 0.50, then ~0.45-0.5 through turn 19",
+        "Open: in IMG_0337 the HP bar rises at each growth were ~65% of the 10%-of-max prediction (IMG_0336 matched); possibly an HP support not counted in the gain"
+      ]
+    },
+    {
+      "observation_id": "obs_20261001_batch12_all_cards",
+      "kind": "implementation_note",
+      "source": "user answers 2026-09-30/10-01; IMG_0304, IMG_0310, IMG_0311, IMG_0325, IMG_0327-IMG_0341",
+      "user_quotes": [
+        "Every card should be covered",
+        "There are only 289 cards in the game",
+        "Joy and Sorrow have no abilities and use the stats of the parent when they died",
+        "Tsukuyomi, reflects on the opponents even turns, effects transmitted through attack are also reflected",
+        "Hanged man effect is at the start of the turn and deals % of Max HP, curse only applies to killer, the rake was not affected when not in play but present in the deck, despite contributing to the attack",
+        "sleep paralysis stuns for 1 turn, cards don't attack during stuns but their abilities still work",
+        "Limitless Rival gets a fixed gain per turn that can be influenced by buffs/debuffs prior",
+        "Witch has a 50% chance to steal",
+        "Vampire Lord steals HP as well",
+        "Limitless damage reduction does cap",
+        "The limitless had no support"
+      ],
+      "findings": [
+        "IMG_0341 (Jersey Devil 5,837 vs a shuffled dummy): Sleep Paralysis 'Perish: On entry, the enemy is stunned. In 3 turns, both active cards die.' (4,156 ATK). In the 4.7 s encounter it entered, hit, took a hit, hit again, and both active cards died at about 6.0 s; in three other encounters Jersey Devil killed it first.",
+        "IMG_0304: Tsukuyomi ('Full Moon: every other turn, opponent damages themself') faced only Buddha and an invincible Inari - no reflection visible.",
+        "IMG_0325: The Hanged Man (320 ATK) was killed by Parallax, which never took another turn before Ra died to Paradox - no curse tick visible."
+      ],
+      "implemented": "All 56 remaining cards; see docs/simulator_questions.md 'Batch 12'. Kernel 0.42: 16-card teams with spare slots, an ability pool (289 cards + 15 forms), n-way random picks, second abilities."
+    },
+    {
+      "observation_id": "obs_20261001_sleep_paralysis_img0345",
+      "kind": "video_observation",
+      "source": "IMG_0345: Platinum Yamato no Orochi vs borderless Sleep Paralysis (4,156 / 8,312), behind Good Boy (0.4-4.4 s) and alone (7.2-11.4 s)",
+      "findings": [
+        "Same sequence both times: Sleep Paralysis hits; Yamato, tinted yellow (stunned), skips its turn; then hits alternate (SP, Yamato, SP, Yamato); both active cards die at the start of Sleep Paralysis's 4th turn.",
+        "Yamato's 'lose 1/8 stats when damaged' gave the hit count: 1,515 -> 1,326 -> 1,160 -> 1,015 (Good Boy's -15% first) and 1,782 -> 1,560 -> 1,365 -> 1,194.",
+        "Card text: 'Perish: On entry, the enemy is stunned. In 3 turns, both active cards die.' (description fixed from the merged 'stunned in 3 turns')."
+      ],
+      "user_quotes": [
+        "the sign looks like a crab",
+        "aquarius heals at exactly 50% hp",
+        "These function as separate cards all under the name of astraeus",
+        "the last sign is \"nullify damage below 100% of Max HP, reducing the threshold by 15% each time\" im assumming that means every nullification"
+      ]
+    },
+    {
+      "observation_id": "obs_20261001_supports_001",
+      "reported_on": "2026-10-01",
+      "case_id": "support_tiers",
+      "source": "user_videos IMG_0350-0354",
+      "kind": "support_catalog",
+      "status": "partial_observation",
+      "notes": "Support values for each border tier were read with OCR. Each support has one border. Unread cells are None in catalog_rules RED_SUPPORTS/BLUE_SUPPORTS. Ruby blue popups show base values (pending user confirmation)."
+    },
+    {
+      "observation_id": "obs_20261001_magical_elf_001",
+      "reported_on": "2026-10-01",
+      "case_id": "magical_elf_awakened_toys",
+      "source": "user_video IMG_0355",
+      "kind": "card_text",
+      "status": "observed",
+      "notes": "Base Magical Elf (4 unique Toys) awakens Toy Bear (Fluffy Aggression: on entry, attack boosted by 1 border tier per fallen Toy), Toy Car (Speedy Progression: on entry, gain an attack per differently named Toy), Toy Jack-in-the-Box (Pop-Up Impression: a turn of confusion per unique Toy when an enemy enters) and Toy Nutcracker (Shelter Obsession: damage cannot exceed 1/4 max HP; on taking damage every unique Toy gains 10% stats; the HP shown went 1,943 -> 2,138 -> 2,352 -> 2,587 -> 2,845, i.e. x1.1 compounding)."
+    }
+  ]
+}

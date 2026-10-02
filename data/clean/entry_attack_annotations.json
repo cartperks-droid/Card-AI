@@ -1,0 +1,651 @@
+[
+  {
+    "card_id": 3,
+    "name": "Good Boy",
+    "annotation": "user_supplied_entry_attack_list",
+    "verification_status": "unverified",
+    "source": {
+      "file": "data-8.csv",
+      "record_1": 1,
+      "column_1": 1
+    }
+  },
+  {
+    "card_id": 4,
+    "name": "Useless Seer",
+    "annotation": "user_supplied_entry_attack_list",
+    "verification_status": "unverified",
+    "source": {
+      "file": "data-8.csv",
+      "record_1": 1,
+      "column_1": 2
+    }
+  },
+  {
+    "card_id": 14,
+    "name": "Knightmare",
+    "annotation": "user_supplied_entry_attack_list",
+    "verification_status": "unverified",
+    "source": {
+      "file": "data-8.csv",
+      "record_1": 1,
+      "column_1": 3
+    }
+  },
+  {
+    "card_id": 33,
+    "name": "Hell's Army",
+    "annotation": "user_supplied_entry_attack_list",
+    "verification_status": "unverified",
+    "source": {
+      "file": "data-8.csv",
+      "record_1": 1,
+      "column_1": 4
+    }
+  },
+  {
+    "card_id": 35,
+    "name": "Pegasus",
+    "annotation": "user_supplied_entry_attack_list",
+    "verification_status": "unverified",
+    "source": {
+      "file": "data-8.csv",
+      "record_1": 1,
+      "column_1": 5
+    }
+  },
+  {
+    "card_id": 36,
+    "name": "Bad Boys",
+    "annotation": "user_supplied_entry_attack_list",
+    "verification_status": "unverified",
+    "source": {
+      "file": "data-8.csv",
+      "record_1": 1,
+      "column_1": 6
+    }
+  },
+  {
+    "card_id": 37,
+    "name": "Pandora",
+    "annotation": "user_supplied_entry_attack_list",
+    "verification_status": "unverified",
+    "source": {
+      "file": "data-8.csv",
+      "record_1": 1,
+      "column_1": 7
+    }
+  },
+  {
+    "card_id": 41,
+    "name": "Boreas",
+    "annotation": "user_supplied_entry_attack_list",
+    "verification_status": "unverified",
+    "source": {
+      "file": "data-8.csv",
+      "record_1": 1,
+      "column_1": 8
+    }
+  },
+  {
+    "card_id": 43,
+    "name": "Loki",
+    "annotation": "user_supplied_entry_attack_list",
+    "verification_status": "unverified",
+    "source": {
+      "file": "data-8.csv",
+      "record_1": 1,
+      "column_1": 9
+    }
+  },
+  {
+    "card_id": 44,
+    "name": "Poseidon",
+    "annotation": "user_supplied_entry_attack_list",
+    "verification_status": "unverified",
+    "source": {
+      "file": "data-8.csv",
+      "record_1": 1,
+      "column_1": 10
+    }
+  },
+  {
+    "card_id": 45,
+    "name": "Limitless Rivals",
+    "annotation": "user_supplied_entry_attack_list",
+    "verification_status": "unverified",
+    "source": {
+      "file": "data-8.csv",
+      "record_1": 1,
+      "column_1": 11
+    }
+  },
+  {
+    "card_id": 46,
+    "name": "Vicious",
+    "annotation": "user_supplied_entry_attack_list",
+    "verification_status": "unverified",
+    "source": {
+      "file": "data-8.csv",
+      "record_1": 1,
+      "column_1": 12
+    }
+  },
+  {
+    "card_id": 47,
+    "name": "Typhon",
+    "annotation": "user_supplied_entry_attack_list",
+    "verification_status": "unverified",
+    "source": {
+      "file": "data-8.csv",
+      "record_1": 1,
+      "column_1": 13
+    }
+  },
+  {
+    "card_id": 48,
+    "name": "The Curse",
+    "annotation": "user_supplied_entry_attack_list",
+    "verification_status": "unverified",
+    "source": {
+      "file": "data-8.csv",
+      "record_1": 1,
+      "column_1": 14
+    }
+  },
+  {
+    "card_id": 52,
+    "name": "Black Plague",
+    "annotation": "user_supplied_entry_attack_list",
+    "verification_status": "unverified",
+    "source": {
+      "file": "data-8.csv",
+      "record_1": 1,
+      "column_1": 15
+    }
+  },
+  {
+    "card_id": 55,
+    "name": "Siegfried",
+    "annotation": "user_supplied_entry_attack_list",
+    "verification_status": "unverified",
+    "source": {
+      "file": "data-8.csv",
+      "record_1": 1,
+      "column_1": 16
+    }
+  },
+  {
+    "card_id": 57,
+    "name": "Surtr",
+    "annotation": "user_supplied_entry_attack_list",
+    "verification_status": "unverified",
+    "source": {
+      "file": "data-8.csv",
+      "record_1": 1,
+      "column_1": 17
+    }
+  },
+  {
+    "card_id": 62,
+    "name": "Serpent Mist",
+    "annotation": "user_supplied_entry_attack_list",
+    "verification_status": "unverified",
+    "source": {
+      "file": "data-8.csv",
+      "record_1": 1,
+      "column_1": 18
+    }
+  },
+  {
+    "card_id": 64,
+    "name": "Achyls",
+    "annotation": "user_supplied_entry_attack_list",
+    "verification_status": "unverified",
+    "source": {
+      "file": "data-8.csv",
+      "record_1": 1,
+      "column_1": 19
+    }
+  },
+  {
+    "card_id": 72,
+    "name": "Sphinx",
+    "annotation": "user_supplied_entry_attack_list",
+    "verification_status": "unverified",
+    "source": {
+      "file": "data-8.csv",
+      "record_1": 1,
+      "column_1": 20
+    }
+  },
+  {
+    "card_id": 84,
+    "name": "Stone Scientist",
+    "annotation": "user_supplied_entry_attack_list",
+    "verification_status": "unverified",
+    "source": {
+      "file": "data-8.csv",
+      "record_1": 1,
+      "column_1": 21
+    }
+  },
+  {
+    "card_id": 85,
+    "name": "Darling",
+    "annotation": "user_supplied_entry_attack_list",
+    "verification_status": "unverified",
+    "source": {
+      "file": "data-8.csv",
+      "record_1": 1,
+      "column_1": 22
+    }
+  },
+  {
+    "card_id": 92,
+    "name": "Admiral Ice",
+    "annotation": "user_supplied_entry_attack_list",
+    "verification_status": "unverified",
+    "source": {
+      "file": "data-8.csv",
+      "record_1": 1,
+      "column_1": 23
+    }
+  },
+  {
+    "card_id": 100,
+    "name": "Mastermind",
+    "annotation": "user_supplied_entry_attack_list",
+    "verification_status": "unverified",
+    "source": {
+      "file": "data-8.csv",
+      "record_1": 1,
+      "column_1": 24
+    }
+  },
+  {
+    "card_id": 105,
+    "name": "Ninja",
+    "annotation": "user_supplied_entry_attack_list",
+    "verification_status": "unverified",
+    "source": {
+      "file": "data-8.csv",
+      "record_1": 1,
+      "column_1": 25
+    }
+  },
+  {
+    "card_id": 119,
+    "name": "Kuchisake-onna",
+    "annotation": "user_supplied_entry_attack_list",
+    "verification_status": "unverified",
+    "source": {
+      "file": "data-8.csv",
+      "record_1": 1,
+      "column_1": 26
+    }
+  },
+  {
+    "card_id": 129,
+    "name": "The Awakened One",
+    "annotation": "user_supplied_entry_attack_list",
+    "verification_status": "unverified",
+    "source": {
+      "file": "data-8.csv",
+      "record_1": 1,
+      "column_1": 27
+    }
+  },
+  {
+    "card_id": 131,
+    "name": "Shén Lóng",
+    "annotation": "user_supplied_entry_attack_list",
+    "verification_status": "unverified",
+    "source": {
+      "file": "data-8.csv",
+      "record_1": 1,
+      "column_1": 28
+    }
+  },
+  {
+    "card_id": 132,
+    "name": "Xīfāng Báihü",
+    "annotation": "user_supplied_entry_attack_list",
+    "verification_status": "unverified",
+    "source": {
+      "file": "data-8.csv",
+      "record_1": 1,
+      "column_1": 29
+    }
+  },
+  {
+    "card_id": 134,
+    "name": "Dōng Fāng Qīng Lóng",
+    "annotation": "user_supplied_entry_attack_list",
+    "verification_status": "unverified",
+    "source": {
+      "file": "data-8.csv",
+      "record_1": 1,
+      "column_1": 30
+    }
+  },
+  {
+    "card_id": 144,
+    "name": "Tricerotops",
+    "annotation": "user_supplied_entry_attack_list",
+    "verification_status": "unverified",
+    "source": {
+      "file": "data-8.csv",
+      "record_1": 1,
+      "column_1": 31
+    }
+  },
+  {
+    "card_id": 146,
+    "name": "Dilophosaurus",
+    "annotation": "user_supplied_entry_attack_list",
+    "verification_status": "unverified",
+    "source": {
+      "file": "data-8.csv",
+      "record_1": 1,
+      "column_1": 32
+    }
+  },
+  {
+    "card_id": 147,
+    "name": "Mammoth",
+    "annotation": "user_supplied_entry_attack_list",
+    "verification_status": "unverified",
+    "source": {
+      "file": "data-8.csv",
+      "record_1": 1,
+      "column_1": 33
+    }
+  },
+  {
+    "card_id": 152,
+    "name": "Marrowclaw",
+    "annotation": "user_supplied_entry_attack_list",
+    "verification_status": "unverified",
+    "source": {
+      "file": "data-8.csv",
+      "record_1": 1,
+      "column_1": 34
+    }
+  },
+  {
+    "card_id": 159,
+    "name": "Tyrannodon",
+    "annotation": "user_supplied_entry_attack_list",
+    "verification_status": "unverified",
+    "source": {
+      "file": "data-8.csv",
+      "record_1": 1,
+      "column_1": 35
+    }
+  },
+  {
+    "card_id": 163,
+    "name": "Soft Paw",
+    "annotation": "user_supplied_entry_attack_list",
+    "verification_status": "unverified",
+    "source": {
+      "file": "data-8.csv",
+      "record_1": 1,
+      "column_1": 36
+    }
+  },
+  {
+    "card_id": 172,
+    "name": "Seraphim",
+    "annotation": "user_supplied_entry_attack_list",
+    "verification_status": "unverified",
+    "source": {
+      "file": "data-8.csv",
+      "record_1": 1,
+      "column_1": 37
+    }
+  },
+  {
+    "card_id": 175,
+    "name": "Poison Witch",
+    "annotation": "user_supplied_entry_attack_list",
+    "verification_status": "unverified",
+    "source": {
+      "file": "data-8.csv",
+      "record_1": 1,
+      "column_1": 38
+    }
+  },
+  {
+    "card_id": 180,
+    "name": "Slum Dweller",
+    "annotation": "user_supplied_entry_attack_list",
+    "verification_status": "unverified",
+    "source": {
+      "file": "data-8.csv",
+      "record_1": 1,
+      "column_1": 39
+    }
+  },
+  {
+    "card_id": 182,
+    "name": "Hard Claws",
+    "annotation": "user_supplied_entry_attack_list",
+    "verification_status": "unverified",
+    "source": {
+      "file": "data-8.csv",
+      "record_1": 1,
+      "column_1": 40
+    }
+  },
+  {
+    "card_id": 186,
+    "name": "The Sack",
+    "annotation": "user_supplied_entry_attack_list",
+    "verification_status": "unverified",
+    "source": {
+      "file": "data-8.csv",
+      "record_1": 1,
+      "column_1": 41
+    }
+  },
+  {
+    "card_id": 195,
+    "name": "Fresno Nightcrawler",
+    "annotation": "user_supplied_entry_attack_list",
+    "verification_status": "unverified",
+    "source": {
+      "file": "data-8.csv",
+      "record_1": 1,
+      "column_1": 42
+    }
+  },
+  {
+    "card_id": 199,
+    "name": "Jersey Devil",
+    "annotation": "user_supplied_entry_attack_list",
+    "verification_status": "unverified",
+    "source": {
+      "file": "data-8.csv",
+      "record_1": 1,
+      "column_1": 43
+    }
+  },
+  {
+    "card_id": 204,
+    "name": "Kraken",
+    "annotation": "user_supplied_entry_attack_list",
+    "verification_status": "unverified",
+    "source": {
+      "file": "data-8.csv",
+      "record_1": 1,
+      "column_1": 44
+    }
+  },
+  {
+    "card_id": 205,
+    "name": "Chronus The Hoarder",
+    "annotation": "user_supplied_entry_attack_list",
+    "verification_status": "unverified",
+    "source": {
+      "file": "data-8.csv",
+      "record_1": 1,
+      "column_1": 45
+    }
+  },
+  {
+    "card_id": 219,
+    "name": "Sisyphus",
+    "annotation": "user_supplied_entry_attack_list",
+    "verification_status": "unverified",
+    "source": {
+      "file": "data-8.csv",
+      "record_1": 1,
+      "column_1": 46
+    }
+  },
+  {
+    "card_id": 236,
+    "name": "Eonus",
+    "annotation": "user_supplied_entry_attack_list",
+    "verification_status": "unverified",
+    "source": {
+      "file": "data-8.csv",
+      "record_1": 1,
+      "column_1": 47
+    }
+  },
+  {
+    "card_id": 240,
+    "name": "Fate Seamstress",
+    "annotation": "user_supplied_entry_attack_list",
+    "verification_status": "unverified",
+    "source": {
+      "file": "data-8.csv",
+      "record_1": 1,
+      "column_1": 48
+    }
+  },
+  {
+    "card_id": 252,
+    "name": "Old Man Winter",
+    "annotation": "user_supplied_entry_attack_list",
+    "verification_status": "unverified",
+    "source": {
+      "file": "data-8.csv",
+      "record_1": 1,
+      "column_1": 49
+    }
+  },
+  {
+    "card_id": 253,
+    "name": "Rudolph",
+    "annotation": "user_supplied_entry_attack_list",
+    "verification_status": "unverified",
+    "source": {
+      "file": "data-8.csv",
+      "record_1": 1,
+      "column_1": 50
+    }
+  },
+  {
+    "card_id": 257,
+    "name": "Krampus",
+    "annotation": "user_supplied_entry_attack_list",
+    "verification_status": "unverified",
+    "source": {
+      "file": "data-8.csv",
+      "record_1": 1,
+      "column_1": 51
+    }
+  },
+  {
+    "card_id": 261,
+    "name": "Toy Bear",
+    "annotation": "user_supplied_entry_attack_list",
+    "verification_status": "unverified",
+    "source": {
+      "file": "data-8.csv",
+      "record_1": 1,
+      "column_1": 52
+    }
+  },
+  {
+    "card_id": 262,
+    "name": "Toy Car",
+    "annotation": "user_supplied_entry_attack_list",
+    "verification_status": "unverified",
+    "source": {
+      "file": "data-8.csv",
+      "record_1": 1,
+      "column_1": 53
+    }
+  },
+  {
+    "card_id": 263,
+    "name": "The Jack-in-the-Box",
+    "annotation": "user_supplied_entry_attack_list",
+    "verification_status": "unverified",
+    "source": {
+      "file": "data-8.csv",
+      "record_1": 1,
+      "column_1": 54
+    }
+  },
+  {
+    "card_id": 265,
+    "name": "Santa Claws",
+    "annotation": "user_supplied_entry_attack_list",
+    "verification_status": "unverified",
+    "source": {
+      "file": "data-8.csv",
+      "record_1": 1,
+      "column_1": 55
+    }
+  },
+  {
+    "card_id": 268,
+    "name": "Witch",
+    "annotation": "user_supplied_entry_attack_list",
+    "verification_status": "unverified",
+    "source": {
+      "file": "data-8.csv",
+      "record_1": 1,
+      "column_1": 56
+    }
+  },
+  {
+    "card_id": 279,
+    "name": "Headless Horseman",
+    "annotation": "user_supplied_entry_attack_list",
+    "verification_status": "unverified",
+    "source": {
+      "file": "data-8.csv",
+      "record_1": 1,
+      "column_1": 57
+    }
+  },
+  {
+    "card_id": 285,
+    "name": "Abomination",
+    "annotation": "user_supplied_entry_attack_list",
+    "verification_status": "unverified",
+    "source": {
+      "file": "data-8.csv",
+      "record_1": 1,
+      "column_1": 58
+    }
+  },
+  {
+    "card_id": 286,
+    "name": "Sleep Paralysis",
+    "annotation": "user_supplied_entry_attack_list",
+    "verification_status": "unverified",
+    "source": {
+      "file": "data-8.csv",
+      "record_1": 1,
+      "column_1": 59
+    }
+  }
+]

@@ -1,0 +1,104 @@
+{
+  "purpose": "Observed battle stats that disagree with the generic catalogue formula; source values are preserved.",
+  "conflicts": [
+    {
+      "card_id": 94,
+      "name": "Immortal Witch",
+      "status": "resolved_for_borderless_baseline",
+      "field": "attack",
+      "generic_borderless_unmutated_formula": 362,
+      "observed_displayed_values": [
+        290,
+        290
+      ],
+      "video_review": "data/review/video_0289/metadata.json",
+      "numeric_maximum_hp": 868,
+      "bonus_setup": "No borders explicitly confirmed; mutations/supports not separately restated in video follow-up.",
+      "action": "Apply separate HP 1.2 and ATK 0.8 ratios before rounding; preserve raw Card Modifier and source data.",
+      "resolved_stats": {
+        "hp": 868,
+        "attack": 290
+      },
+      "stat_ratio_source": "https://card-rng.fandom.com/wiki/Immortal_Witch",
+      "scope": "868 HP confirmed by user on card outside battle; 290 ATK visible in recording. Border/mutation extrapolation not independently verified."
+    },
+    {
+      "card_id": 36,
+      "name": "Bad Boys",
+      "status": "resolved",
+      "observed_attack_hp": [
+        320,
+        640
+      ],
+      "resolution": "Weather Eclipse -> Base"
+    },
+    {
+      "card_id": 205,
+      "name": "Chronus The Hoarder",
+      "status": "resolved",
+      "observed_attack_hp": [
+        160,
+        320
+      ],
+      "resolution": "User-confirmed 2x Bosses modifier"
+    },
+    {
+      "card_id": 210,
+      "name": "Raze The Destroyer",
+      "status": "resolved",
+      "observed_attack_hp": [
+        2078,
+        4156
+      ],
+      "resolution": "User-confirmed 2x Bosses modifier"
+    },
+    {
+      "card_id": 261,
+      "name": "Toy Bear",
+      "status": "baseline_fitted_cause_unresolved",
+      "observed_attack_hp": [
+        1943,
+        3886
+      ],
+      "resolution": "Confirmed Snow and 400M rarity preserved. Shared 2/3 modifier fitted against existing 1.5x Snow multiplier. No global weather change."
+    },
+    {
+      "card_id": 288,
+      "name": "Jason",
+      "status": "baseline_fitted_cause_unresolved",
+      "observed_attack_hp": [
+        4788,
+        9575
+      ],
+      "resolution": "Shared 2x modifier fits baseline before rounding; not identified as Bosses or weather modifier."
+    },
+    {
+      "card_id": 74,
+      "name": "Shu",
+      "status": "baseline_fitted_cause_unresolved",
+      "observed_attack_hp": [
+        362,
+        1230
+      ],
+      "generic_formula_attack_hp": [
+        633,
+        1266
+      ],
+      "user_quote": "Shu has 1230 hp, with 362 attack, an abnormality for its weather multiplier",
+      "resolution": "Separate ratios before rounding: HP x1.7/1.75 (weather 1.7 on HP) and ATK x1/1.75 (no weather on ATK). Raw Aurora weather preserved.",
+      "scope": "Any HP ratio that rounds up to 1230 fits equally; border/mutation scaling extrapolated."
+    },
+    {
+      "card_id": 104,
+      "name": "Piccolo",
+      "status": "baseline_fitted_cause_unresolved",
+      "observed_attack": 3072,
+      "generic_formula_attack_hp": [
+        2560,
+        5120
+      ],
+      "resolution": "Separate 1.2 HP/ATK ratio (HP assumed); raw data preserved.",
+      "user_quote": "Piccolo's stats show an ATK of 3072"
+    }
+  ]
+}

@@ -1,0 +1,1054 @@
+{
+  "schema_version": 1,
+  "purpose": "Proposed oracle configurations with references to user observations; confirmed findings and pending rules are separated in oracle_observations.json.",
+  "source_card_ids": {
+    "basis": "Cards-2.xml Cards list order",
+    "index_base": 1,
+    "source_count": 289
+  },
+  "source_border_ids": {
+    "basis": "Cards-2.xml Borders list order",
+    "index_base": 1,
+    "source_count": 16
+  },
+  "baseline": {
+    "legal_layout_confirmed": false,
+    "proposed_slots_per_team": 4,
+    "allow_single_card_battle_if_legal": true,
+    "identical_cards_across_opposing_teams_requires_legality_confirmation": true,
+    "no_blue_support_conditional_on_game_legality": true,
+    "mandatory_blue_fallback": {
+      "support_id": 1,
+      "name": "Shielder",
+      "note": "2% reduction is real behavior. Record the substitution as a distinct actual fixture; do not treat it as neutral."
+    },
+    "intrinsic_weather": "Weather is a card attribute used in inherent stat calculation, not a runtime weather setting. Use each specified card as imported; record any different card variant.",
+    "mode_and_other_modifiers": "Record actual game mode and any additional modifiers. A null field means unrecorded, not a known neutral value.",
+    "user_side_cards": "Must be lit/available to the user; validate proposed lineups against inventory before requesting a run.",
+    "training_dummy_opponent_cards": "Any opposing card is available, per user clarification."
+  },
+  "result_template": {
+    "case_id": null,
+    "variant_id": null,
+    "observed_at": null,
+    "actual_setup": null,
+    "initial_stats": null,
+    "events": [],
+    "raw_recording_or_notes": null,
+    "confirmed_rules": [],
+    "still_unknown": []
+  },
+  "cases": [
+    {
+      "case_id": "turn_entry_good_boy",
+      "priority": 1,
+      "kind": "battle",
+      "title": "Good Boy mirror: entry reductions and turn order",
+      "status": "partially_observed",
+      "variants": [
+        {
+          "variant_id": "mirror",
+          "team_a": {
+            "cards": [
+              {
+                "card_id": 3,
+                "name": "Good Boy",
+                "border_id": 1,
+                "border_code": ""
+              },
+              {
+                "card_id": 4,
+                "name": "Useless Seer",
+                "border_id": 1,
+                "border_code": ""
+              },
+              {
+                "card_id": 5,
+                "name": "Baby Skeleton",
+                "border_id": 1,
+                "border_code": ""
+              },
+              {
+                "card_id": 141,
+                "name": "Ancient Egg",
+                "border_id": 1,
+                "border_code": ""
+              }
+            ],
+            "red_support": {
+              "support_id": 1,
+              "name": "Adventurer"
+            },
+            "blue_support": null
+          },
+          "team_b": {
+            "cards": [
+              {
+                "card_id": 3,
+                "name": "Good Boy",
+                "border_id": 1,
+                "border_code": ""
+              },
+              {
+                "card_id": 4,
+                "name": "Useless Seer",
+                "border_id": 1,
+                "border_code": ""
+              },
+              {
+                "card_id": 5,
+                "name": "Baby Skeleton",
+                "border_id": 1,
+                "border_code": ""
+              },
+              {
+                "card_id": 141,
+                "name": "Ancient Egg",
+                "border_id": 1,
+                "border_code": ""
+              }
+            ],
+            "red_support": {
+              "support_id": 1,
+              "name": "Adventurer"
+            },
+            "blue_support": null
+          },
+          "rng_seed": null,
+          "mode": null,
+          "confirmed_result": {
+            "observation_id": "obs_20260926_good_boy_001",
+            "scope": "One user-reported battle; exact requested setup not fully enumerated.",
+            "both_entry_damage_reductions_reported": true,
+            "first_activation_side": "user",
+            "first_attack_side": "user",
+            "winner": "user",
+            "numeric_stats": null
+          }
+        }
+      ],
+      "observe": [
+        "Already reported: both cards reduced the other card damage; user card activated first, attacked first, and won this battle.",
+        "If further testing is needed, record exact stats and whether both entry effects completed before the first normal attack.",
+        "Initial-side selection in general and turn ownership after replacement remain unknown."
+      ],
+      "expected_result": null,
+      "observation_ids": [
+        "obs_20260926_good_boy_001"
+      ]
+    },
+    {
+      "case_id": "base_stats",
+      "priority": 1,
+      "kind": "stat_snapshot",
+      "title": "Starting stats, Card Modifier and Platinum border",
+      "status": "two_stat_snapshots_confirmed_rounding_pending",
+      "cards": [
+        {
+          "card_id": 33,
+          "name": "Hell's Army",
+          "border_id": 1,
+          "border_code": ""
+        },
+        {
+          "card_id": 38,
+          "name": "Heaven's Armor",
+          "border_id": 1,
+          "border_code": ""
+        },
+        {
+          "card_id": 1,
+          "name": "Archer",
+          "border_id": 2,
+          "border_code": "Pl"
+        },
+        {
+          "card_id": 1,
+          "name": "Archer",
+          "border_id": 1,
+          "border_code": ""
+        },
+        {
+          "card_id": 4,
+          "name": "Useless Seer",
+          "border_id": 1,
+          "border_code": ""
+        }
+      ],
+      "requested_supports": {
+        "red_support": {
+          "support_id": 1,
+          "name": "Adventurer"
+        },
+        "blue_support": null
+      },
+      "observe": [
+        "Displayed max HP and ATK before battle, whether passive/entry effects have applied, supports, and any card variant differing from the imported intrinsic weather category.",
+        "User confirms borders raise inherent stats through resulting rarity. Confirm the exact effective-rarity combination and rounding; do not assume the proposed formula.",
+        "Confirmed: Card Modifier applies to both HP and ATK; Hell's Army and Heaven's Armor each have 2560 HP / 1280 damage. Remaining stat questions concern rounding order and border combinations.",
+        "Archer without a border distinguishes the two candidate ceiling orders under the prototype formula. Report Useless Seer if convenient as another starting-stat check."
+      ],
+      "expected_result": null,
+      "confirmed_result": {
+        "observation_ids": [
+          "rules_20260926_intrinsic_weather_border_001",
+          "rules_20260927_card_modifier_001"
+        ],
+        "scope": "User-confirmed intrinsic-weather and border concepts, Card Modifier applying to both stats, plus two numeric snapshots.",
+        "numeric_stats": [
+          {
+            "card_id": 33,
+            "max_hp": 2560,
+            "attack_damage": 1280
+          },
+          {
+            "card_id": 38,
+            "max_hp": 2560,
+            "attack_damage": 1280
+          }
+        ]
+      },
+      "observation_ids": [
+        "rules_20260926_intrinsic_weather_border_001",
+        "rules_20260927_card_modifier_001"
+      ]
+    },
+    {
+      "case_id": "plain_turns",
+      "priority": 2,
+      "kind": "battle",
+      "title": "Plain damage control if entry mirror is insufficient",
+      "status": "proposed",
+      "variants": [
+        {
+          "variant_id": "mirror",
+          "team_a": {
+            "cards": [
+              {
+                "card_id": 162,
+                "name": "Bacon Hair",
+                "border_id": 1,
+                "border_code": ""
+              },
+              {
+                "card_id": 4,
+                "name": "Useless Seer",
+                "border_id": 1,
+                "border_code": ""
+              },
+              {
+                "card_id": 5,
+                "name": "Baby Skeleton",
+                "border_id": 1,
+                "border_code": ""
+              },
+              {
+                "card_id": 141,
+                "name": "Ancient Egg",
+                "border_id": 1,
+                "border_code": ""
+              }
+            ],
+            "red_support": {
+              "support_id": 1,
+              "name": "Adventurer"
+            },
+            "blue_support": null
+          },
+          "team_b": {
+            "cards": [
+              {
+                "card_id": 162,
+                "name": "Bacon Hair",
+                "border_id": 1,
+                "border_code": ""
+              },
+              {
+                "card_id": 4,
+                "name": "Useless Seer",
+                "border_id": 1,
+                "border_code": ""
+              },
+              {
+                "card_id": 5,
+                "name": "Baby Skeleton",
+                "border_id": 1,
+                "border_code": ""
+              },
+              {
+                "card_id": 141,
+                "name": "Ancient Egg",
+                "border_id": 1,
+                "border_code": ""
+              }
+            ],
+            "red_support": {
+              "support_id": 1,
+              "name": "Adventurer"
+            },
+            "blue_support": null
+          },
+          "rng_seed": null,
+          "mode": null,
+          "confirmed_result": null
+        }
+      ],
+      "observe": [
+        "Initial HP/max HP/ATK, first six events and first replacement.",
+        "Alternating attacks versus any simultaneous resolution, and successor turn ownership."
+      ],
+      "expected_result": null
+    },
+    {
+      "case_id": "enemy_entry_theft",
+      "priority": 2,
+      "kind": "battle",
+      "title": "Chronus entry trigger and Poseidon stat timing",
+      "status": "proposed",
+      "variants": [
+        {
+          "variant_id": "chronus_a",
+          "team_a": {
+            "cards": [
+              {
+                "card_id": 205,
+                "name": "Chronus The Hoarder",
+                "border_id": 1,
+                "border_code": ""
+              },
+              {
+                "card_id": 4,
+                "name": "Useless Seer",
+                "border_id": 1,
+                "border_code": ""
+              },
+              {
+                "card_id": 5,
+                "name": "Baby Skeleton",
+                "border_id": 1,
+                "border_code": ""
+              },
+              {
+                "card_id": 141,
+                "name": "Ancient Egg",
+                "border_id": 1,
+                "border_code": ""
+              }
+            ],
+            "red_support": {
+              "support_id": 1,
+              "name": "Adventurer"
+            },
+            "blue_support": null
+          },
+          "team_b": {
+            "cards": [
+              {
+                "card_id": 44,
+                "name": "Poseidon",
+                "border_id": 1,
+                "border_code": ""
+              },
+              {
+                "card_id": 4,
+                "name": "Useless Seer",
+                "border_id": 1,
+                "border_code": ""
+              },
+              {
+                "card_id": 5,
+                "name": "Baby Skeleton",
+                "border_id": 1,
+                "border_code": ""
+              },
+              {
+                "card_id": 141,
+                "name": "Ancient Egg",
+                "border_id": 1,
+                "border_code": ""
+              }
+            ],
+            "red_support": {
+              "support_id": 1,
+              "name": "Adventurer"
+            },
+            "blue_support": null
+          },
+          "rng_seed": null,
+          "mode": null,
+          "confirmed_result": null
+        },
+        {
+          "variant_id": "chronus_b",
+          "team_a": {
+            "cards": [
+              {
+                "card_id": 44,
+                "name": "Poseidon",
+                "border_id": 1,
+                "border_code": ""
+              },
+              {
+                "card_id": 4,
+                "name": "Useless Seer",
+                "border_id": 1,
+                "border_code": ""
+              },
+              {
+                "card_id": 5,
+                "name": "Baby Skeleton",
+                "border_id": 1,
+                "border_code": ""
+              },
+              {
+                "card_id": 141,
+                "name": "Ancient Egg",
+                "border_id": 1,
+                "border_code": ""
+              }
+            ],
+            "red_support": {
+              "support_id": 1,
+              "name": "Adventurer"
+            },
+            "blue_support": null
+          },
+          "team_b": {
+            "cards": [
+              {
+                "card_id": 205,
+                "name": "Chronus The Hoarder",
+                "border_id": 1,
+                "border_code": ""
+              },
+              {
+                "card_id": 4,
+                "name": "Useless Seer",
+                "border_id": 1,
+                "border_code": ""
+              },
+              {
+                "card_id": 5,
+                "name": "Baby Skeleton",
+                "border_id": 1,
+                "border_code": ""
+              },
+              {
+                "card_id": 141,
+                "name": "Ancient Egg",
+                "border_id": 1,
+                "border_code": ""
+              }
+            ],
+            "red_support": {
+              "support_id": 1,
+              "name": "Adventurer"
+            },
+            "blue_support": null
+          },
+          "rng_seed": null,
+          "mode": null,
+          "confirmed_result": null
+        }
+      ],
+      "observe": [
+        "Initial stats and exact ordering of Poseidon +40% stats and Chronus 10% theft, before the first ordinary attack.",
+        "Does Chronus trigger on its own entry, on the enemy's entry, or both?",
+        "Compare reverse-side run; record the starting side if chosen randomly."
+      ],
+      "expected_result": null
+    },
+    {
+      "case_id": "entry_attack_mirror",
+      "priority": 2,
+      "kind": "battle",
+      "title": "Entry attacks versus normal actions",
+      "status": "proposed",
+      "variants": [
+        {
+          "variant_id": "mirror",
+          "team_a": {
+            "cards": [
+              {
+                "card_id": 14,
+                "name": "Knightmare",
+                "border_id": 1,
+                "border_code": ""
+              },
+              {
+                "card_id": 4,
+                "name": "Useless Seer",
+                "border_id": 1,
+                "border_code": ""
+              },
+              {
+                "card_id": 5,
+                "name": "Baby Skeleton",
+                "border_id": 1,
+                "border_code": ""
+              },
+              {
+                "card_id": 141,
+                "name": "Ancient Egg",
+                "border_id": 1,
+                "border_code": ""
+              }
+            ],
+            "red_support": {
+              "support_id": 1,
+              "name": "Adventurer"
+            },
+            "blue_support": null
+          },
+          "team_b": {
+            "cards": [
+              {
+                "card_id": 14,
+                "name": "Knightmare",
+                "border_id": 1,
+                "border_code": ""
+              },
+              {
+                "card_id": 4,
+                "name": "Useless Seer",
+                "border_id": 1,
+                "border_code": ""
+              },
+              {
+                "card_id": 5,
+                "name": "Baby Skeleton",
+                "border_id": 1,
+                "border_code": ""
+              },
+              {
+                "card_id": 141,
+                "name": "Ancient Egg",
+                "border_id": 1,
+                "border_code": ""
+              }
+            ],
+            "red_support": {
+              "support_id": 1,
+              "name": "Adventurer"
+            },
+            "blue_support": null
+          },
+          "rng_seed": null,
+          "mode": null,
+          "confirmed_result": null
+        }
+      ],
+      "observe": [
+        "Record both half-damage entry attacks, if present, then the first two normal actions.",
+        "Does entry damage replace an ordinary attack? Record damage rounding and who attacks first."
+      ],
+      "expected_result": null
+    },
+    {
+      "case_id": "multihit_block",
+      "priority": 2,
+      "kind": "battle",
+      "title": "Block consumption and hit granularity",
+      "status": "proposed",
+      "variants": [
+        {
+          "variant_id": "dancer",
+          "team_a": {
+            "cards": [
+              {
+                "card_id": 67,
+                "name": "Dancer",
+                "border_id": 1,
+                "border_code": ""
+              },
+              {
+                "card_id": 4,
+                "name": "Useless Seer",
+                "border_id": 1,
+                "border_code": ""
+              },
+              {
+                "card_id": 5,
+                "name": "Baby Skeleton",
+                "border_id": 1,
+                "border_code": ""
+              },
+              {
+                "card_id": 141,
+                "name": "Ancient Egg",
+                "border_id": 1,
+                "border_code": ""
+              }
+            ],
+            "red_support": {
+              "support_id": 1,
+              "name": "Adventurer"
+            },
+            "blue_support": null
+          },
+          "team_b": {
+            "cards": [
+              {
+                "card_id": 73,
+                "name": "Horus",
+                "border_id": 1,
+                "border_code": ""
+              },
+              {
+                "card_id": 4,
+                "name": "Useless Seer",
+                "border_id": 1,
+                "border_code": ""
+              },
+              {
+                "card_id": 5,
+                "name": "Baby Skeleton",
+                "border_id": 1,
+                "border_code": ""
+              },
+              {
+                "card_id": 141,
+                "name": "Ancient Egg",
+                "border_id": 1,
+                "border_code": ""
+              }
+            ],
+            "red_support": {
+              "support_id": 1,
+              "name": "Adventurer"
+            },
+            "blue_support": null
+          },
+          "rng_seed": null,
+          "mode": null,
+          "confirmed_result": null
+        },
+        {
+          "variant_id": "engineer_optional",
+          "team_a": {
+            "cards": [
+              {
+                "card_id": 166,
+                "name": "Engineer",
+                "border_id": 1,
+                "border_code": ""
+              },
+              {
+                "card_id": 4,
+                "name": "Useless Seer",
+                "border_id": 1,
+                "border_code": ""
+              },
+              {
+                "card_id": 5,
+                "name": "Baby Skeleton",
+                "border_id": 1,
+                "border_code": ""
+              },
+              {
+                "card_id": 141,
+                "name": "Ancient Egg",
+                "border_id": 1,
+                "border_code": ""
+              }
+            ],
+            "red_support": {
+              "support_id": 1,
+              "name": "Adventurer"
+            },
+            "blue_support": null
+          },
+          "team_b": {
+            "cards": [
+              {
+                "card_id": 73,
+                "name": "Horus",
+                "border_id": 1,
+                "border_code": ""
+              },
+              {
+                "card_id": 4,
+                "name": "Useless Seer",
+                "border_id": 1,
+                "border_code": ""
+              },
+              {
+                "card_id": 5,
+                "name": "Baby Skeleton",
+                "border_id": 1,
+                "border_code": ""
+              },
+              {
+                "card_id": 141,
+                "name": "Ancient Egg",
+                "border_id": 1,
+                "border_code": ""
+              }
+            ],
+            "red_support": {
+              "support_id": 1,
+              "name": "Adventurer"
+            },
+            "blue_support": null
+          },
+          "rng_seed": null,
+          "mode": null,
+          "confirmed_result": null
+        }
+      ],
+      "observe": [
+        "Observe the attacker's first action: hit count, which hits Horus blocks, damage per hit and any intervening reactions.",
+        "If Horus kills the attacker before it can act, reverse ownership and record that change; a no-action trace cannot resolve hit granularity.",
+        "Engineer variant is only needed if Dancer leaves the block scope ambiguous."
+      ],
+      "expected_result": null
+    },
+    {
+      "case_id": "counter_chain",
+      "priority": 2,
+      "kind": "battle",
+      "title": "Counter recursion and lethal reaction cancellation",
+      "status": "proposed",
+      "variants": [
+        {
+          "variant_id": "mirror",
+          "team_a": {
+            "cards": [
+              {
+                "card_id": 210,
+                "name": "Raze The Destroyer",
+                "border_id": 1,
+                "border_code": ""
+              },
+              {
+                "card_id": 4,
+                "name": "Useless Seer",
+                "border_id": 1,
+                "border_code": ""
+              },
+              {
+                "card_id": 5,
+                "name": "Baby Skeleton",
+                "border_id": 1,
+                "border_code": ""
+              },
+              {
+                "card_id": 141,
+                "name": "Ancient Egg",
+                "border_id": 1,
+                "border_code": ""
+              }
+            ],
+            "red_support": {
+              "support_id": 1,
+              "name": "Adventurer"
+            },
+            "blue_support": null
+          },
+          "team_b": {
+            "cards": [
+              {
+                "card_id": 210,
+                "name": "Raze The Destroyer",
+                "border_id": 1,
+                "border_code": ""
+              },
+              {
+                "card_id": 4,
+                "name": "Useless Seer",
+                "border_id": 1,
+                "border_code": ""
+              },
+              {
+                "card_id": 5,
+                "name": "Baby Skeleton",
+                "border_id": 1,
+                "border_code": ""
+              },
+              {
+                "card_id": 141,
+                "name": "Ancient Egg",
+                "border_id": 1,
+                "border_code": ""
+              }
+            ],
+            "red_support": {
+              "support_id": 1,
+              "name": "Adventurer"
+            },
+            "blue_support": null
+          },
+          "rng_seed": null,
+          "mode": null,
+          "confirmed_result": null
+        }
+      ],
+      "observe": [
+        "Trace first normal attack and all nested reactions before the next scheduled ordinary turn.",
+        "Does one counter trigger another? Does a lethally damaged unit still counter?",
+        "Record health after each reaction and replacement timing."
+      ],
+      "expected_result": null
+    },
+    {
+      "case_id": "lethal_survival",
+      "priority": 3,
+      "kind": "battle",
+      "title": "Arthur lethal replacement use count",
+      "status": "proposed",
+      "variants": [
+        {
+          "variant_id": "arthur_b",
+          "team_a": {
+            "cards": [
+              {
+                "card_id": 162,
+                "name": "Bacon Hair",
+                "border_id": 1,
+                "border_code": ""
+              },
+              {
+                "card_id": 4,
+                "name": "Useless Seer",
+                "border_id": 1,
+                "border_code": ""
+              },
+              {
+                "card_id": 5,
+                "name": "Baby Skeleton",
+                "border_id": 1,
+                "border_code": ""
+              },
+              {
+                "card_id": 141,
+                "name": "Ancient Egg",
+                "border_id": 1,
+                "border_code": ""
+              }
+            ],
+            "red_support": {
+              "support_id": 1,
+              "name": "Adventurer"
+            },
+            "blue_support": null
+          },
+          "team_b": {
+            "cards": [
+              {
+                "card_id": 10,
+                "name": "Arthur",
+                "border_id": 1,
+                "border_code": ""
+              },
+              {
+                "card_id": 4,
+                "name": "Useless Seer",
+                "border_id": 1,
+                "border_code": ""
+              },
+              {
+                "card_id": 5,
+                "name": "Baby Skeleton",
+                "border_id": 1,
+                "border_code": ""
+              },
+              {
+                "card_id": 141,
+                "name": "Ancient Egg",
+                "border_id": 1,
+                "border_code": ""
+              }
+            ],
+            "red_support": {
+              "support_id": 1,
+              "name": "Adventurer"
+            },
+            "blue_support": null
+          },
+          "rng_seed": null,
+          "mode": null,
+          "confirmed_result": null
+        }
+      ],
+      "observe": [
+        "Record first three otherwise-lethal attacks against Arthur, or until Arthur dies.",
+        "How many times does Arthur survive at 1 HP, and what consumes that protection?",
+        "Separate replacement, death and next-card entry events."
+      ],
+      "expected_result": null
+    },
+    {
+      "case_id": "inari_duration",
+      "priority": 3,
+      "kind": "battle",
+      "title": "Three-turn invincibility and death timing",
+      "status": "proposed",
+      "variants": [
+        {
+          "variant_id": "mirror",
+          "team_a": {
+            "cards": [
+              {
+                "card_id": 114,
+                "name": "Inari",
+                "border_id": 1,
+                "border_code": ""
+              },
+              {
+                "card_id": 4,
+                "name": "Useless Seer",
+                "border_id": 1,
+                "border_code": ""
+              },
+              {
+                "card_id": 5,
+                "name": "Baby Skeleton",
+                "border_id": 1,
+                "border_code": ""
+              },
+              {
+                "card_id": 141,
+                "name": "Ancient Egg",
+                "border_id": 1,
+                "border_code": ""
+              }
+            ],
+            "red_support": {
+              "support_id": 1,
+              "name": "Adventurer"
+            },
+            "blue_support": null
+          },
+          "team_b": {
+            "cards": [
+              {
+                "card_id": 114,
+                "name": "Inari",
+                "border_id": 1,
+                "border_code": ""
+              },
+              {
+                "card_id": 4,
+                "name": "Useless Seer",
+                "border_id": 1,
+                "border_code": ""
+              },
+              {
+                "card_id": 5,
+                "name": "Baby Skeleton",
+                "border_id": 1,
+                "border_code": ""
+              },
+              {
+                "card_id": 141,
+                "name": "Ancient Egg",
+                "border_id": 1,
+                "border_code": ""
+              }
+            ],
+            "red_support": {
+              "support_id": 1,
+              "name": "Adventurer"
+            },
+            "blue_support": null
+          },
+          "rng_seed": null,
+          "mode": null,
+          "confirmed_result": null
+        }
+      ],
+      "observe": [
+        "Record all scheduled actions, invincibility intervals and the event when each Inari dies.",
+        "Determine whether the ordinary-turn count is per owner or shared; this case does not establish counters/extra-turn counting."
+      ],
+      "expected_result": null
+    },
+    {
+      "case_id": "repeat_cutoff",
+      "priority": 3,
+      "kind": "battle",
+      "title": "Candidate sustained healing battle to observe repeat cutoff",
+      "status": "proposed",
+      "variants": [
+        {
+          "variant_id": "mirror",
+          "team_a": {
+            "cards": [
+              {
+                "card_id": 209,
+                "name": "Morpheus the Slumberer",
+                "border_id": 1,
+                "border_code": ""
+              },
+              {
+                "card_id": 4,
+                "name": "Useless Seer",
+                "border_id": 1,
+                "border_code": ""
+              },
+              {
+                "card_id": 5,
+                "name": "Baby Skeleton",
+                "border_id": 1,
+                "border_code": ""
+              },
+              {
+                "card_id": 141,
+                "name": "Ancient Egg",
+                "border_id": 1,
+                "border_code": ""
+              }
+            ],
+            "red_support": {
+              "support_id": 1,
+              "name": "Adventurer"
+            },
+            "blue_support": null
+          },
+          "team_b": {
+            "cards": [
+              {
+                "card_id": 209,
+                "name": "Morpheus the Slumberer",
+                "border_id": 1,
+                "border_code": ""
+              },
+              {
+                "card_id": 4,
+                "name": "Useless Seer",
+                "border_id": 1,
+                "border_code": ""
+              },
+              {
+                "card_id": 5,
+                "name": "Baby Skeleton",
+                "border_id": 1,
+                "border_code": ""
+              },
+              {
+                "card_id": 141,
+                "name": "Ancient Egg",
+                "border_id": 1,
+                "border_code": ""
+              }
+            ],
+            "red_support": {
+              "support_id": 1,
+              "name": "Adventurer"
+            },
+            "blue_support": null
+          },
+          "rng_seed": null,
+          "mode": null,
+          "confirmed_result": null
+        }
+      ],
+      "observe": [
+        "This matchup is only a candidate long-lived interaction; record natural termination if it happens.",
+        "If forced removal occurs, record exact action/paired-turn/reaction count, both active-card states and successor entry.",
+        "Ask directly about cutoff resets on active-card changes and whether forced deaths trigger death/revive/kill effects; this lineup cannot alone settle those rules."
+      ],
+      "expected_result": null
+    }
+  ]
+}

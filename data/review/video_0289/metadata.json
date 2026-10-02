@@ -1,0 +1,51 @@
+{
+  "source": "/Users/xavier.vallee/Downloads/IMG_0289.MOV",
+  "fps": 29.99384531217944,
+  "frames": 731.0,
+  "duration": 24.37166666666667,
+  "width": 1080.0,
+  "height": 1920.0,
+  "sha256": "384e908d9d2764908eb44fd29666f9f8d1e374f98d06c9022005f6c3a267f3ca",
+  "inspection": {
+    "card_names": [
+      "Immortal Witch",
+      "Immortal Witch"
+    ],
+    "displayed_attack": [
+      290,
+      290
+    ],
+    "numeric_hp_visible": false,
+    "both_cards_leave_at_end": true,
+    "winner_banner_visible": false,
+    "user_reported_turns": 100,
+    "user_reported_rounds": 50,
+    "turn_count_source": "user_count; not independently counted frame by frame",
+    "canonical_generic_formula": {
+      "hp": 724,
+      "attack": 362
+    },
+    "stat_mismatch_status": "Resolved for borderless baseline by 1.2 HP / 0.8 ATK ratios before rounding; original generic calculation preserved above.",
+    "selected_frame_times_seconds": [
+      0.4,
+      0.8,
+      1.2,
+      2,
+      6,
+      22,
+      22.5,
+      22.8,
+      23,
+      23.2,
+      23.4,
+      23.6,
+      24
+    ]
+  },
+  "follow_up_user_confirmation": {
+    "border": "none",
+    "card_hp_outside_battle": 868,
+    "hp_in_battle": "bar only",
+    "mutations_supports": "not separately restated"
+  }
+}

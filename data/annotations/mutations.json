@@ -1,0 +1,324 @@
+{
+  "schema_version": 1,
+  "source": "User mutation-stat report in this task; received 2026-09-28",
+  "source_stat_order": [
+    "attack",
+    "health"
+  ],
+  "source_intro": "A new feature, mutations, was added. The effects seem to carry over linearly from card to card here are some cards attack and health (attack, health) with some mutations",
+  "source_dancer_note": "(I realized I mis-sorted shroud and aurora manually in weathers by their multiplier, both here and in the list)",
+  "reported_context": {
+    "borders": "not stated in mutation report",
+    "supports": "not stated in mutation report"
+  },
+  "fit_scope": "Compare reported stats to pre-rounded baseline rarity stats, with no border or support adjustment; all three cards currently have intrinsic Base weather and Card Modifier 1.",
+  "interpretation": "Simple exact multiplier candidates consistent with all rounded observations; finite rounded stats do not prove a unique factor.",
+  "unresolved": [
+    "No Rapture mutation was observed; no Rapture mutation factor is inferred."
+  ],
+  "candidate_multipliers": [
+    {
+      "mutation": "None",
+      "multiplier": 1.0,
+      "status": "consistent_with_rounded_observations",
+      "unique_factor_proven": false
+    },
+    {
+      "mutation": "Storm",
+      "multiplier": 1.1,
+      "status": "consistent_with_rounded_observations",
+      "unique_factor_proven": false
+    },
+    {
+      "mutation": "Snow",
+      "multiplier": 1.2,
+      "status": "consistent_with_rounded_observations",
+      "unique_factor_proven": false
+    },
+    {
+      "mutation": "Aurora",
+      "multiplier": 1.3,
+      "status": "consistent_with_rounded_observations",
+      "unique_factor_proven": false
+    },
+    {
+      "mutation": "Shroud",
+      "multiplier": 1.5,
+      "status": "consistent_with_rounded_observations",
+      "unique_factor_proven": false
+    },
+    {
+      "mutation": "Meteor Shower",
+      "multiplier": 1.8,
+      "status": "consistent_with_rounded_observations",
+      "unique_factor_proven": false
+    },
+    {
+      "mutation": "Time Storm",
+      "multiplier": 2.0,
+      "status": "consistent_with_rounded_observations",
+      "unique_factor_proven": false
+    },
+    {
+      "mutation": "Eclipse",
+      "multiplier": 2.5,
+      "status": "consistent_with_rounded_observations",
+      "unique_factor_proven": false
+    },
+    {
+      "mutation": "Virus",
+      "multiplier": 3.0,
+      "status": "consistent_with_rounded_observations",
+      "unique_factor_proven": false
+    },
+    {
+      "mutation": "Blood Rain",
+      "multiplier": 3.5,
+      "status": "consistent_with_rounded_observations",
+      "unique_factor_proven": false
+    },
+    {
+      "mutation": "Armageddon",
+      "multiplier": 4.0,
+      "status": "consistent_with_rounded_observations",
+      "unique_factor_proven": false
+    },
+    {
+      "mutation": "Manga",
+      "multiplier": 4.5,
+      "status": "consistent_with_rounded_observations",
+      "unique_factor_proven": false
+    }
+  ],
+  "observations": [
+    {
+      "observation_id": 1,
+      "card_id": 69,
+      "card_name": "Black Cat",
+      "mutation": "None",
+      "attack": 142,
+      "hp": 284
+    },
+    {
+      "observation_id": 2,
+      "card_id": 69,
+      "card_name": "Black Cat",
+      "mutation": "Storm",
+      "attack": 156,
+      "hp": 312
+    },
+    {
+      "observation_id": 3,
+      "card_id": 69,
+      "card_name": "Black Cat",
+      "mutation": "Snow",
+      "attack": 170,
+      "hp": 340
+    },
+    {
+      "observation_id": 4,
+      "card_id": 69,
+      "card_name": "Black Cat",
+      "mutation": "Aurora",
+      "attack": 185,
+      "hp": 369
+    },
+    {
+      "observation_id": 5,
+      "card_id": 69,
+      "card_name": "Black Cat",
+      "mutation": "Meteor Shower",
+      "attack": 255,
+      "hp": 510
+    },
+    {
+      "observation_id": 6,
+      "card_id": 69,
+      "card_name": "Black Cat",
+      "mutation": "Time Storm",
+      "attack": 284,
+      "hp": 567
+    },
+    {
+      "observation_id": 7,
+      "card_id": 69,
+      "card_name": "Black Cat",
+      "mutation": "Blood Rain",
+      "attack": 496,
+      "hp": 992
+    },
+    {
+      "observation_id": 8,
+      "card_id": 69,
+      "card_name": "Black Cat",
+      "mutation": "Manga",
+      "attack": 638,
+      "hp": 1275
+    },
+    {
+      "observation_id": 9,
+      "card_id": 67,
+      "card_name": "Dancer",
+      "mutation": "None",
+      "attack": 65,
+      "hp": 130
+    },
+    {
+      "observation_id": 10,
+      "card_id": 67,
+      "card_name": "Dancer",
+      "mutation": "Storm",
+      "attack": 72,
+      "hp": 143
+    },
+    {
+      "observation_id": 11,
+      "card_id": 67,
+      "card_name": "Dancer",
+      "mutation": "Snow",
+      "attack": 78,
+      "hp": 156
+    },
+    {
+      "observation_id": 12,
+      "card_id": 67,
+      "card_name": "Dancer",
+      "mutation": "Shroud",
+      "attack": 98,
+      "hp": 195
+    },
+    {
+      "observation_id": 13,
+      "card_id": 67,
+      "card_name": "Dancer",
+      "mutation": "Aurora",
+      "attack": 85,
+      "hp": 169
+    },
+    {
+      "observation_id": 14,
+      "card_id": 67,
+      "card_name": "Dancer",
+      "mutation": "Meteor Shower",
+      "attack": 117,
+      "hp": 234
+    },
+    {
+      "observation_id": 15,
+      "card_id": 67,
+      "card_name": "Dancer",
+      "mutation": "Time Storm",
+      "attack": 130,
+      "hp": 260
+    },
+    {
+      "observation_id": 16,
+      "card_id": 67,
+      "card_name": "Dancer",
+      "mutation": "Eclipse",
+      "attack": 163,
+      "hp": 325
+    },
+    {
+      "observation_id": 17,
+      "card_id": 67,
+      "card_name": "Dancer",
+      "mutation": "Virus",
+      "attack": 195,
+      "hp": 390
+    },
+    {
+      "observation_id": 18,
+      "card_id": 10,
+      "card_name": "Arthur",
+      "mutation": "None",
+      "attack": 33,
+      "hp": 65
+    },
+    {
+      "observation_id": 19,
+      "card_id": 10,
+      "card_name": "Arthur",
+      "mutation": "Storm",
+      "attack": 36,
+      "hp": 72
+    },
+    {
+      "observation_id": 20,
+      "card_id": 10,
+      "card_name": "Arthur",
+      "mutation": "Snow",
+      "attack": 39,
+      "hp": 78
+    },
+    {
+      "observation_id": 21,
+      "card_id": 10,
+      "card_name": "Arthur",
+      "mutation": "Aurora",
+      "attack": 43,
+      "hp": 85
+    },
+    {
+      "observation_id": 22,
+      "card_id": 10,
+      "card_name": "Arthur",
+      "mutation": "Shroud",
+      "attack": 49,
+      "hp": 98
+    },
+    {
+      "observation_id": 23,
+      "card_id": 10,
+      "card_name": "Arthur",
+      "mutation": "Meteor Shower",
+      "attack": 59,
+      "hp": 117
+    },
+    {
+      "observation_id": 24,
+      "card_id": 10,
+      "card_name": "Arthur",
+      "mutation": "Time Storm",
+      "attack": 65,
+      "hp": 130
+    },
+    {
+      "observation_id": 25,
+      "card_id": 10,
+      "card_name": "Arthur",
+      "mutation": "Eclipse",
+      "attack": 82,
+      "hp": 163
+    },
+    {
+      "observation_id": 26,
+      "card_id": 10,
+      "card_name": "Arthur",
+      "mutation": "Virus",
+      "attack": 98,
+      "hp": 195
+    },
+    {
+      "observation_id": 27,
+      "card_id": 10,
+      "card_name": "Arthur",
+      "mutation": "Armageddon",
+      "attack": 130,
+      "hp": 260
+    },
+    {
+      "observation_id": 28,
+      "card_id": 10,
+      "card_name": "Arthur",
+      "mutation": "Manga",
+      "attack": 147,
+      "hp": 293
+    }
+  ],
+  "subsequent_clarifications": {
+    "weather": "Weather cards retain their separate weather multiplier and are ineligible for mutations. The mutated-card analogy does not define a shared category.",
+    "aurora_shroud": "Mappings are accurate; retain original indices.",
+    "source": "User corrections in this task on 2026-09-28"
+  }
+}

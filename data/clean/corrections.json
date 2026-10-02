@@ -1,0 +1,2379 @@
+[
+  {
+    "kind": "user_authorized_description_edit",
+    "card_id": 120,
+    "card_index_0": 119,
+    "name": "Demon Cultivator",
+    "original_value": "stats increase by 30 % for 2 turns; awaken on the 3rd turn",
+    "clean_value": "stats increase by 30 % for 2 turns; awaken after 2 turns",
+    "reason": "User requests token-efficient after 2 turns wording and removal of rd"
+  },
+  {
+    "kind": "user_authorized_description_edit",
+    "card_id": 88,
+    "card_index_0": 87,
+    "name": "Academy Student",
+    "original_value": "each enemy loses hp equal to 40 % of damage dealt",
+    "clean_value": "each enemy loses hp equal to 30 % of damage dealt",
+    "reason": "User: Academy Student was nerfed to 30 %"
+  },
+  {
+    "kind": "user_authorized_description_edit",
+    "card_id": 164,
+    "card_index_0": 163,
+    "name": "True Prophet",
+    "original_value": "the next card will dodge a lethal attack",
+    "clean_value": "on death, the next card will dodge an attack",
+    "reason": "User: True Prophet's grant fires on death and dodges the next attack, lethal or not"
+  },
+  {
+    "kind": "user_authorized_description_edit",
+    "card_id": 180,
+    "card_index_0": 179,
+    "name": "Slum Dweller",
+    "original_value": "attacks on entry; attacks reduce the target's damage by 30 %",
+    "clean_value": "attacks on entry; attacks reduce the target's damage by 10 %",
+    "reason": "User: Slum Dweller was nerfed to 10 % (IMG_0330: Malik 655,360 -> 589,824 -> 530,842)"
+  },
+  {
+    "kind": "user_authorized_description_edit",
+    "card_id": 286,
+    "card_index_0": 285,
+    "name": "Sleep Paralysis",
+    "original_value": "on entry, the enemy is stunned in 3 turns, both active cards die",
+    "clean_value": "on entry, the enemy is stunned; in 3 turns, both active cards die",
+    "reason": "Card text in IMG_0330/IMG_0341: 'On entry, the enemy is stunned. In 3 turns, both active cards die.'"
+  },
+  {
+    "kind": "remove_proven_trailing_duplicate",
+    "source": {
+      "file": "Cards-2.xml",
+      "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+      "snap_value_id": "34126",
+      "variable": "Card Descriptions"
+    },
+    "original_count": 290,
+    "clean_count": 289,
+    "removed_item_1": 290,
+    "duplicate_of_item_1": 289,
+    "original_value": "Every turn, becomes a different card.",
+    "reason": "Identical final two descriptions and matching entity count"
+  },
+  {
+    "kind": "user_authorized_trailing_weather_removal",
+    "source": {
+      "file": "data-10.csv",
+      "record_1": 1
+    },
+    "removed_item_1": 290,
+    "original_value": "1",
+    "original_count": 290,
+    "clean_count": 289,
+    "reason": "User explicitly requested dropping exactly the final 1"
+  },
+  {
+    "kind": "source_precedence",
+    "field": "weather_id",
+    "source": {
+      "file": "data-10.csv"
+    },
+    "superseded_source": {
+      "file": "Cards-2.xml",
+      "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[2]",
+      "snap_value_id": "34124",
+      "variable": "Card Weather"
+    },
+    "reason": "Latest user-supplied weather mapping supersedes embedded mapping",
+    "original_value": [
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "11",
+      "1",
+      "2",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "3",
+      "1",
+      "8",
+      "1",
+      "1",
+      "11",
+      "1",
+      "1",
+      "8",
+      "4",
+      "1",
+      "3",
+      "6",
+      "2",
+      "7",
+      "9",
+      "6",
+      "6",
+      "1",
+      "5",
+      "12",
+      "12",
+      "1",
+      "13",
+      "10",
+      "8",
+      "13",
+      "1",
+      "6",
+      "12",
+      "10",
+      "9",
+      "1",
+      "2",
+      "7",
+      "12",
+      "8",
+      "1",
+      "1",
+      "1",
+      "4",
+      "3",
+      "1",
+      "4",
+      "8",
+      "1",
+      "1",
+      "1",
+      "1",
+      "11",
+      "1",
+      "1",
+      "1",
+      "5",
+      "9",
+      "1",
+      "10",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "8",
+      "1",
+      "11",
+      "3",
+      "7",
+      "1",
+      "1",
+      "1",
+      "1",
+      "13",
+      "7",
+      "1",
+      "1",
+      "1",
+      "6",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "11",
+      "1",
+      "1",
+      "1",
+      "1",
+      "2",
+      "1",
+      "1",
+      "1",
+      "11",
+      "1",
+      "6",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "6",
+      "13",
+      "5",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "10",
+      "3",
+      "9",
+      "1",
+      "7",
+      "6",
+      "7",
+      "1",
+      "1",
+      "8",
+      "11",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "6",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "4",
+      "11",
+      "1",
+      "1",
+      "12",
+      "12",
+      "10",
+      "1",
+      "3",
+      "6",
+      "2",
+      "4",
+      "4",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "3",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "3",
+      "1",
+      "1",
+      "6",
+      "9",
+      "11",
+      "3",
+      "1",
+      "5",
+      "3",
+      "1",
+      "1",
+      "1",
+      "3",
+      "1",
+      "1",
+      "1",
+      "1",
+      "11",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "11",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1"
+    ],
+    "clean_value": [
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "11",
+      "1",
+      "2",
+      "1",
+      "1",
+      "1",
+      "5",
+      "1",
+      "3",
+      "1",
+      "8",
+      "1",
+      "1",
+      "11",
+      "1",
+      "1",
+      "8",
+      "4",
+      "1",
+      "3",
+      "6",
+      "2",
+      "7",
+      "9",
+      "6",
+      "6",
+      "1",
+      "1",
+      "5",
+      "12",
+      "12",
+      "1",
+      "13",
+      "10",
+      "8",
+      "13",
+      "1",
+      "6",
+      "12",
+      "10",
+      "9",
+      "1",
+      "2",
+      "7",
+      "12",
+      "8",
+      "1",
+      "1",
+      "1",
+      "4",
+      "3",
+      "4",
+      "8",
+      "1",
+      "1",
+      "1",
+      "1",
+      "11",
+      "1",
+      "1",
+      "1",
+      "5",
+      "9",
+      "1",
+      "10",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "8",
+      "1",
+      "11",
+      "3",
+      "7",
+      "1",
+      "1",
+      "1",
+      "1",
+      "13",
+      "7",
+      "1",
+      "1",
+      "1",
+      "6",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "11",
+      "1",
+      "1",
+      "1",
+      "1",
+      "2",
+      "1",
+      "1",
+      "1",
+      "11",
+      "1",
+      "6",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "6",
+      "13",
+      "5",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "10",
+      "3",
+      "9",
+      "1",
+      "7",
+      "6",
+      "7",
+      "1",
+      "1",
+      "8",
+      "11",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "6",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "4",
+      "11",
+      "1",
+      "1",
+      "12",
+      "12",
+      "10",
+      "1",
+      "3",
+      "6",
+      "2",
+      "4",
+      "4",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "3",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "3",
+      "1",
+      "1",
+      "6",
+      "9",
+      "11",
+      "3",
+      "1",
+      "5",
+      "3",
+      "1",
+      "1",
+      "1",
+      "3",
+      "1",
+      "1",
+      "1",
+      "1",
+      "11",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "11",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1",
+      "1"
+    ]
+  },
+  {
+    "kind": "source_precedence",
+    "field": "card_modifier",
+    "source": {
+      "file": "data-9.csv"
+    },
+    "superseded_source": {
+      "file": "Cards-2.xml",
+      "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[20]",
+      "snap_value_id": null,
+      "variable": "Card Damage Modifiers"
+    },
+    "original_value": "0",
+    "reason": "User-supplied 289-element vector replaces scalar placeholder"
+  },
+  {
+    "kind": "video_verified_support_description_swap",
+    "color": "red",
+    "support_ids": [
+      4,
+      5
+    ],
+    "reason": "IMG_0350-0354: support binder texts"
+  },
+  {
+    "kind": "video_verified_support_description_swap",
+    "color": "red",
+    "support_ids": [
+      13,
+      15
+    ],
+    "reason": "IMG_0350-0354: support binder texts"
+  },
+  {
+    "kind": "video_verified_support_description_swap",
+    "color": "red",
+    "support_ids": [
+      20,
+      21
+    ],
+    "reason": "IMG_0350-0354: support binder texts"
+  },
+  {
+    "kind": "video_verified_support_description_swap",
+    "color": "red",
+    "support_ids": [
+      22,
+      23
+    ],
+    "reason": "IMG_0350-0354: support binder texts"
+  },
+  {
+    "kind": "video_verified_support_description_swap",
+    "color": "red",
+    "support_ids": [
+      26,
+      27
+    ],
+    "reason": "IMG_0350-0354: support binder texts"
+  },
+  {
+    "kind": "video_verified_support_description_edit",
+    "color": "red",
+    "support_id": 19,
+    "original_value": "+22 Stats. +36% for Era 2 cards.",
+    "clean_value": "+22% Stats. +36% for Era 2 cards.",
+    "reason": "IMG_0350: support binder text"
+  },
+  {
+    "kind": "remove_proven_trailing_duplicate",
+    "source": {
+      "file": "Cards-2.xml",
+      "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[27]",
+      "snap_value_id": "34816",
+      "variable": "Support Card Descriptions (Blue)"
+    },
+    "original_count": 16,
+    "clean_count": 15,
+    "removed_item_1": 16,
+    "duplicate_of_item_1": 15,
+    "original_value": "10% chance to prevent an ally from taking lethal damage, leaving them at 1HP. Can activate once per ally.",
+    "reason": "Identical final two descriptions and matching entity count"
+  },
+  {
+    "kind": "user_evidence_border_rarity",
+    "border_id": 6,
+    "name": "RuPl",
+    "original_value": 1000000,
+    "clean_value": 10000000,
+    "reason": "Combined borders multiply their parts (Ru 1e5 x Pl 1e2; Ga 1e6 x Cr 1e4 x Pl 1e2): the user's deck shows A0-ON1 GaCrPl at 66qd and Deus Ex/Anubis/Set RuPl at 1e7 x card rarity, and the stats-sorted deck screenshot and an enemy GaCrPl Malik (2,621,440 HP) fit only these values"
+  },
+  {
+    "kind": "user_evidence_border_rarity",
+    "border_id": 12,
+    "name": "GaCrPl",
+    "original_value": 10000000000000,
+    "clean_value": 1000000000000,
+    "reason": "Combined borders multiply their parts (Ru 1e5 x Pl 1e2; Ga 1e6 x Cr 1e4 x Pl 1e2): the user's deck shows A0-ON1 GaCrPl at 66qd and Deus Ex/Anubis/Set RuPl at 1e7 x card rarity, and the stats-sorted deck screenshot and an enemy GaCrPl Malik (2,621,440 HP) fit only these values"
+  },
+  {
+    "kind": "user_authorized_token_row_edit",
+    "card_id": 88,
+    "original_row": [
+      "22",
+      "19",
+      "74",
+      "5",
+      "75",
+      "7",
+      "68",
+      "1",
+      "8",
+      "2",
+      "79",
+      "0",
+      "0",
+      "0",
+      "0",
+      "0",
+      "0",
+      "0",
+      "0",
+      "0",
+      "0",
+      "0",
+      "0",
+      "0",
+      "0",
+      "0",
+      "0",
+      "0",
+      "0",
+      "0",
+      "0",
+      "0"
+    ],
+    "clean_row": [
+      22,
+      19,
+      74,
+      5,
+      75,
+      7,
+      39,
+      1,
+      8,
+      2,
+      79,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  {
+    "kind": "user_authorized_token_row_edit",
+    "card_id": 164,
+    "original_row": [
+      "13",
+      "51",
+      "40",
+      "202",
+      "44",
+      "50",
+      "85",
+      "10",
+      "0",
+      "0",
+      "0",
+      "0",
+      "0",
+      "0",
+      "0",
+      "0",
+      "0",
+      "0",
+      "0",
+      "0",
+      "0",
+      "0",
+      "0",
+      "0",
+      "0",
+      "0",
+      "0",
+      "0",
+      "0",
+      "0",
+      "0",
+      "0"
+    ],
+    "clean_row": [
+      4,
+      43,
+      3,
+      13,
+      51,
+      40,
+      202,
+      44,
+      57,
+      10,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  {
+    "kind": "user_authorized_token_row_edit",
+    "card_id": 180,
+    "original_row": [
+      "31",
+      "4",
+      "9",
+      "6",
+      "31",
+      "63",
+      "13",
+      "121",
+      "2",
+      "20",
+      "39",
+      "1",
+      "0",
+      "0",
+      "0",
+      "0",
+      "0",
+      "0",
+      "0",
+      "0",
+      "0",
+      "0",
+      "0",
+      "0",
+      "0",
+      "0",
+      "0",
+      "0",
+      "0",
+      "0",
+      "0",
+      "0"
+    ],
+    "clean_row": [
+      31,
+      4,
+      9,
+      6,
+      31,
+      63,
+      13,
+      121,
+      2,
+      20,
+      34,
+      1,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  {
+    "kind": "user_authorized_token_row_edit",
+    "card_id": 286,
+    "original_row": [
+      "4",
+      "9",
+      "3",
+      "13",
+      "19",
+      "54",
+      "385",
+      "67",
+      "24",
+      "28",
+      "3",
+      "205",
+      "143",
+      "73",
+      "114",
+      "0",
+      "0",
+      "0",
+      "0",
+      "0",
+      "0",
+      "0",
+      "0",
+      "0",
+      "0",
+      "0",
+      "0",
+      "0",
+      "0",
+      "0",
+      "0",
+      "0"
+    ],
+    "clean_row": [
+      4,
+      9,
+      3,
+      13,
+      19,
+      54,
+      385,
+      6,
+      67,
+      24,
+      28,
+      3,
+      205,
+      143,
+      73,
+      114,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  {
+    "kind": "user_authorized_rd_deletion_reindex",
+    "removed_legacy_lexical_id": 248,
+    "rule": "Leave PAD and IDs below 248 unchanged; decrement IDs above 248 by one",
+    "changed_token_occurrences": 191,
+    "vocabulary_order_preserved": true,
+    "source": "user_2026-09-27/data-6.csv + data-7.csv",
+    "lexical_rows_validated": 289
+  },
+  {
+    "kind": "quarantine_source_token_matrix",
+    "source": {
+      "file": "Cards-2.xml",
+      "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[24]",
+      "snap_value_id": "34151",
+      "variable": "data-5_refined_tokenized_2d"
+    },
+    "original_value": "archive/persistent_variables.json",
+    "status": "quarantined_invalid",
+    "reason": "Stored token IDs fail range/reconstruction checks; no source vocabulary offset is guessed"
+  },
+  {
+    "kind": "user_authorized_class_addition",
+    "card_id": 233,
+    "name": "Anubis & Hades",
+    "added_class": "undead",
+    "source": {
+      "file": "../../card_engine/data_corrections.py",
+      "evidence": "user stat/weather corrections and all-Bosses clarification, 2026-09-28"
+    },
+    "reason": "User: class missing from the inferred data"
+  },
+  {
+    "kind": "user_authorized_class_addition",
+    "card_id": 242,
+    "name": "War",
+    "added_class": "undead",
+    "source": {
+      "file": "../../card_engine/data_corrections.py",
+      "evidence": "user stat/weather corrections and all-Bosses clarification, 2026-09-28"
+    },
+    "reason": "User: class missing from the inferred data"
+  },
+  {
+    "kind": "user_authorized_class_addition",
+    "card_id": 270,
+    "name": "Bloody Mary",
+    "added_class": "undead",
+    "source": {
+      "file": "../../card_engine/data_corrections.py",
+      "evidence": "user stat/weather corrections and all-Bosses clarification, 2026-09-28"
+    },
+    "reason": "User: class missing from the inferred data"
+  },
+  {
+    "kind": "user_authorized_class_addition",
+    "card_id": 205,
+    "name": "Chronus The Hoarder",
+    "added_class": "sin",
+    "source": {
+      "file": "../../card_engine/data_corrections.py",
+      "evidence": "user stat/weather corrections and all-Bosses clarification, 2026-09-28"
+    },
+    "reason": "User: class missing from the inferred data"
+  },
+  {
+    "kind": "user_authorized_class_addition",
+    "card_id": 206,
+    "name": "Malik The Sovereign",
+    "added_class": "sin",
+    "source": {
+      "file": "../../card_engine/data_corrections.py",
+      "evidence": "user stat/weather corrections and all-Bosses clarification, 2026-09-28"
+    },
+    "reason": "User: class missing from the inferred data"
+  },
+  {
+    "kind": "user_authorized_class_addition",
+    "card_id": 207,
+    "name": "Gideon The Insatiable",
+    "added_class": "sin",
+    "source": {
+      "file": "../../card_engine/data_corrections.py",
+      "evidence": "user stat/weather corrections and all-Bosses clarification, 2026-09-28"
+    },
+    "reason": "User: class missing from the inferred data"
+  },
+  {
+    "kind": "user_authorized_class_addition",
+    "card_id": 208,
+    "name": "Lilith the Enchantress",
+    "added_class": "sin",
+    "source": {
+      "file": "../../card_engine/data_corrections.py",
+      "evidence": "user stat/weather corrections and all-Bosses clarification, 2026-09-28"
+    },
+    "reason": "User: class missing from the inferred data"
+  },
+  {
+    "kind": "user_authorized_class_addition",
+    "card_id": 209,
+    "name": "Morpheus the Slumberer",
+    "added_class": "sin",
+    "source": {
+      "file": "../../card_engine/data_corrections.py",
+      "evidence": "user stat/weather corrections and all-Bosses clarification, 2026-09-28"
+    },
+    "reason": "User: class missing from the inferred data"
+  },
+  {
+    "kind": "user_authorized_class_addition",
+    "card_id": 210,
+    "name": "Raze The Destroyer",
+    "added_class": "sin",
+    "source": {
+      "file": "../../card_engine/data_corrections.py",
+      "evidence": "user stat/weather corrections and all-Bosses clarification, 2026-09-28"
+    },
+    "reason": "User: class missing from the inferred data"
+  },
+  {
+    "kind": "user_authorized_class_addition",
+    "card_id": 211,
+    "name": "Sable The Envious",
+    "added_class": "sin",
+    "source": {
+      "file": "../../card_engine/data_corrections.py",
+      "evidence": "user stat/weather corrections and all-Bosses clarification, 2026-09-28"
+    },
+    "reason": "User: class missing from the inferred data"
+  },
+  {
+    "kind": "user_authorized_class_removal",
+    "card_id": 152,
+    "name": "Marrowclaw",
+    "removed_class": "undead",
+    "source": {
+      "file": "../../card_engine/data_corrections.py",
+      "evidence": "user stat/weather corrections and all-Bosses clarification, 2026-09-28"
+    },
+    "reason": "User: inferred class is wrong; art/wiki class sources are unreliable"
+  },
+  {
+    "kind": "user_authorized_class_removal",
+    "card_id": 65,
+    "name": "Parallax",
+    "removed_class": "demon",
+    "source": {
+      "file": "../../card_engine/data_corrections.py",
+      "evidence": "user stat/weather corrections and all-Bosses clarification, 2026-09-28"
+    },
+    "reason": "User: inferred class is wrong; art/wiki class sources are unreliable"
+  },
+  {
+    "kind": "user_authorized_class_removal",
+    "card_id": 219,
+    "name": "Sisyphus",
+    "removed_class": "avian",
+    "source": {
+      "file": "../../card_engine/data_corrections.py",
+      "evidence": "user stat/weather corrections and all-Bosses clarification, 2026-09-28"
+    },
+    "reason": "User: inferred class is wrong; art/wiki class sources are unreliable"
+  },
+  {
+    "kind": "user_authorized_class_removal",
+    "card_id": 246,
+    "name": "Memories",
+    "removed_class": "avian",
+    "source": {
+      "file": "../../card_engine/data_corrections.py",
+      "evidence": "user stat/weather corrections and all-Bosses clarification, 2026-09-28"
+    },
+    "reason": "User: inferred class is wrong; art/wiki class sources are unreliable"
+  },
+  {
+    "kind": "user_authorized_class_removal",
+    "card_id": 280,
+    "name": "The Blood Countess",
+    "removed_class": "undead",
+    "source": {
+      "file": "../../card_engine/data_corrections.py",
+      "evidence": "user stat/weather corrections and all-Bosses clarification, 2026-09-28"
+    },
+    "reason": "User: inferred class is wrong; art/wiki class sources are unreliable"
+  },
+  {
+    "kind": "user_authorized_class_removal",
+    "card_id": 285,
+    "name": "Abomination",
+    "removed_class": "undead",
+    "source": {
+      "file": "../../card_engine/data_corrections.py",
+      "evidence": "user stat/weather corrections and all-Bosses clarification, 2026-09-28"
+    },
+    "reason": "User: inferred class is wrong; art/wiki class sources are unreliable"
+  },
+  {
+    "kind": "user_authorized_class_removal",
+    "card_id": 286,
+    "name": "Sleep Paralysis",
+    "removed_class": "undead",
+    "source": {
+      "file": "../../card_engine/data_corrections.py",
+      "evidence": "user stat/weather corrections and all-Bosses clarification, 2026-09-28"
+    },
+    "reason": "User: inferred class is wrong; art/wiki class sources are unreliable"
+  },
+  {
+    "kind": "user_rule_rng_class",
+    "card_id": 18,
+    "name": "Arthur of Excalibur",
+    "rng": true,
+    "source": {
+      "file": "../../card_engine/data_corrections.py",
+      "evidence": "user stat/weather corrections and all-Bosses clarification, 2026-09-28"
+    },
+    "reason": "User: chance-based abilities qualify as RNG"
+  },
+  {
+    "kind": "user_rule_rng_class",
+    "card_id": 21,
+    "name": "Ice Queen",
+    "rng": true,
+    "source": {
+      "file": "../../card_engine/data_corrections.py",
+      "evidence": "user stat/weather corrections and all-Bosses clarification, 2026-09-28"
+    },
+    "reason": "User: chance-based abilities qualify as RNG"
+  },
+  {
+    "kind": "user_rule_rng_class",
+    "card_id": 29,
+    "name": "Sciron",
+    "rng": true,
+    "source": {
+      "file": "../../card_engine/data_corrections.py",
+      "evidence": "user stat/weather corrections and all-Bosses clarification, 2026-09-28"
+    },
+    "reason": "User: chance-based abilities qualify as RNG"
+  },
+  {
+    "kind": "user_rule_rng_class",
+    "card_id": 32,
+    "name": "Hoarfrost Phoenix",
+    "rng": true,
+    "source": {
+      "file": "../../card_engine/data_corrections.py",
+      "evidence": "user stat/weather corrections and all-Bosses clarification, 2026-09-28"
+    },
+    "reason": "User: chance-based abilities qualify as RNG"
+  },
+  {
+    "kind": "user_rule_rng_class",
+    "card_id": 40,
+    "name": "ToadBoiGaming",
+    "rng": true,
+    "source": {
+      "file": "../../card_engine/data_corrections.py",
+      "evidence": "user stat/weather corrections and all-Bosses clarification, 2026-09-28"
+    },
+    "reason": "User: chance-based abilities qualify as RNG"
+  },
+  {
+    "kind": "user_rule_rng_class",
+    "card_id": 50,
+    "name": "Judgement Day",
+    "rng": true,
+    "source": {
+      "file": "../../card_engine/data_corrections.py",
+      "evidence": "user stat/weather corrections and all-Bosses clarification, 2026-09-28"
+    },
+    "reason": "User: chance-based abilities qualify as RNG"
+  },
+  {
+    "kind": "user_rule_rng_class",
+    "card_id": 53,
+    "name": "Chaos",
+    "rng": true,
+    "source": {
+      "file": "../../card_engine/data_corrections.py",
+      "evidence": "user stat/weather corrections and all-Bosses clarification, 2026-09-28"
+    },
+    "reason": "User: chance-based abilities qualify as RNG"
+  },
+  {
+    "kind": "user_rule_rng_class",
+    "card_id": 64,
+    "name": "Achyls",
+    "rng": true,
+    "source": {
+      "file": "../../card_engine/data_corrections.py",
+      "evidence": "user stat/weather corrections and all-Bosses clarification, 2026-09-28"
+    },
+    "reason": "User: chance-based abilities qualify as RNG"
+  },
+  {
+    "kind": "user_rule_rng_class",
+    "card_id": 93,
+    "name": "Nao Presence",
+    "rng": true,
+    "source": {
+      "file": "../../card_engine/data_corrections.py",
+      "evidence": "user stat/weather corrections and all-Bosses clarification, 2026-09-28"
+    },
+    "reason": "User: chance-based abilities qualify as RNG"
+  },
+  {
+    "kind": "user_rule_rng_class",
+    "card_id": 130,
+    "name": "Nüwa",
+    "rng": true,
+    "source": {
+      "file": "../../card_engine/data_corrections.py",
+      "evidence": "user stat/weather corrections and all-Bosses clarification, 2026-09-28"
+    },
+    "reason": "User: chance-based abilities qualify as RNG"
+  },
+  {
+    "kind": "user_rule_rng_class",
+    "card_id": 148,
+    "name": "Umbrasaur",
+    "rng": true,
+    "source": {
+      "file": "../../card_engine/data_corrections.py",
+      "evidence": "user stat/weather corrections and all-Bosses clarification, 2026-09-28"
+    },
+    "reason": "User: chance-based abilities qualify as RNG"
+  },
+  {
+    "kind": "user_rule_rng_class",
+    "card_id": 150,
+    "name": "Unicorn",
+    "rng": true,
+    "source": {
+      "file": "../../card_engine/data_corrections.py",
+      "evidence": "user stat/weather corrections and all-Bosses clarification, 2026-09-28"
+    },
+    "reason": "User: chance-based abilities qualify as RNG"
+  },
+  {
+    "kind": "user_rule_rng_class",
+    "card_id": 152,
+    "name": "Marrowclaw",
+    "rng": true,
+    "source": {
+      "file": "../../card_engine/data_corrections.py",
+      "evidence": "user stat/weather corrections and all-Bosses clarification, 2026-09-28"
+    },
+    "reason": "User: chance-based abilities qualify as RNG"
+  },
+  {
+    "kind": "user_rule_rng_class",
+    "card_id": 194,
+    "name": "Durante",
+    "rng": true,
+    "source": {
+      "file": "../../card_engine/data_corrections.py",
+      "evidence": "user stat/weather corrections and all-Bosses clarification, 2026-09-28"
+    },
+    "reason": "User: chance-based abilities qualify as RNG"
+  },
+  {
+    "kind": "user_rule_rng_class",
+    "card_id": 201,
+    "name": "Bigfoot",
+    "rng": true,
+    "source": {
+      "file": "../../card_engine/data_corrections.py",
+      "evidence": "user stat/weather corrections and all-Bosses clarification, 2026-09-28"
+    },
+    "reason": "User: chance-based abilities qualify as RNG"
+  },
+  {
+    "kind": "user_rule_rng_class",
+    "card_id": 216,
+    "name": "Shay, Heart of the Cards",
+    "rng": true,
+    "source": {
+      "file": "../../card_engine/data_corrections.py",
+      "evidence": "user stat/weather corrections and all-Bosses clarification, 2026-09-28"
+    },
+    "reason": "User: chance-based abilities qualify as RNG"
+  },
+  {
+    "kind": "user_rule_rng_class",
+    "card_id": 218,
+    "name": "Valentine's Specter",
+    "rng": true,
+    "source": {
+      "file": "../../card_engine/data_corrections.py",
+      "evidence": "user stat/weather corrections and all-Bosses clarification, 2026-09-28"
+    },
+    "reason": "User: chance-based abilities qualify as RNG"
+  },
+  {
+    "kind": "user_rule_rng_class",
+    "card_id": 220,
+    "name": "George Washington",
+    "rng": true,
+    "source": {
+      "file": "../../card_engine/data_corrections.py",
+      "evidence": "user stat/weather corrections and all-Bosses clarification, 2026-09-28"
+    },
+    "reason": "User: chance-based abilities qualify as RNG"
+  },
+  {
+    "kind": "user_rule_rng_class",
+    "card_id": 228,
+    "name": "Eclipseborn Luminant",
+    "rng": true,
+    "source": {
+      "file": "../../card_engine/data_corrections.py",
+      "evidence": "user stat/weather corrections and all-Bosses clarification, 2026-09-28"
+    },
+    "reason": "User: chance-based abilities qualify as RNG"
+  },
+  {
+    "kind": "user_rule_rng_class",
+    "card_id": 232,
+    "name": "Cave Goblin God",
+    "rng": true,
+    "source": {
+      "file": "../../card_engine/data_corrections.py",
+      "evidence": "user stat/weather corrections and all-Bosses clarification, 2026-09-28"
+    },
+    "reason": "User: chance-based abilities qualify as RNG"
+  },
+  {
+    "kind": "user_rule_rng_class",
+    "card_id": 252,
+    "name": "Old Man Winter",
+    "rng": true,
+    "source": {
+      "file": "../../card_engine/data_corrections.py",
+      "evidence": "user stat/weather corrections and all-Bosses clarification, 2026-09-28"
+    },
+    "reason": "User: chance-based abilities qualify as RNG"
+  },
+  {
+    "kind": "user_rule_rng_class",
+    "card_id": 260,
+    "name": "Santa Claus",
+    "rng": true,
+    "source": {
+      "file": "../../card_engine/data_corrections.py",
+      "evidence": "user stat/weather corrections and all-Bosses clarification, 2026-09-28"
+    },
+    "reason": "User: chance-based abilities qualify as RNG"
+  },
+  {
+    "kind": "user_rule_rng_class",
+    "card_id": 268,
+    "name": "Witch",
+    "rng": true,
+    "source": {
+      "file": "../../card_engine/data_corrections.py",
+      "evidence": "user stat/weather corrections and all-Bosses clarification, 2026-09-28"
+    },
+    "reason": "User: chance-based abilities qualify as RNG"
+  },
+  {
+    "kind": "user_rule_rng_class",
+    "card_id": 270,
+    "name": "Bloody Mary",
+    "rng": true,
+    "source": {
+      "file": "../../card_engine/data_corrections.py",
+      "evidence": "user stat/weather corrections and all-Bosses clarification, 2026-09-28"
+    },
+    "reason": "User: chance-based abilities qualify as RNG"
+  },
+  {
+    "kind": "user_rule_rng_class",
+    "card_id": 281,
+    "name": "The Composer",
+    "rng": true,
+    "source": {
+      "file": "../../card_engine/data_corrections.py",
+      "evidence": "user stat/weather corrections and all-Bosses clarification, 2026-09-28"
+    },
+    "reason": "User: chance-based abilities qualify as RNG"
+  },
+  {
+    "kind": "developer_class_list",
+    "card_id": 46,
+    "name": "Vicious",
+    "class": "demon",
+    "member": true,
+    "source": {
+      "file": "../../card_engine/data_corrections.py",
+      "evidence": "user stat/weather corrections and all-Bosses clarification, 2026-09-28"
+    },
+    "reason": "User: the developer's class list"
+  },
+  {
+    "kind": "developer_class_list",
+    "card_id": 60,
+    "name": "Fafnir",
+    "class": "demon",
+    "member": true,
+    "source": {
+      "file": "../../card_engine/data_corrections.py",
+      "evidence": "user stat/weather corrections and all-Bosses clarification, 2026-09-28"
+    },
+    "reason": "User: the developer's class list"
+  },
+  {
+    "kind": "developer_class_list",
+    "card_id": 109,
+    "name": "A0-ON1",
+    "class": "demon",
+    "member": true,
+    "source": {
+      "file": "../../card_engine/data_corrections.py",
+      "evidence": "user stat/weather corrections and all-Bosses clarification, 2026-09-28"
+    },
+    "reason": "User: the developer's class list"
+  },
+  {
+    "kind": "developer_class_list",
+    "card_id": 110,
+    "name": "AK4-ON1",
+    "class": "demon",
+    "member": true,
+    "source": {
+      "file": "../../card_engine/data_corrections.py",
+      "evidence": "user stat/weather corrections and all-Bosses clarification, 2026-09-28"
+    },
+    "reason": "User: the developer's class list"
+  },
+  {
+    "kind": "developer_class_list",
+    "card_id": 2,
+    "name": "Shining Armor",
+    "class": "swordsmen",
+    "member": true,
+    "source": {
+      "file": "../../card_engine/data_corrections.py",
+      "evidence": "user stat/weather corrections and all-Bosses clarification, 2026-09-28"
+    },
+    "reason": "User: the developer's class list"
+  },
+  {
+    "kind": "developer_class_list",
+    "card_id": 10,
+    "name": "Arthur",
+    "class": "swordsmen",
+    "member": true,
+    "source": {
+      "file": "../../card_engine/data_corrections.py",
+      "evidence": "user stat/weather corrections and all-Bosses clarification, 2026-09-28"
+    },
+    "reason": "User: the developer's class list"
+  },
+  {
+    "kind": "developer_class_list",
+    "card_id": 14,
+    "name": "Knightmare",
+    "class": "swordsmen",
+    "member": true,
+    "source": {
+      "file": "../../card_engine/data_corrections.py",
+      "evidence": "user stat/weather corrections and all-Bosses clarification, 2026-09-28"
+    },
+    "reason": "User: the developer's class list"
+  },
+  {
+    "kind": "developer_class_list",
+    "card_id": 18,
+    "name": "Arthur of Excalibur",
+    "class": "swordsmen",
+    "member": true,
+    "source": {
+      "file": "../../card_engine/data_corrections.py",
+      "evidence": "user stat/weather corrections and all-Bosses clarification, 2026-09-28"
+    },
+    "reason": "User: the developer's class list"
+  },
+  {
+    "kind": "developer_class_list",
+    "card_id": 20,
+    "name": "Conqueror",
+    "class": "swordsmen",
+    "member": true,
+    "source": {
+      "file": "../../card_engine/data_corrections.py",
+      "evidence": "user stat/weather corrections and all-Bosses clarification, 2026-09-28"
+    },
+    "reason": "User: the developer's class list"
+  },
+  {
+    "kind": "developer_class_list",
+    "card_id": 23,
+    "name": "Ixion",
+    "class": "swordsmen",
+    "member": true,
+    "source": {
+      "file": "../../card_engine/data_corrections.py",
+      "evidence": "user stat/weather corrections and all-Bosses clarification, 2026-09-28"
+    },
+    "reason": "User: the developer's class list"
+  },
+  {
+    "kind": "developer_class_list",
+    "card_id": 29,
+    "name": "Sciron",
+    "class": "swordsmen",
+    "member": true,
+    "source": {
+      "file": "../../card_engine/data_corrections.py",
+      "evidence": "user stat/weather corrections and all-Bosses clarification, 2026-09-28"
+    },
+    "reason": "User: the developer's class list"
+  },
+  {
+    "kind": "developer_class_list",
+    "card_id": 33,
+    "name": "Hell's Army",
+    "class": "swordsmen",
+    "member": true,
+    "source": {
+      "file": "../../card_engine/data_corrections.py",
+      "evidence": "user stat/weather corrections and all-Bosses clarification, 2026-09-28"
+    },
+    "reason": "User: the developer's class list"
+  },
+  {
+    "kind": "developer_class_list",
+    "card_id": 55,
+    "name": "Siegfried",
+    "class": "swordsmen",
+    "member": true,
+    "source": {
+      "file": "../../card_engine/data_corrections.py",
+      "evidence": "user stat/weather corrections and all-Bosses clarification, 2026-09-28"
+    },
+    "reason": "User: the developer's class list"
+  },
+  {
+    "kind": "developer_class_list",
+    "card_id": 87,
+    "name": "Artoria of Excalibur",
+    "class": "swordsmen",
+    "member": true,
+    "source": {
+      "file": "../../card_engine/data_corrections.py",
+      "evidence": "user stat/weather corrections and all-Bosses clarification, 2026-09-28"
+    },
+    "reason": "User: the developer's class list"
+  },
+  {
+    "kind": "developer_class_list",
+    "card_id": 106,
+    "name": "Samurai",
+    "class": "swordsmen",
+    "member": true,
+    "source": {
+      "file": "../../card_engine/data_corrections.py",
+      "evidence": "user stat/weather corrections and all-Bosses clarification, 2026-09-28"
+    },
+    "reason": "User: the developer's class list"
+  },
+  {
+    "kind": "developer_class_list",
+    "card_id": 113,
+    "name": "Sasaki Kojiro",
+    "class": "swordsmen",
+    "member": true,
+    "source": {
+      "file": "../../card_engine/data_corrections.py",
+      "evidence": "user stat/weather corrections and all-Bosses clarification, 2026-09-28"
+    },
+    "reason": "User: the developer's class list"
+  },
+  {
+    "kind": "developer_class_list",
+    "card_id": 116,
+    "name": "Susanoo",
+    "class": "swordsmen",
+    "member": true,
+    "source": {
+      "file": "../../card_engine/data_corrections.py",
+      "evidence": "user stat/weather corrections and all-Bosses clarification, 2026-09-28"
+    },
+    "reason": "User: the developer's class list"
+  },
+  {
+    "kind": "developer_class_list",
+    "card_id": 65,
+    "name": "Parallax",
+    "class": "dragon",
+    "member": true,
+    "source": {
+      "file": "../../card_engine/data_corrections.py",
+      "evidence": "user stat/weather corrections and all-Bosses clarification, 2026-09-28"
+    },
+    "reason": "User: the developer's class list"
+  },
+  {
+    "kind": "developer_class_list",
+    "card_id": 177,
+    "name": "Juggernoid",
+    "class": "dragon",
+    "member": true,
+    "source": {
+      "file": "../../card_engine/data_corrections.py",
+      "evidence": "user stat/weather corrections and all-Bosses clarification, 2026-09-28"
+    },
+    "reason": "User: the developer's class list"
+  },
+  {
+    "kind": "developer_class_list",
+    "card_id": 234,
+    "name": "Longmu",
+    "class": "dragon",
+    "member": true,
+    "source": {
+      "file": "../../card_engine/data_corrections.py",
+      "evidence": "user stat/weather corrections and all-Bosses clarification, 2026-09-28"
+    },
+    "reason": "User: the developer's class list"
+  },
+  {
+    "kind": "user_verified_class_memberships",
+    "cards": 289,
+    "source": {
+      "file": "../../card_engine/data_corrections.py",
+      "evidence": "user stat/weather corrections and all-Bosses clarification, 2026-09-28"
+    },
+    "reason": "User reviewed all class lists and supplied only contradictions"
+  },
+  {
+    "kind": "user_authorized_stat_metadata_correction",
+    "card_id": 36,
+    "name": "Bad Boys",
+    "field": "weather_id",
+    "original_value": 9,
+    "original_value_lexical": "9",
+    "clean_value": 1,
+    "superseded_source": {
+      "file": "data-10.csv",
+      "record_1": 1,
+      "column_1": 36
+    },
+    "source": {
+      "file": "../../card_engine/data_corrections.py",
+      "evidence": "user stat/weather corrections and all-Bosses clarification, 2026-09-28"
+    },
+    "reason": "User confirms Base weather for Bad Boys and Eclipse for adjacent Pandora; no global index shift"
+  },
+  {
+    "kind": "user_authorized_stat_metadata_correction",
+    "card_id": 37,
+    "name": "Pandora",
+    "field": "weather_id",
+    "original_value": 6,
+    "original_value_lexical": "6",
+    "clean_value": 9,
+    "superseded_source": {
+      "file": "data-10.csv",
+      "record_1": 1,
+      "column_1": 37
+    },
+    "source": {
+      "file": "../../card_engine/data_corrections.py",
+      "evidence": "user stat/weather corrections and all-Bosses clarification, 2026-09-28"
+    },
+    "reason": "User confirms Base weather for Bad Boys and Eclipse for adjacent Pandora; no global index shift"
+  },
+  {
+    "kind": "user_authorized_stat_metadata_correction",
+    "card_id": 205,
+    "name": "Chronus The Hoarder",
+    "field": "card_modifier",
+    "original_value": 1,
+    "original_value_lexical": "1",
+    "clean_value": 2,
+    "superseded_source": {
+      "file": "data-9.csv",
+      "record_1": 1,
+      "column_1": 205
+    },
+    "source": {
+      "file": "../../card_engine/data_corrections.py",
+      "evidence": "user stat/weather corrections and all-Bosses clarification, 2026-09-28"
+    },
+    "reason": "User confirms 2x stat multiplier for every card in Bosses pack"
+  },
+  {
+    "kind": "user_authorized_stat_metadata_correction",
+    "card_id": 206,
+    "name": "Malik The Sovereign",
+    "field": "card_modifier",
+    "original_value": 1,
+    "original_value_lexical": "1",
+    "clean_value": 2,
+    "superseded_source": {
+      "file": "data-9.csv",
+      "record_1": 1,
+      "column_1": 206
+    },
+    "source": {
+      "file": "../../card_engine/data_corrections.py",
+      "evidence": "user stat/weather corrections and all-Bosses clarification, 2026-09-28"
+    },
+    "reason": "User confirms 2x stat multiplier for every card in Bosses pack"
+  },
+  {
+    "kind": "user_authorized_stat_metadata_correction",
+    "card_id": 207,
+    "name": "Gideon The Insatiable",
+    "field": "card_modifier",
+    "original_value": 1,
+    "original_value_lexical": "1",
+    "clean_value": 2,
+    "superseded_source": {
+      "file": "data-9.csv",
+      "record_1": 1,
+      "column_1": 207
+    },
+    "source": {
+      "file": "../../card_engine/data_corrections.py",
+      "evidence": "user stat/weather corrections and all-Bosses clarification, 2026-09-28"
+    },
+    "reason": "User confirms 2x stat multiplier for every card in Bosses pack"
+  },
+  {
+    "kind": "user_authorized_stat_metadata_correction",
+    "card_id": 208,
+    "name": "Lilith the Enchantress",
+    "field": "card_modifier",
+    "original_value": 1,
+    "original_value_lexical": "1",
+    "clean_value": 2,
+    "superseded_source": {
+      "file": "data-9.csv",
+      "record_1": 1,
+      "column_1": 208
+    },
+    "source": {
+      "file": "../../card_engine/data_corrections.py",
+      "evidence": "user stat/weather corrections and all-Bosses clarification, 2026-09-28"
+    },
+    "reason": "User confirms 2x stat multiplier for every card in Bosses pack"
+  },
+  {
+    "kind": "user_authorized_stat_metadata_correction",
+    "card_id": 209,
+    "name": "Morpheus the Slumberer",
+    "field": "card_modifier",
+    "original_value": 1,
+    "original_value_lexical": "1",
+    "clean_value": 2,
+    "superseded_source": {
+      "file": "data-9.csv",
+      "record_1": 1,
+      "column_1": 209
+    },
+    "source": {
+      "file": "../../card_engine/data_corrections.py",
+      "evidence": "user stat/weather corrections and all-Bosses clarification, 2026-09-28"
+    },
+    "reason": "User confirms 2x stat multiplier for every card in Bosses pack"
+  },
+  {
+    "kind": "user_authorized_stat_metadata_correction",
+    "card_id": 210,
+    "name": "Raze The Destroyer",
+    "field": "card_modifier",
+    "original_value": 1,
+    "original_value_lexical": "1",
+    "clean_value": 2,
+    "superseded_source": {
+      "file": "data-9.csv",
+      "record_1": 1,
+      "column_1": 210
+    },
+    "source": {
+      "file": "../../card_engine/data_corrections.py",
+      "evidence": "user stat/weather corrections and all-Bosses clarification, 2026-09-28"
+    },
+    "reason": "User confirms 2x stat multiplier for every card in Bosses pack"
+  },
+  {
+    "kind": "user_authorized_stat_metadata_correction",
+    "card_id": 211,
+    "name": "Sable The Envious",
+    "field": "card_modifier",
+    "original_value": 1,
+    "original_value_lexical": "1",
+    "clean_value": 2,
+    "superseded_source": {
+      "file": "data-9.csv",
+      "record_1": 1,
+      "column_1": 211
+    },
+    "source": {
+      "file": "../../card_engine/data_corrections.py",
+      "evidence": "user stat/weather corrections and all-Bosses clarification, 2026-09-28"
+    },
+    "reason": "User confirms 2x stat multiplier for every card in Bosses pack"
+  },
+  {
+    "kind": "user_authorized_stat_metadata_correction",
+    "card_id": 212,
+    "name": "Mother of Beasts",
+    "field": "card_modifier",
+    "original_value": 1,
+    "original_value_lexical": "1",
+    "clean_value": 2,
+    "superseded_source": {
+      "file": "data-9.csv",
+      "record_1": 1,
+      "column_1": 212
+    },
+    "source": {
+      "file": "../../card_engine/data_corrections.py",
+      "evidence": "user stat/weather corrections and all-Bosses clarification, 2026-09-28"
+    },
+    "reason": "User confirms 2x stat multiplier for every card in Bosses pack"
+  },
+  {
+    "kind": "user_authorized_stat_metadata_correction",
+    "card_id": 250,
+    "name": "Time Lord Stryx",
+    "field": "card_modifier",
+    "original_value": 1,
+    "original_value_lexical": "1",
+    "clean_value": 1.5,
+    "superseded_source": {
+      "file": "data-9.csv",
+      "record_1": 1,
+      "column_1": 250
+    },
+    "source": {
+      "file": "../../card_engine/data_corrections.py",
+      "evidence": "user stat/weather corrections and all-Bosses clarification, 2026-09-28"
+    },
+    "reason": "Observed stats x1.5 in user videos (see OBSERVED_MODIFIERS)"
+  },
+  {
+    "kind": "user_authorized_stat_metadata_correction",
+    "card_id": 139,
+    "name": "Buddha",
+    "field": "card_modifier",
+    "original_value": 1,
+    "original_value_lexical": "1",
+    "clean_value": 1.02344,
+    "superseded_source": {
+      "file": "data-9.csv",
+      "record_1": 1,
+      "column_1": 139
+    },
+    "source": {
+      "file": "../../card_engine/data_corrections.py",
+      "evidence": "user stat/weather corrections and all-Bosses clarification, 2026-09-28"
+    },
+    "reason": "Observed stats x1.02344 in user videos (see OBSERVED_MODIFIERS)"
+  },
+  {
+    "kind": "user_authorized_stat_metadata_correction",
+    "card_id": 247,
+    "name": "Legends",
+    "field": "card_modifier",
+    "original_value": 1,
+    "original_value_lexical": "1",
+    "clean_value": 1.2,
+    "superseded_source": {
+      "file": "data-9.csv",
+      "record_1": 1,
+      "column_1": 247
+    },
+    "source": {
+      "file": "../../card_engine/data_corrections.py",
+      "evidence": "user stat/weather corrections and all-Bosses clarification, 2026-09-28"
+    },
+    "reason": "Observed stats x1.2 in user videos (see OBSERVED_MODIFIERS)"
+  },
+  {
+    "kind": "user_authorized_stat_metadata_correction",
+    "card_id": 157,
+    "name": "Tyrannosaurus Rex",
+    "field": "card_modifier",
+    "original_value": 1,
+    "original_value_lexical": "1",
+    "clean_value": 1.2,
+    "superseded_source": {
+      "file": "data-9.csv",
+      "record_1": 1,
+      "column_1": 157
+    },
+    "source": {
+      "file": "../../card_engine/data_corrections.py",
+      "evidence": "user stat/weather corrections and all-Bosses clarification, 2026-09-28"
+    },
+    "reason": "Observed stats x1.2 in user videos (see OBSERVED_MODIFIERS)"
+  },
+  {
+    "kind": "user_authorized_stat_metadata_correction",
+    "card_id": 159,
+    "name": "Tyrannodon",
+    "field": "card_modifier",
+    "original_value": 1,
+    "original_value_lexical": "1",
+    "clean_value": 1.5,
+    "superseded_source": {
+      "file": "data-9.csv",
+      "record_1": 1,
+      "column_1": 159
+    },
+    "source": {
+      "file": "../../card_engine/data_corrections.py",
+      "evidence": "user stat/weather corrections and all-Bosses clarification, 2026-09-28"
+    },
+    "reason": "Observed stats x1.5 in user videos (see OBSERVED_MODIFIERS)"
+  },
+  {
+    "kind": "user_authorized_stat_metadata_correction",
+    "card_id": 274,
+    "name": "Ghoul",
+    "field": "card_modifier",
+    "original_value": 1,
+    "original_value_lexical": "1",
+    "clean_value": 2,
+    "superseded_source": {
+      "file": "data-9.csv",
+      "record_1": 1,
+      "column_1": 274
+    },
+    "source": {
+      "file": "../../card_engine/data_corrections.py",
+      "evidence": "user stat/weather corrections and all-Bosses clarification, 2026-09-28"
+    },
+    "reason": "User: Halloween 2025 card stats x2 (IMG_0310/0325 Walking Dead 520, The Hanged Man 320)"
+  },
+  {
+    "kind": "user_authorized_stat_metadata_correction",
+    "card_id": 275,
+    "name": "Zombie Nurse",
+    "field": "card_modifier",
+    "original_value": 1,
+    "original_value_lexical": "1",
+    "clean_value": 2,
+    "superseded_source": {
+      "file": "data-9.csv",
+      "record_1": 1,
+      "column_1": 275
+    },
+    "source": {
+      "file": "../../card_engine/data_corrections.py",
+      "evidence": "user stat/weather corrections and all-Bosses clarification, 2026-09-28"
+    },
+    "reason": "User: Halloween 2025 card stats x2 (IMG_0310/0325 Walking Dead 520, The Hanged Man 320)"
+  },
+  {
+    "kind": "user_authorized_stat_metadata_correction",
+    "card_id": 276,
+    "name": "Night Witch",
+    "field": "card_modifier",
+    "original_value": 1,
+    "original_value_lexical": "1",
+    "clean_value": 2,
+    "superseded_source": {
+      "file": "data-9.csv",
+      "record_1": 1,
+      "column_1": 276
+    },
+    "source": {
+      "file": "../../card_engine/data_corrections.py",
+      "evidence": "user stat/weather corrections and all-Bosses clarification, 2026-09-28"
+    },
+    "reason": "User: Halloween 2025 card stats x2 (IMG_0310/0325 Walking Dead 520, The Hanged Man 320)"
+  },
+  {
+    "kind": "user_authorized_stat_metadata_correction",
+    "card_id": 277,
+    "name": "The Hanged Man",
+    "field": "card_modifier",
+    "original_value": 1,
+    "original_value_lexical": "1",
+    "clean_value": 2,
+    "superseded_source": {
+      "file": "data-9.csv",
+      "record_1": 1,
+      "column_1": 277
+    },
+    "source": {
+      "file": "../../card_engine/data_corrections.py",
+      "evidence": "user stat/weather corrections and all-Bosses clarification, 2026-09-28"
+    },
+    "reason": "User: Halloween 2025 card stats x2 (IMG_0310/0325 Walking Dead 520, The Hanged Man 320)"
+  },
+  {
+    "kind": "user_authorized_stat_metadata_correction",
+    "card_id": 278,
+    "name": "Walking Dead",
+    "field": "card_modifier",
+    "original_value": 1,
+    "original_value_lexical": "1",
+    "clean_value": 2,
+    "superseded_source": {
+      "file": "data-9.csv",
+      "record_1": 1,
+      "column_1": 278
+    },
+    "source": {
+      "file": "../../card_engine/data_corrections.py",
+      "evidence": "user stat/weather corrections and all-Bosses clarification, 2026-09-28"
+    },
+    "reason": "User: Halloween 2025 card stats x2 (IMG_0310/0325 Walking Dead 520, The Hanged Man 320)"
+  },
+  {
+    "kind": "user_authorized_stat_metadata_correction",
+    "card_id": 279,
+    "name": "Headless Horseman",
+    "field": "card_modifier",
+    "original_value": 1,
+    "original_value_lexical": "1",
+    "clean_value": 2,
+    "superseded_source": {
+      "file": "data-9.csv",
+      "record_1": 1,
+      "column_1": 279
+    },
+    "source": {
+      "file": "../../card_engine/data_corrections.py",
+      "evidence": "user stat/weather corrections and all-Bosses clarification, 2026-09-28"
+    },
+    "reason": "User: Halloween 2025 card stats x2 (IMG_0310/0325 Walking Dead 520, The Hanged Man 320)"
+  },
+  {
+    "kind": "user_authorized_stat_metadata_correction",
+    "card_id": 281,
+    "name": "The Composer",
+    "field": "card_modifier",
+    "original_value": 1,
+    "original_value_lexical": "1",
+    "clean_value": 2,
+    "superseded_source": {
+      "file": "data-9.csv",
+      "record_1": 1,
+      "column_1": 281
+    },
+    "source": {
+      "file": "../../card_engine/data_corrections.py",
+      "evidence": "user stat/weather corrections and all-Bosses clarification, 2026-09-28"
+    },
+    "reason": "User: Halloween 2025 card stats x2 (IMG_0310/0325 Walking Dead 520, The Hanged Man 320)"
+  },
+  {
+    "kind": "user_authorized_stat_metadata_correction",
+    "card_id": 282,
+    "name": "Dracula",
+    "field": "card_modifier",
+    "original_value": 1,
+    "original_value_lexical": "1",
+    "clean_value": 2,
+    "superseded_source": {
+      "file": "data-9.csv",
+      "record_1": 1,
+      "column_1": 282
+    },
+    "source": {
+      "file": "../../card_engine/data_corrections.py",
+      "evidence": "user stat/weather corrections and all-Bosses clarification, 2026-09-28"
+    },
+    "reason": "User: Halloween 2025 card stats x2 (IMG_0310/0325 Walking Dead 520, The Hanged Man 320)"
+  },
+  {
+    "kind": "user_authorized_stat_metadata_correction",
+    "card_id": 283,
+    "name": "Flying Dutchman",
+    "field": "card_modifier",
+    "original_value": 1,
+    "original_value_lexical": "1",
+    "clean_value": 2,
+    "superseded_source": {
+      "file": "data-9.csv",
+      "record_1": 1,
+      "column_1": 283
+    },
+    "source": {
+      "file": "../../card_engine/data_corrections.py",
+      "evidence": "user stat/weather corrections and all-Bosses clarification, 2026-09-28"
+    },
+    "reason": "User: Halloween 2025 card stats x2 (IMG_0310/0325 Walking Dead 520, The Hanged Man 320)"
+  },
+  {
+    "kind": "user_authorized_stat_metadata_correction",
+    "card_id": 284,
+    "name": "Hecate",
+    "field": "card_modifier",
+    "original_value": 1,
+    "original_value_lexical": "1",
+    "clean_value": 5,
+    "superseded_source": {
+      "file": "data-9.csv",
+      "record_1": 1,
+      "column_1": 284
+    },
+    "source": {
+      "file": "../../card_engine/data_corrections.py",
+      "evidence": "user stat/weather corrections and all-Bosses clarification, 2026-09-28"
+    },
+    "reason": "User: Halloween 2025 card stats x5 (IMG_0310/0325 Walking Dead 520, The Hanged Man 320)"
+  },
+  {
+    "kind": "user_authorized_stat_metadata_correction",
+    "card_id": 285,
+    "name": "Abomination",
+    "field": "card_modifier",
+    "original_value": 1,
+    "original_value_lexical": "1",
+    "clean_value": 2,
+    "superseded_source": {
+      "file": "data-9.csv",
+      "record_1": 1,
+      "column_1": 285
+    },
+    "source": {
+      "file": "../../card_engine/data_corrections.py",
+      "evidence": "user stat/weather corrections and all-Bosses clarification, 2026-09-28"
+    },
+    "reason": "User: Halloween 2025 card stats x2 (IMG_0310/0325 Walking Dead 520, The Hanged Man 320)"
+  },
+  {
+    "kind": "user_authorized_stat_metadata_correction",
+    "card_id": 286,
+    "name": "Sleep Paralysis",
+    "field": "card_modifier",
+    "original_value": 1,
+    "original_value_lexical": "1",
+    "clean_value": 2,
+    "superseded_source": {
+      "file": "data-9.csv",
+      "record_1": 1,
+      "column_1": 286
+    },
+    "source": {
+      "file": "../../card_engine/data_corrections.py",
+      "evidence": "user stat/weather corrections and all-Bosses clarification, 2026-09-28"
+    },
+    "reason": "User: Halloween 2025 card stats x2 (IMG_0310/0325 Walking Dead 520, The Hanged Man 320)"
+  },
+  {
+    "kind": "user_authorized_stat_metadata_correction",
+    "card_id": 287,
+    "name": "Michael M.",
+    "field": "card_modifier",
+    "original_value": 1,
+    "original_value_lexical": "1",
+    "clean_value": 2,
+    "superseded_source": {
+      "file": "data-9.csv",
+      "record_1": 1,
+      "column_1": 287
+    },
+    "source": {
+      "file": "../../card_engine/data_corrections.py",
+      "evidence": "user stat/weather corrections and all-Bosses clarification, 2026-09-28"
+    },
+    "reason": "User: Halloween 2025 card stats x2 (IMG_0310/0325 Walking Dead 520, The Hanged Man 320)"
+  },
+  {
+    "kind": "user_authorized_stat_metadata_correction",
+    "card_id": 289,
+    "name": "Glamour",
+    "field": "card_modifier",
+    "original_value": 1,
+    "original_value_lexical": "1",
+    "clean_value": 3,
+    "superseded_source": {
+      "file": "data-9.csv",
+      "record_1": 1,
+      "column_1": 289
+    },
+    "source": {
+      "file": "../../card_engine/data_corrections.py",
+      "evidence": "user stat/weather corrections and all-Bosses clarification, 2026-09-28"
+    },
+    "reason": "User: Halloween 2025 card stats x3 (IMG_0310/0325 Walking Dead 520, The Hanged Man 320)"
+  },
+  {
+    "kind": "user_authorized_stat_metadata_correction",
+    "card_id": 261,
+    "name": "Toy Bear",
+    "field": "card_modifier",
+    "original_value": 1,
+    "original_value_lexical": "1",
+    "clean_value": 0.6666666666666666,
+    "superseded_source": {
+      "file": "data-9.csv",
+      "record_1": 1,
+      "column_1": 261
+    },
+    "source": {
+      "file": "../../card_engine/data_corrections.py",
+      "evidence": "user stat/weather corrections and all-Bosses clarification, 2026-09-28"
+    },
+    "reason": "Inferred shared modifier with confirmed Snow weather (1.5x) fits user baseline 1943 ATK / 3886 HP; exact modifier not directly observed"
+  },
+  {
+    "kind": "user_authorized_stat_metadata_correction",
+    "card_id": 288,
+    "name": "Jason",
+    "field": "card_modifier",
+    "original_value": 1,
+    "original_value_lexical": "1",
+    "clean_value": 2,
+    "superseded_source": {
+      "file": "data-9.csv",
+      "record_1": 1,
+      "column_1": 288
+    },
+    "source": {
+      "file": "../../card_engine/data_corrections.py",
+      "evidence": "user stat/weather corrections and all-Bosses clarification, 2026-09-28"
+    },
+    "reason": "Fitted 2x shared modifier before rounding matches user baseline 4788 ATK / 9575 HP; cause not specified"
+  }
+]

@@ -1,0 +1,29 @@
+{
+  "sources": {
+    "IMG_0291.MOV": "115 s, [Arthur (Eclipse), True Prophet, Nao Presence, Piccolo] vs PG Seraphim, several rounds",
+    "IMG_0292.MOV": "60 s, [Arthur (Eclipse), True Prophet, Nao Presence, Malik (RuCrPl)] vs PG Seraphim",
+    "IMG_0293.MOV": "9 s, [Arthur (Eclipse), Forest Spirit, Inari, Infected Maw] vs PG Seraphim"
+  },
+  "frame_sampling": "AVFoundation, 1 fps overview plus 5-10 fps detail; HP bars measured as red runs",
+  "confirmed_displays": {
+    "pg_seraphim_attack": 41943040,
+    "arthur_eclipse_attack": 82,
+    "nao_attack": 1039,
+    "forest_spirit_attack": 19
+  },
+  "unexplained_displays": {},
+  "observations_pg_only": [
+    "Arthur dies within about 0.2 s at Seraphim's entry (no visible 1-HP survival).",
+    "Cards reduced to 0 HP while waiting die on arrival if they arrive before any normal attack (Prophet in 0291, Forest Spirit in 0293)."
+  ],
+  "user_statement": "PlCrRu Seraphim behaves normally: True Prophet enters with empty health, dodges a lethal hit and dies; Nao dodges as normal; Malik attacks normally.",
+  "interpretation": "Superseded (user's display-shift theory, confirmed across all runs): waiting cards reduced to 0 HP die in the deck, and the game's display drops one card from the front per deck death, so the shown card is usually an earlier, surviving one. No ability passing or arrival deaths occur.",
+  "confirmed_mutations": {
+    "inari": "Storm (x1.1, 352 ATK)",
+    "infected_maw": "Meteor Shower (x1.8, 510 ATK); Maw is Base weather, so this is legal"
+  },
+  "inari_reinterpretation": "Ruled out: [Inari, Forest Spirit] vs Raze shows no carried-over invincibility (Forest Spirit dies to Raze's first attack). Infected Maw surviving about 3 s in IMG_0293 remains a PG-only anomaly.",
+  "resolved_displays": {
+    "piccolo_attack": "3,072 is Piccolo's base attack (user-read out of battle; not a mutation or doubling)"
+  }
+}

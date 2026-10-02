@@ -1,0 +1,58 @@
+{
+  "schema_version": 1,
+  "dataset_sha256": "ea2064dce13c5fe856f6bff029620748e8db067a19317d9d39c39a0f683d7213",
+  "scope": "Two manually reviewed rarity discrepancies; not an exhaustive screenshot audit",
+  "raw_sources_changed": false,
+  "conflicts": [
+    {
+      "card_id": 48,
+      "name": "The Curse",
+      "field": "rarity",
+      "status": "unresolved",
+      "canonical_value": 6660000,
+      "canonical_value_lexical": "6660000",
+      "canonical_source": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[19]",
+        "snap_value_id": "34147",
+        "variable": "Card Rarities",
+        "item_1": 48
+      },
+      "screenshot_value": 6660666,
+      "screenshot_display": "6,660,666",
+      "screenshot_source": {
+        "file": "user_2026-09-27/Screenshot 2026-09-26 at 6.30.31 PM.png",
+        "image_number": 2,
+        "tile_row_1": 4,
+        "tile_column_1": 6,
+        "observation": "manual_visual_reading"
+      },
+      "resolution": "Retain canonical source value; no correction authorized"
+    },
+    {
+      "card_id": 132,
+      "name": "Xīfāng Báihü",
+      "field": "rarity",
+      "status": "unresolved",
+      "canonical_value": 400000000,
+      "canonical_value_lexical": "400000000",
+      "canonical_source": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[19]",
+        "snap_value_id": "34147",
+        "variable": "Card Rarities",
+        "item_1": 132
+      },
+      "screenshot_value": 450000000,
+      "screenshot_display": "450,000,000",
+      "screenshot_source": {
+        "file": "user_2026-09-27/Screenshot 2026-09-26 at 6.31.56 PM.png",
+        "image_number": 7,
+        "tile_row_1": 3,
+        "tile_column_1": 1,
+        "observation": "manual_visual_reading"
+      },
+      "resolution": "Retain canonical source value; no correction authorized"
+    }
+  ]
+}

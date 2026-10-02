@@ -1,0 +1,457 @@
+{
+  "schema_version": "1.0.0",
+  "status": "clean_data_validated_rules_unverified",
+  "simulation_ready": false,
+  "counts": {
+    "persistent_variables": 41,
+    "cards": 289,
+    "supports_red": 28,
+    "supports_blue": 15,
+    "borders": 16,
+    "weathers": 13,
+    "registry_handlers": 372,
+    "entry_attack_annotations": 59,
+    "lexical_tokens": 438
+  },
+  "checks": {
+    "raw_files_hashed": true,
+    "persistent_variables_archived": true,
+    "stable_1_based_snap_ids": true,
+    "entity_alignment": true,
+    "canonical_token_ranges": true,
+    "exact_refined_text_reconstruction": true,
+    "source_registry_description_alignment": true
+  },
+  "source_tokens": {
+    "status": "quarantined_invalid",
+    "source_vocabulary_size": 440,
+    "source_boundary_tokens": [
+      "𝖡𝖮𝖲",
+      "𝖢𝖠𝖱𝖣"
+    ],
+    "observed_token_min": 1,
+    "observed_token_max": 441,
+    "exact_lexical_reconstruction_count": 171,
+    "mismatched_row_count": 118,
+    "out_of_range_rows": [
+      {
+        "card_id": 52,
+        "tokens": [
+          {
+            "position_1": 11,
+            "token_id": 441
+          }
+        ]
+      }
+    ],
+    "boundary_error_rows": [],
+    "repair_policy": "Literal old XML mapping remains archived. Canonical tokens follow the new CSVs with the user's rd deletion/reindex and row119 wording edit.",
+    "new_user_files": {
+      "matrix_file": "user_2026-09-27/data-6.csv",
+      "vocabulary_file": "user_2026-09-27/data-7.csv",
+      "matrix_shape": [
+        289,
+        32
+      ],
+      "vocabulary_size": 438,
+      "max_nonpadding_id": 439,
+      "missing_used_vocabulary_ids": [
+        439
+      ],
+      "unused_id_gap": [
+        248
+      ],
+      "matches_saved_tokens_without_specials": true,
+      "matches_saved_lexical_vocabulary": true,
+      "status": "resolved_by_user_authorized_rd_reindex_and_wording_edit"
+    },
+    "resolution": {
+      "deleted_unused_lexical_id": 248,
+      "lexical_ids": [
+        1,
+        438
+      ],
+      "all_rows_validated": true,
+      "description_edit_card_id": 120
+    }
+  },
+  "unresolved": [
+    {
+      "id": "gameplay_class_membership",
+      "status": "inferred",
+      "affected_cards": 289,
+      "detail": "Packs follow supplied screenshots; visual classes are candidates and sourced positives remain version-sensitive. Never silently use inferred classes as confirmed simulator predicates."
+    },
+    {
+      "id": "registry_semantics",
+      "status": "unverified",
+      "affected_handlers": 372,
+      "detail": "All proposed handlers need true-logic verification, including source confidence HIGH. Source confidence is preserved, not trusted."
+    },
+    {
+      "id": "original_and_refined_text_divergence",
+      "status": "preserved",
+      "detail": "Original and refined descriptions retained independently; no typo or semantic rewriting applied."
+    },
+    {
+      "id": "legacy_token_matrix",
+      "status": "quarantined_invalid",
+      "detail": "Old mapping is archived. Current input follows the user's supplied CSVs and authorized rd reindex/after 2 turns edit; all 289 rows validate."
+    },
+    {
+      "id": "rarity_tokens",
+      "status": "archive_only",
+      "dimensions": [
+        32768,
+        2
+      ],
+      "detail": "Learned table preserved losslessly. It is not a runtime rarity-to-stat rule."
+    }
+  ],
+  "correction_count": 118,
+  "source_files": [
+    {
+      "file": "Cards-2.xml",
+      "bytes": 3190795,
+      "sha256": "0bfc42b8aeff53df9249076556bc84bc1abeeb076b2ddc0d7c68308957502505"
+    },
+    {
+      "file": "IMG_0290.MOV",
+      "bytes": 186871964,
+      "sha256": "75986ec7ff57f03d14b39dacccc8fc9a7cf207b3183bf756355ea684ebd6d575"
+    },
+    {
+      "file": "IMG_0291.MOV",
+      "bytes": 125539362,
+      "sha256": "072e650e8f817ba3c625ab00dc34499fcb50815a077b4d2ee8f59b8132050938"
+    },
+    {
+      "file": "IMG_0292.MOV",
+      "bytes": 65594423,
+      "sha256": "fa93b3e61c427c52d767f5f26c7313e29b01201bab1f530b911ed380b04fb40c"
+    },
+    {
+      "file": "IMG_0293.MOV",
+      "bytes": 9899472,
+      "sha256": "3d52a3fa336a3be8dcc1976a3148797224caac1a9a6c96f595db44a585d9b7d2"
+    },
+    {
+      "file": "IMG_0295.MOV",
+      "bytes": 8721538,
+      "sha256": "b2e49ada3aac18ac78f7865f5fe8d9c5016972fb7dfe30a95457adb464b557ae"
+    },
+    {
+      "file": "IMG_0296.MOV",
+      "bytes": 7282692,
+      "sha256": "769b45ffca9bb3d239588dd2640e2dcafa96316022366ea73795d871ac432d52"
+    },
+    {
+      "file": "IMG_0297.MOV",
+      "bytes": 6035433,
+      "sha256": "94337db56149420bca8e8ceb8f8d2dc4226efd65381c5404db4aa9897aa5a9a2"
+    },
+    {
+      "file": "IMG_0299.MOV",
+      "bytes": 60597394,
+      "sha256": "64d1d6206f71348504463fd212593762b83fb60472d1d15be8c6d3a2e33ac3ec"
+    },
+    {
+      "file": "IMG_0300.MOV",
+      "bytes": 5684447,
+      "sha256": "f30250c160692e5e7f811256194ad3c83a4fe4e7a1661000aa1dfe6794bb64b0"
+    },
+    {
+      "file": "IMG_0303.MOV",
+      "bytes": 30969772,
+      "sha256": "092f0dc69455b5c29d427704d4aa6f3f91f3fad9ad670fe8108b97893a80e41a"
+    },
+    {
+      "file": "IMG_0304.MOV",
+      "bytes": 156215481,
+      "sha256": "f15fb8b2f65b00971967e6504b26de2aab7d28ccf6c0b35029a4eae9dd1d4369"
+    },
+    {
+      "file": "IMG_0305.MOV",
+      "bytes": 18048632,
+      "sha256": "0bfd21f0ff56b30f87dbb419941b79f073d2de04e65ed53aa765d5592d29faa5"
+    },
+    {
+      "file": "IMG_0306.MOV",
+      "bytes": 34147051,
+      "sha256": "02d41650337c804c9b0a0560e5c5760da2c2dedb7eb01cdfef101afabb7b2e3c"
+    },
+    {
+      "file": "IMG_0310.MOV",
+      "bytes": 52677395,
+      "sha256": "3399ab9d960d33e45154655886ecc188b237297b19be76c93fa8f2e50f2db630"
+    },
+    {
+      "file": "IMG_0311.MOV",
+      "bytes": 16450822,
+      "sha256": "26f364b7dbcde24160e3c3f49d7a927529ebedd74f83bf519c417d58a78cf91c"
+    },
+    {
+      "file": "IMG_0314.MOV",
+      "bytes": 7384254,
+      "sha256": "61df6157479e3993060c5bfd4fcbb2ce5ee21faac88fd7cfdb48641c46432c03"
+    },
+    {
+      "file": "IMG_0315.MOV",
+      "bytes": 11674349,
+      "sha256": "02c1cd0ac5ab17857473fd32a365dd442f1d85c4d4ef961080ed73fe21b30d0e"
+    },
+    {
+      "file": "IMG_0316.MOV",
+      "bytes": 12493786,
+      "sha256": "35df0258d5d5405eb6147a8c5b5a195a86c701ca5cc3fd08b0831e584ac3aa1c"
+    },
+    {
+      "file": "IMG_0317.MOV",
+      "bytes": 18352851,
+      "sha256": "2e7403095781a8422cd9a479973a70483166d189889d933f88aa1fe557b06196"
+    },
+    {
+      "file": "IMG_0319.MOV",
+      "bytes": 64807162,
+      "sha256": "b0699c19e41d752b6509c798709357aace162470a2926abc8f965553e828ddd1"
+    },
+    {
+      "file": "IMG_0324.MOV",
+      "bytes": 11403734,
+      "sha256": "7041dbe9b814714d3666c7eb98d7fec16fe7a556ee31079691edaf565b14f061"
+    },
+    {
+      "file": "IMG_0325.MOV",
+      "bytes": 10777016,
+      "sha256": "6454430f9ca48704c91108d300e3b79a53846b8c31e921590149355d3fa1204e"
+    },
+    {
+      "file": "IMG_0326.MOV",
+      "bytes": 21029037,
+      "sha256": "be1e6127234a86adead555f87a749531667942951db3698cee9cf5501b492f0a"
+    },
+    {
+      "file": "IMG_0327.MOV",
+      "bytes": 30378254,
+      "sha256": "c4b7ff5861713a510c858819e7445ca42cd208b72b292da3ee1e762db95f646c"
+    },
+    {
+      "file": "IMG_0328.HEIC",
+      "bytes": 2913133,
+      "sha256": "1179605d8e009cfac8f9f3cabb3f5e13874a80390a3c0e071eefb02afa0e2afb"
+    },
+    {
+      "file": "IMG_0329.MOV",
+      "bytes": 42051501,
+      "sha256": "d4a8a24a10cbd9d2ec9b256aca69b723d7e577cf3640a6a9d9d6a3426d9ebe46"
+    },
+    {
+      "file": "IMG_0330.MOV",
+      "bytes": 151677489,
+      "sha256": "688fd15253781b47e3af65aa0f7bb9ca49171a26f7a33ba9f89f42b05caa5089"
+    },
+    {
+      "file": "IMG_0333.MOV",
+      "bytes": 9817339,
+      "sha256": "a1c4116ecc41e71fa8fe35d1e6cb82271b911359e1814c18f21cc278b7b88aa9"
+    },
+    {
+      "file": "IMG_0334.MOV",
+      "bytes": 7723299,
+      "sha256": "b8af82ebefc17df47f7f89053fcfa018cfd20dd4b17ba0dc61767008739e36de"
+    },
+    {
+      "file": "IMG_0336.MOV",
+      "bytes": 527865436,
+      "sha256": "790755e5d16e29e41b3f69839199c5d3ee4d9a9856734a9befa855937de471f9"
+    },
+    {
+      "file": "IMG_0337.MOV",
+      "bytes": 16431579,
+      "sha256": "e6247c279daee786e9984cc521a98a70554ed83c3ba70f81fce7055972813ae8"
+    },
+    {
+      "file": "IMG_0338.MOV",
+      "bytes": 6591139,
+      "sha256": "dfff4374f1477cf6aea3583453501d1b06c2324c7c66eb34ccb6b1d1524b6e75"
+    },
+    {
+      "file": "IMG_0341.MOV",
+      "bytes": 97696723,
+      "sha256": "aa53e1634bc332245ed70db8339afe44d5844d5e57db02f8ebf9d978587055ad"
+    },
+    {
+      "file": "IMG_0342.MOV",
+      "bytes": 46325887,
+      "sha256": "50fceb5ac6e875003dee15c6088c6ce8340402a4bc348017eee3b12d819a0a52"
+    },
+    {
+      "file": "IMG_0345.MOV",
+      "bytes": 21563498,
+      "sha256": "f91f32494a1570c374dd74fea7e76e4021a3280d10938c9800c1b5946218f355"
+    },
+    {
+      "file": "IMG_0350.MOV",
+      "bytes": 66974749,
+      "sha256": "171aac64c663979d8d97e7f00c853ab4d2d400cbb58769eb090cc1a4065c4e62"
+    },
+    {
+      "file": "IMG_0351.MOV",
+      "bytes": 27883504,
+      "sha256": "c5eb391b62e88b1b428c876dbb70447630298c31b137df97f4cd98e474d9a7b1"
+    },
+    {
+      "file": "IMG_0352.MOV",
+      "bytes": 26213313,
+      "sha256": "7b1d2d1aa0ff8a08a0a42dcafd5c236220c349d0581157b8676b575882c2adb4"
+    },
+    {
+      "file": "IMG_0353.MOV",
+      "bytes": 34563698,
+      "sha256": "0f069c26ed1f7469c1731a6f0357a9562a5271dcb5364606a5017ddf3ee3935e"
+    },
+    {
+      "file": "IMG_0354.MOV",
+      "bytes": 26782641,
+      "sha256": "7f06f7b398bee4cb157404e462f48f56f6dafe9a146514add6d777b30addff45"
+    },
+    {
+      "file": "IMG_0355.MOV",
+      "bytes": 12311130,
+      "sha256": "9855cfef0896ac9b466c528549ecad402c3ead08862745c0c3f571db39485708"
+    },
+    {
+      "file": "data-10.csv",
+      "bytes": 608,
+      "sha256": "a5ebeffa9cb5167b7c2aaf5ccf5cb528e2a7d73873b83b98b219eaf29119670b"
+    },
+    {
+      "file": "data-4.csv",
+      "bytes": 3090,
+      "sha256": "31eb7f16cb87f24e58a3bffc614e8ccf5420d52215676ee84a6cbd5bd0e8bfb0"
+    },
+    {
+      "file": "data-5.csv",
+      "bytes": 16246,
+      "sha256": "289f8ef6df82c5899ddf781a4e18007132aa8b78672a170df989513d84505b1e"
+    },
+    {
+      "file": "data-6.csv",
+      "bytes": 29,
+      "sha256": "b3f68e0ddb3744fdefc45d31b48f23a1486c316cd08b33d5c1bfd4eb3f3b7c52"
+    },
+    {
+      "file": "data-8.csv",
+      "bytes": 672,
+      "sha256": "b343467c336eb8dc04260b2d42db60ce4ea8048431632573990fb4c483f59bc8"
+    },
+    {
+      "file": "data-9.csv",
+      "bytes": 594,
+      "sha256": "68bc5f566989aa896d9ed5830676d77d83a99e4e875dee20ae49f6b580ddcfbf"
+    },
+    {
+      "file": "user_2026-09-27/Screenshot 2026-09-26 at 6.30.20 PM.png",
+      "bytes": 491203,
+      "sha256": "84cf13259883519c4cc5174bf31ea536bf1bfc13ff78e8c7145681839c64ebf4"
+    },
+    {
+      "file": "user_2026-09-27/Screenshot 2026-09-26 at 6.30.31 PM.png",
+      "bytes": 466782,
+      "sha256": "b38903443e207c8245bbf38f78eabc266ec2d8981405c1894250e03b21bad673"
+    },
+    {
+      "file": "user_2026-09-27/Screenshot 2026-09-26 at 6.30.52 PM.png",
+      "bytes": 331142,
+      "sha256": "df6f93b74a551f10a0ba7450562725d829d1827cb5858e1202dbf951a62e50db"
+    },
+    {
+      "file": "user_2026-09-27/Screenshot 2026-09-26 at 6.31.00 PM.png",
+      "bytes": 253116,
+      "sha256": "1d24a68eed6bfa5114a8b1f52d59f5856fede2b6370185652d7bac2ace2ab6a3"
+    },
+    {
+      "file": "user_2026-09-27/Screenshot 2026-09-26 at 6.31.07 PM.png",
+      "bytes": 454998,
+      "sha256": "282c27d6a2a0fee872b93669493cacfbfee760677dab66d46bcff239f1f1f992"
+    },
+    {
+      "file": "user_2026-09-27/Screenshot 2026-09-26 at 6.31.22 PM.png",
+      "bytes": 312694,
+      "sha256": "13ff133d44a530b607729dc2b38b3fbb5646f541003f9ac236e83d19f79dc5e7"
+    },
+    {
+      "file": "user_2026-09-27/Screenshot 2026-09-26 at 6.31.56 PM.png",
+      "bytes": 423558,
+      "sha256": "32b58c69ce69efe6121e72d2b9cadf36acb5dfc27a1d9f8237d8f19650e2c3b3"
+    },
+    {
+      "file": "user_2026-09-27/Screenshot 2026-09-26 at 6.32.18 PM.png",
+      "bytes": 387245,
+      "sha256": "68cffe6a985038e2ff593dd451a893ac43c1c7a6cdaee0173b56558344208c64"
+    },
+    {
+      "file": "user_2026-09-27/Screenshot 2026-09-26 at 6.32.23 PM.png",
+      "bytes": 458856,
+      "sha256": "7df097f2c46226c2c9e254c29b87d4b8dcfd9f868e23373171f804efd9b6fc61"
+    },
+    {
+      "file": "user_2026-09-27/Screenshot 2026-09-26 at 6.32.30 PM.png",
+      "bytes": 326711,
+      "sha256": "0448d4138bb476e94e0bdf5d7cfc2569fd6de5a7847e6908de916eebf6af4774"
+    },
+    {
+      "file": "user_2026-09-27/Screenshot 2026-09-26 at 6.32.40 PM.png",
+      "bytes": 253002,
+      "sha256": "95f7b120d3c339b87ae5af3a243efdb647d4475dde3a3d930b4bdaf55b1a1a0e"
+    },
+    {
+      "file": "user_2026-09-27/Screenshot 2026-09-26 at 6.33.01 PM.png",
+      "bytes": 413075,
+      "sha256": "fdca717124ab7a71846dee05e8fec85bd266e20d1e1e54ff1243aa7c33df53be"
+    },
+    {
+      "file": "user_2026-09-27/Screenshot 2026-09-26 at 6.33.14 PM.png",
+      "bytes": 339641,
+      "sha256": "dcf5730f411d0f314c94bc152be2fa8e6db5e14a37cac5fcb7c6fb7fb39ecfd8"
+    },
+    {
+      "file": "user_2026-09-27/Screenshot 2026-09-26 at 6.33.22 PM.png",
+      "bytes": 306252,
+      "sha256": "71aae4a5066e2361bc3b75e64b4ad4056de92190762361ff5ec7e10bbea58625"
+    },
+    {
+      "file": "user_2026-09-27/Screenshot 2026-09-26 at 6.33.32 PM.png",
+      "bytes": 271934,
+      "sha256": "78147f5fc8273461933b7339acdd4ce8140469ed9143852d75f8678c53bf762b"
+    },
+    {
+      "file": "user_2026-09-27/data-6.csv",
+      "bytes": 21588,
+      "sha256": "1df3064bbad8c8579171ba2877e7b38465ec4ffaff32e6532413eb33c11262b8"
+    },
+    {
+      "file": "user_2026-09-27/data-7.csv",
+      "bytes": 2793,
+      "sha256": "7bb9074be42d2b26caa2058a54bd515b286a35b144befd6d9ad23fa3f8669a9d"
+    },
+    {
+      "file": "../../card_engine/data_corrections.py",
+      "bytes": 10995,
+      "sha256": "c8eb039099832e9bc4c423789ce8f3fb7977f144275d58e44dff9e328d3d7b2d",
+      "role": "user_authorized_stat_metadata_corrections"
+    },
+    {
+      "file": "../annotations/sourced_classes.json",
+      "bytes": 6330,
+      "sha256": "611d2dd6a5d534a27b1ecab2556bca2fa8c31935179cb5f2c213c2334a64ebe7",
+      "role": "curated_web_class_evidence"
+    },
+    {
+      "file": "../../card_engine/metadata.py",
+      "bytes": 9270,
+      "sha256": "38d3615ec7f3d0a7732ee6029d27664c63627081d600d671afff3b64b33769a0",
+      "role": "curated_screenshot_annotations"
+    }
+  ]
+}

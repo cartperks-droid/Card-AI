@@ -1,0 +1,354 @@
+[
+  {
+    "border_id": 1,
+    "name": "",
+    "rarity": 1,
+    "rarity_lexical": "1",
+    "source": {
+      "name": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[16]",
+        "snap_value_id": "34140",
+        "variable": "Borders",
+        "item_1": 1
+      },
+      "rarity": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[28]",
+        "snap_value_id": "34817",
+        "variable": "Border Rarities",
+        "item_1": 1
+      }
+    }
+  },
+  {
+    "border_id": 2,
+    "name": "Pl",
+    "rarity": 100,
+    "rarity_lexical": "100",
+    "source": {
+      "name": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[16]",
+        "snap_value_id": "34140",
+        "variable": "Borders",
+        "item_1": 2
+      },
+      "rarity": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[28]",
+        "snap_value_id": "34817",
+        "variable": "Border Rarities",
+        "item_1": 2
+      }
+    }
+  },
+  {
+    "border_id": 3,
+    "name": "Cr",
+    "rarity": 10000,
+    "rarity_lexical": "10000",
+    "source": {
+      "name": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[16]",
+        "snap_value_id": "34140",
+        "variable": "Borders",
+        "item_1": 3
+      },
+      "rarity": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[28]",
+        "snap_value_id": "34817",
+        "variable": "Border Rarities",
+        "item_1": 3
+      }
+    }
+  },
+  {
+    "border_id": 4,
+    "name": "CrPl",
+    "rarity": 1000000,
+    "rarity_lexical": "1000000",
+    "source": {
+      "name": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[16]",
+        "snap_value_id": "34140",
+        "variable": "Borders",
+        "item_1": 4
+      },
+      "rarity": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[28]",
+        "snap_value_id": "34817",
+        "variable": "Border Rarities",
+        "item_1": 4
+      }
+    }
+  },
+  {
+    "border_id": 5,
+    "name": "Ru",
+    "rarity": 100000,
+    "rarity_lexical": "100000",
+    "source": {
+      "name": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[16]",
+        "snap_value_id": "34140",
+        "variable": "Borders",
+        "item_1": 5
+      },
+      "rarity": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[28]",
+        "snap_value_id": "34817",
+        "variable": "Border Rarities",
+        "item_1": 5
+      }
+    }
+  },
+  {
+    "border_id": 6,
+    "name": "RuPl",
+    "rarity": 10000000,
+    "rarity_lexical": "10000000",
+    "source": {
+      "name": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[16]",
+        "snap_value_id": "34140",
+        "variable": "Borders",
+        "item_1": 6
+      },
+      "rarity": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[28]",
+        "snap_value_id": "34817",
+        "variable": "Border Rarities",
+        "item_1": 6
+      }
+    }
+  },
+  {
+    "border_id": 7,
+    "name": "RuCr",
+    "rarity": 1000000000,
+    "rarity_lexical": "1000000000",
+    "source": {
+      "name": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[16]",
+        "snap_value_id": "34140",
+        "variable": "Borders",
+        "item_1": 7
+      },
+      "rarity": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[28]",
+        "snap_value_id": "34817",
+        "variable": "Border Rarities",
+        "item_1": 7
+      }
+    }
+  },
+  {
+    "border_id": 8,
+    "name": "RuCrPl",
+    "rarity": 100000000000,
+    "rarity_lexical": "100000000000",
+    "source": {
+      "name": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[16]",
+        "snap_value_id": "34140",
+        "variable": "Borders",
+        "item_1": 8
+      },
+      "rarity": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[28]",
+        "snap_value_id": "34817",
+        "variable": "Border Rarities",
+        "item_1": 8
+      }
+    }
+  },
+  {
+    "border_id": 9,
+    "name": "Ga",
+    "rarity": 1000000,
+    "rarity_lexical": "1000000",
+    "source": {
+      "name": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[16]",
+        "snap_value_id": "34140",
+        "variable": "Borders",
+        "item_1": 9
+      },
+      "rarity": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[28]",
+        "snap_value_id": "34817",
+        "variable": "Border Rarities",
+        "item_1": 9
+      }
+    }
+  },
+  {
+    "border_id": 10,
+    "name": "GaPl",
+    "rarity": 100000000,
+    "rarity_lexical": "100000000",
+    "source": {
+      "name": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[16]",
+        "snap_value_id": "34140",
+        "variable": "Borders",
+        "item_1": 10
+      },
+      "rarity": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[28]",
+        "snap_value_id": "34817",
+        "variable": "Border Rarities",
+        "item_1": 10
+      }
+    }
+  },
+  {
+    "border_id": 11,
+    "name": "GaCr",
+    "rarity": 10000000000,
+    "rarity_lexical": "10000000000",
+    "source": {
+      "name": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[16]",
+        "snap_value_id": "34140",
+        "variable": "Borders",
+        "item_1": 11
+      },
+      "rarity": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[28]",
+        "snap_value_id": "34817",
+        "variable": "Border Rarities",
+        "item_1": 11
+      }
+    }
+  },
+  {
+    "border_id": 12,
+    "name": "GaCrPl",
+    "rarity": 1000000000000,
+    "rarity_lexical": "1000000000000",
+    "source": {
+      "name": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[16]",
+        "snap_value_id": "34140",
+        "variable": "Borders",
+        "item_1": 12
+      },
+      "rarity": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[28]",
+        "snap_value_id": "34817",
+        "variable": "Border Rarities",
+        "item_1": 12
+      }
+    }
+  },
+  {
+    "border_id": 13,
+    "name": "GaRu",
+    "rarity": 100000000000,
+    "rarity_lexical": "100000000000",
+    "source": {
+      "name": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[16]",
+        "snap_value_id": "34140",
+        "variable": "Borders",
+        "item_1": 13
+      },
+      "rarity": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[28]",
+        "snap_value_id": "34817",
+        "variable": "Border Rarities",
+        "item_1": 13
+      }
+    }
+  },
+  {
+    "border_id": 14,
+    "name": "GaRuPl",
+    "rarity": 10000000000000,
+    "rarity_lexical": "10000000000000",
+    "source": {
+      "name": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[16]",
+        "snap_value_id": "34140",
+        "variable": "Borders",
+        "item_1": 14
+      },
+      "rarity": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[28]",
+        "snap_value_id": "34817",
+        "variable": "Border Rarities",
+        "item_1": 14
+      }
+    }
+  },
+  {
+    "border_id": 15,
+    "name": "GaRuCr",
+    "rarity": 1000000000000000,
+    "rarity_lexical": "1000000000000000",
+    "source": {
+      "name": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[16]",
+        "snap_value_id": "34140",
+        "variable": "Borders",
+        "item_1": 15
+      },
+      "rarity": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[28]",
+        "snap_value_id": "34817",
+        "variable": "Border Rarities",
+        "item_1": 15
+      }
+    }
+  },
+  {
+    "border_id": 16,
+    "name": "GaRuCrPl",
+    "rarity": 100000000000000000,
+    "rarity_lexical": "100000000000000000",
+    "source": {
+      "name": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[16]",
+        "snap_value_id": "34140",
+        "variable": "Borders",
+        "item_1": 16
+      },
+      "rarity": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[28]",
+        "snap_value_id": "34817",
+        "variable": "Border Rarities",
+        "item_1": 16
+      }
+    }
+  }
+]

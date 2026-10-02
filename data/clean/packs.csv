@@ -1,0 +1,15 @@
+pack_id,name,first_card_id,last_card_id,basis,status
+1,Era 1,1,65,User-specified pack order and screenshot section boundaries,user_screenshot_supported
+2,Egypt,66,79,User-specified pack order and screenshot section boundaries,user_screenshot_supported
+3,Anime,80,104,User-specified pack order and screenshot section boundaries,user_screenshot_supported
+4,Rising Sun,105,119,User-specified pack order and screenshot section boundaries,user_screenshot_supported
+5,Immortal,120,140,User-specified pack order and screenshot section boundaries,user_screenshot_supported
+6,Prehistoric,141,159,User-specified pack order and screenshot section boundaries,user_screenshot_supported
+7,Era 2,160,182,User-specified pack order and screenshot section boundaries,user_screenshot_supported
+8,Video Game,183,194,User-specified pack order and screenshot section boundaries,user_screenshot_supported
+9,Cryptid,195,204,User-specified pack order and screenshot section boundaries,user_screenshot_supported
+10,Bosses,205,212,User-specified pack order and screenshot section boundaries,user_screenshot_supported
+11,Limited,213,250,User-specified pack order and screenshot section boundaries,user_screenshot_supported
+12,Christmas,251,265,User-specified pack order and screenshot section boundaries,user_screenshot_supported
+13,Halloween,266,273,User-specified pack order and screenshot section boundaries,user_screenshot_supported
+14,Halloween 2025,274,289,User-specified pack order and screenshot section boundaries,user_screenshot_supported

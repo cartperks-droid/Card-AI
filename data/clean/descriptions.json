@@ -1,0 +1,6071 @@
+[
+  {
+    "card_id": 1,
+    "original": "10% chance to dodge attacks.",
+    "refined": "10 % chance to dodge attacks",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 1
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 1
+      }
+    }
+  },
+  {
+    "card_id": 2,
+    "original": "Deduct 10% Max Hp from damage.",
+    "refined": "deduct 10 % max hp from damage",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 2
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 2
+      }
+    }
+  },
+  {
+    "card_id": 3,
+    "original": "Reduce opponent's damage by 15% on entering.",
+    "refined": "reduce enemy's damage by 15 % on entry",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 3
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 3
+      }
+    }
+  },
+  {
+    "card_id": 4,
+    "original": "Reveal enemy's hand on entry.",
+    "refined": "reveal enemy's hand on entry",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 4
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 4
+      }
+    }
+  },
+  {
+    "card_id": 5,
+    "original": "Damage taken is doubled.",
+    "refined": "damage taken is 2 x",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 5
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 5
+      }
+    }
+  },
+  {
+    "card_id": 6,
+    "original": "Block first non-lethal hit.",
+    "refined": "block first nonlethal hit",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 6
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 6
+      }
+    }
+  },
+  {
+    "card_id": 7,
+    "original": "Heal 20% HP after attacking.",
+    "refined": "heal 20 % hp after attack",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 7
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 7
+      }
+    }
+  },
+  {
+    "card_id": 8,
+    "original": "Field Effect: Boost all cards' damage by 10%.",
+    "refined": "field: boost all cards' damage by 10 %",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 8
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 8
+      }
+    }
+  },
+  {
+    "card_id": 9,
+    "original": "Evade attacks under 30% of Max HP.",
+    "refined": "dodge attacks under 30 % of max hp",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 9
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 9
+      }
+    }
+  },
+  {
+    "card_id": 10,
+    "original": "Survives lethal attack with 1 HP.",
+    "refined": "survives lethal attack with 1 hp",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 10
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 10
+      }
+    }
+  },
+  {
+    "card_id": 11,
+    "original": "Increase damage by 25% each time attacked.",
+    "refined": "increase damage by 25 % each time attacked",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 11
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 11
+      }
+    }
+  },
+  {
+    "card_id": 12,
+    "original": "2x damage to undead.",
+    "refined": "2 x damage to undead",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 12
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 12
+      }
+    }
+  },
+  {
+    "card_id": 13,
+    "original": "Attacker loses HP equal to damage dealt.",
+    "refined": "attacker loses hp equal to damage dealt",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 13
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 13
+      }
+    }
+  },
+  {
+    "card_id": 14,
+    "original": "Half-Damage attack on entry.",
+    "refined": "half-damage attack on entry",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 14
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 14
+      }
+    }
+  },
+  {
+    "card_id": 15,
+    "original": "30% chance toskip opponent's turn.",
+    "refined": "30 % chance to skip enemy's turn",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 15
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 15
+      }
+    }
+  },
+  {
+    "card_id": 16,
+    "original": "Gain 2 turns if HP drops below 50%.",
+    "refined": "gain 2 turns if hp drops below 50 %",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 16
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 16
+      }
+    }
+  },
+  {
+    "card_id": 17,
+    "original": "Steal 30% HP and ATK when killing an enemy.",
+    "refined": "steal 30 % hp and atk on kill",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 17
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 17
+      }
+    }
+  },
+  {
+    "card_id": 18,
+    "original": "50% chance to deal double dmg.",
+    "refined": "50 % chance to deal double damage",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 18
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 18
+      }
+    }
+  },
+  {
+    "card_id": 19,
+    "original": "Gain an extra turn.",
+    "refined": "gain an extra turn",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 19
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 19
+      }
+    }
+  },
+  {
+    "card_id": 20,
+    "original": "Deal 2x damage, take half if border is rarer.",
+    "refined": "deal 2 x damage, take half if border is rarer",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 20
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 20
+      }
+    }
+  },
+  {
+    "card_id": 21,
+    "original": "50% chance to freeze target for 1 turn.",
+    "refined": "50 % chance to freeze target for 1 turn",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 21
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 21
+      }
+    }
+  },
+  {
+    "card_id": 22,
+    "original": "50% chance to revive with half HP.",
+    "refined": "50 % chance to revive with 1 / 2 hp",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 22
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 22
+      }
+    }
+  },
+  {
+    "card_id": 23,
+    "original": "Deal 50% more damage and bypass defensses.",
+    "refined": "deal 50 % more damage and bypass defenses",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 23
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 23
+      }
+    }
+  },
+  {
+    "card_id": 24,
+    "original": "Deal 2x damage, 1 turn to recharge.",
+    "refined": "deal 2 x damage, 1 turn to recharge",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 24
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 24
+      }
+    }
+  },
+  {
+    "card_id": 25,
+    "original": "Deal extra damage equal to 70% of lost HP.",
+    "refined": "deal extra damage equal to 70 % of lost hp",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 25
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 25
+      }
+    }
+  },
+  {
+    "card_id": 26,
+    "original": "Inflict Max HP as damage on death and boost allies' stats by 20%.",
+    "refined": "inflict max hp as damage on death and boost allies' stats by 20 %",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 26
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 26
+      }
+    }
+  },
+  {
+    "card_id": 27,
+    "original": "50% chance to deal Max HP damage on death.",
+    "refined": "50 % chance to deal max hp damage on death",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 27
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 27
+      }
+    }
+  },
+  {
+    "card_id": 28,
+    "original": "Boosts damage and HP by 25%.",
+    "refined": "boosts damage and hp by 25 %",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 28
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 28
+      }
+    }
+  },
+  {
+    "card_id": 29,
+    "original": "Enemy's hit chance is squared ratio of damage to your Max HP.",
+    "refined": "enemy's hit chance is squared ratio of damage to self max hp",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 29
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 29
+      }
+    }
+  },
+  {
+    "card_id": 30,
+    "original": "Enemies with status conditions cannot hit this card. Max of 5 dodges.",
+    "refined": "enemies with status effects cannot hit self; max of 5 dodges",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 30
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 30
+      }
+    }
+  },
+  {
+    "card_id": 31,
+    "original": "50% chance ot revive with full HP.",
+    "refined": "50 % chance to revive with full hp",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 31
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 31
+      }
+    }
+  },
+  {
+    "card_id": 32,
+    "original": "50% chance to revive with ful HP and freeze enemy.",
+    "refined": "50 % chance to revive with full hp and freeze enemy",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 32
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 32
+      }
+    }
+  },
+  {
+    "card_id": 33,
+    "original": "Cut target's HP in half and remove their ability on entry.",
+    "refined": "cut target's hp in half and remove their ability on entry",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 33
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 33
+      }
+    }
+  },
+  {
+    "card_id": 34,
+    "original": "Attacker takes damage equal to 75% of your ATK.",
+    "refined": "attacker takes damage equal to 75 % of self atk",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 34
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 34
+      }
+    }
+  },
+  {
+    "card_id": 35,
+    "original": "Attack for 2.5x damage on entry.",
+    "refined": "attack for 2.5 x damage on entry",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 35
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 35
+      }
+    }
+  },
+  {
+    "card_id": 36,
+    "original": "Lower enemy's damage by 30% on entry.",
+    "refined": "reduce enemy's damage by 30 % on entry",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 36
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 36
+      }
+    }
+  },
+  {
+    "card_id": 37,
+    "original": "On entry, gain 2 random abilities.",
+    "refined": "on entry, gain 2 random abilities",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 37
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 37
+      }
+    }
+  },
+  {
+    "card_id": 38,
+    "original": "Reduce damage taken by 75%.",
+    "refined": "reduce damage taken by 75 %",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 38
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 38
+      }
+    }
+  },
+  {
+    "card_id": 39,
+    "original": "Steal 10% of enemy's HP and ATK after damaging.",
+    "refined": "steal 10 % of enemy's hp and atk after damaging",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 39
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 39
+      }
+    }
+  },
+  {
+    "card_id": 40,
+    "original": "50% chance to transfer half stats to next card on death.",
+    "refined": "50 % chance to transfer 1 / 2 stats to next card on death",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 40
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 40
+      }
+    }
+  },
+  {
+    "card_id": 41,
+    "original": "Attack and steal 25% of enemy's damage on entry.",
+    "refined": "attack and steal 25 % of enemy's damage on entry",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 41
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 41
+      }
+    }
+  },
+  {
+    "card_id": 42,
+    "original": "Deal 2.5x damage, 1 turn to recharge. Bypasses defensive abilities.",
+    "refined": "deal 2.5 x damage, 1 turn to recharge; bypasses defense abilities",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 42
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 42
+      }
+    }
+  },
+  {
+    "card_id": 43,
+    "original": "Steal and randomize enemy's ability on entry.",
+    "refined": "steal and randomize enemy's ability on entry",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 43
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 43
+      }
+    }
+  },
+  {
+    "card_id": 44,
+    "original": "Boost damage and HP by 40% on entry.",
+    "refined": "boost damage and hp by 40 % on entry",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 44
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 44
+      }
+    }
+  },
+  {
+    "card_id": 45,
+    "original": "On entry attack with 3x damage. +10% stats and damage reduction each turn.",
+    "refined": "on entry attack with 3 x damage; + 10 % stats and damage reduction each turn",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 45
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 45
+      }
+    }
+  },
+  {
+    "card_id": 46,
+    "original": "Half opponent's stats on entry.",
+    "refined": "half enemy's stats on entry",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 46
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 46
+      }
+    }
+  },
+  {
+    "card_id": 47,
+    "original": "Boost HP by 200% on entry.",
+    "refined": "boost hp by 200 % on entry",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 47
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 47
+      }
+    }
+  },
+  {
+    "card_id": 48,
+    "original": "On entry open a Domain and disable all enemy defense abilities. Slashes opponent 2-5 times dealing 35% damage each.",
+    "refined": "on entry open a domain and disable all enemy defense abilities; slashes enemy 2 - 5 times dealing 35 % damage each",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 48
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 48
+      }
+    }
+  },
+  {
+    "card_id": 49,
+    "original": "Copy fallen ally's ability.",
+    "refined": "copy fallen ally's ability",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 49
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 49
+      }
+    }
+  },
+  {
+    "card_id": 50,
+    "original": "50% chance to deal infinite damage. Can't dodge or gain shields.",
+    "refined": "50 % chance to deal infinite damage; cannot dodge or gain shields",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 50
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 50
+      }
+    }
+  },
+  {
+    "card_id": 51,
+    "original": "Boost allies' stats by 25% when killing an enemy. Dodge normal attacks at the cost of 20% HP.",
+    "refined": "boost allies' stats by 25 % on kill; dodge normal attacks at the cost of 20 % hp",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 51
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 51
+      }
+    }
+  },
+  {
+    "card_id": 52,
+    "original": "On entry Poisons the entire enemy team at 50% effectiveness for 2 turns.",
+    "refined": "on entry, poison all enemies at 50 % effectiveness for 2 turns",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 52
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 52
+      }
+    }
+  },
+  {
+    "card_id": 53,
+    "original": "Randomly attacks 4 enemies dealing 50% damage to each.",
+    "refined": "randomly attacks 4 enemies dealing 50 % damage to each",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 53
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 53
+      }
+    }
+  },
+  {
+    "card_id": 54,
+    "original": "Dodge every other attack, starting with first.",
+    "refined": "dodge every other attack, starting first",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 54
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 54
+      }
+    }
+  },
+  {
+    "card_id": 55,
+    "original": "Gain 75% ATK on entry. When fighting a Dragon: 2x damage, 0.5x enemy damage.",
+    "refined": "gain 75 % atk on entry; when fighting a dragon: 2 x damage, 0.5 x enemy damage",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 55
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 55
+      }
+    }
+  },
+  {
+    "card_id": 56,
+    "original": "Gain an ability based on the card's art.",
+    "refined": "gain an ability based on the card's art",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 56
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 56
+      }
+    }
+  },
+  {
+    "card_id": 57,
+    "original": "Deal 4x damage, 1 turn to recharge. On entry burn all enemies for 3 turns.",
+    "refined": "deal 4 x damage, 1 turn to recharge; on entry burn all enemies for 3 turns",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 57
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 57
+      }
+    }
+  },
+  {
+    "card_id": 58,
+    "original": "Opponent loses 25% of their damage at turn start.",
+    "refined": "enemy loses 25 % of their damage turn start",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 58
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 58
+      }
+    }
+  },
+  {
+    "card_id": 59,
+    "original": "Damage can't exceed 1/3 of Max HP.",
+    "refined": "damage cannot exceed 1 / 3 of max hp",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 59
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 59
+      }
+    }
+  },
+  {
+    "card_id": 60,
+    "original": "Deal 3x damage, lose 30% ATK after attacking.",
+    "refined": "deal 3 x damage, lose 30 % atk after attack",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 60
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 60
+      }
+    }
+  },
+  {
+    "card_id": 61,
+    "original": "Reduce damage by 15% of Max HP, then halve.",
+    "refined": "reduce damage by 15 % of max hp, then halve",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 61
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 61
+      }
+    }
+  },
+  {
+    "card_id": 62,
+    "original": "On entry, gain attack equal to combined total of all fallen allies attack. Takes 1.5x Damage.",
+    "refined": "on entry, gain attack equal to combined total of all fallen allies attack; takes 1.5 x damage",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 62
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 62
+      }
+    }
+  },
+  {
+    "card_id": 63,
+    "original": "Attacks inflict 2 turns of Frostbite. Take half damage from enemies with Frostbite.",
+    "refined": "attacks inflict 2 turns of frostbite; take 1 / 2 damage from enemies with frostbite",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 63
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 63
+      }
+    }
+  },
+  {
+    "card_id": 64,
+    "original": "On entry, 70% chance to set enemy stats to its base borderless stats.",
+    "refined": "on entry, 70 % chance to set enemy stats to its base borderless stats",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 64
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 64
+      }
+    }
+  },
+  {
+    "card_id": 65,
+    "original": "Once only, if this card would die, the enemy dies instead.",
+    "refined": "once only, if self would die, the enemy dies instead",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 65
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 65
+      }
+    }
+  },
+  {
+    "card_id": 66,
+    "original": "Enemy ATK drops 10% after attacking.",
+    "refined": "enemy atk drops 10 % after attack",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 66
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 66
+      }
+    }
+  },
+  {
+    "card_id": 67,
+    "original": "3x attacks, each dealing 50% damage.",
+    "refined": "3 x attacks, each dealing 50 % damage",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 67
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 67
+      }
+    }
+  },
+  {
+    "card_id": 68,
+    "original": "Cards of lower rarity deal half damage.",
+    "refined": "cards of reduce rarity deal 1 / 2 damage",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 68
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 68
+      }
+    }
+  },
+  {
+    "card_id": 69,
+    "original": "Opponent's RNG abilities always fail. 2x damage to RNG-based cards.",
+    "refined": "enemy's rng abilities always fail; 2 x damage to rng-based cards",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 69
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 69
+      }
+    }
+  },
+  {
+    "card_id": 70,
+    "original": "Gain 50% lifesteal and counter when attacked.",
+    "refined": "gain 50 % lifesteal and counterattack when attacked",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 70
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 70
+      }
+    }
+  },
+  {
+    "card_id": 71,
+    "original": "Halve HP, double ATK.",
+    "refined": "halve hp, 2 x atk",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 71
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 71
+      }
+    }
+  },
+  {
+    "card_id": 72,
+    "original": "Attack on entry.",
+    "refined": "attack on entry",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 72
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 72
+      }
+    }
+  },
+  {
+    "card_id": 73,
+    "original": "Block first attack.",
+    "refined": "block first attack",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 73
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 73
+      }
+    }
+  },
+  {
+    "card_id": 74,
+    "original": "Recover 70% of damage taken.",
+    "refined": "heal 70 % of damage taken",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 74
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 74
+      }
+    }
+  },
+  {
+    "card_id": 75,
+    "original": "Remove opponenet's ability after dealing damage.",
+    "refined": "remove enemy's ability after dealing damage",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 75
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 75
+      }
+    }
+  },
+  {
+    "card_id": 76,
+    "original": "Revive at half health if an ally dies.",
+    "refined": "revive at 1 / 2 hp if an ally dies",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 76
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 76
+      }
+    }
+  },
+  {
+    "card_id": 77,
+    "original": "When alive and in party, all allies become immune to Status effects.",
+    "refined": "when alive and in party, all allies become immune to status effects",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 77
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 77
+      }
+    }
+  },
+  {
+    "card_id": 78,
+    "original": "After death, shield the next card from one attack.",
+    "refined": "on death, shield the next card from one attack",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 78
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 78
+      }
+    }
+  },
+  {
+    "card_id": 79,
+    "original": "Damages the next card, ignoring its on-death ability.",
+    "refined": "damages the next card, ignoring its on-death ability",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 79
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 79
+      }
+    }
+  },
+  {
+    "card_id": 80,
+    "original": "Attack again for 50% damage bypassing defenses.",
+    "refined": "extra attack for 50 % damage bypassing defenses",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 80
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 80
+      }
+    }
+  },
+  {
+    "card_id": 81,
+    "original": "Burn target for 3 turns when attacked.",
+    "refined": "burn target for 3 turns when attacked",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 81
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 81
+      }
+    }
+  },
+  {
+    "card_id": 82,
+    "original": "Increase stats by 10% for the first 5 turns.",
+    "refined": "increase stats by 10 % for the first 5 turns",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 82
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 82
+      }
+    }
+  },
+  {
+    "card_id": 83,
+    "original": "After attacking, stats change by -10 to +30%.",
+    "refined": "after attack, stats change by - 10 to + 30 %",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 83
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 83
+      }
+    }
+  },
+  {
+    "card_id": 84,
+    "original": "Boost next card's stats by 20% on entry.",
+    "refined": "boost next card's stats by 20 % on entry",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 84
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 84
+      }
+    }
+  },
+  {
+    "card_id": 85,
+    "original": "Boost stats by 20% on entry. Recover 10% HP for each turn.",
+    "refined": "boost stats by 20 % on entry; heal 10 % hp for each turn",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 85
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 85
+      }
+    }
+  },
+  {
+    "card_id": 86,
+    "original": "Lower target's ATK by 40% of damage dealt.",
+    "refined": "reduce target's atk by 40 % of damage dealt",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 86
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 86
+      }
+    }
+  },
+  {
+    "card_id": 87,
+    "original": "Nullify damage below 75% of your ATK.",
+    "refined": "nullify damage below 75 % of self atk",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 87
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 87
+      }
+    }
+  },
+  {
+    "card_id": 88,
+    "original": "Each enemy loses HP equal to 40% of damage dealt.",
+    "refined": "each enemy loses hp equal to 30 % of damage dealt",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 88
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 88
+      }
+    }
+  },
+  {
+    "card_id": 89,
+    "original": "Start with 2 turns, then gain 1 each cycle.",
+    "refined": "start with 2 turns, then gain 1 each cycle",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 89
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 89
+      }
+    }
+  },
+  {
+    "card_id": 90,
+    "original": "Defeated opponents fight on your side.",
+    "refined": "defeated enemies fight on your side",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 90
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 90
+      }
+    }
+  },
+  {
+    "card_id": 91,
+    "original": "Steal ATK and HP equal to damage dealt.",
+    "refined": "steal atk and hp equal to damage dealt",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 91
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 91
+      }
+    }
+  },
+  {
+    "card_id": 92,
+    "original": "Slow target on entry.",
+    "refined": "slow target on entry",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 92
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 92
+      }
+    }
+  },
+  {
+    "card_id": 93,
+    "original": "60% chance to evade attacks.",
+    "refined": "60 % chance to dodge attacks",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 93
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 93
+      }
+    }
+  },
+  {
+    "card_id": 94,
+    "original": "Recover 35% HP each turn.",
+    "refined": "heal 35 % hp each turn",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 94
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 94
+      }
+    }
+  },
+  {
+    "card_id": 95,
+    "original": "Deal 2x damage then 4x with a meteor.",
+    "refined": "deal 2 x damage then 4 x with a meteor",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 95
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 95
+      }
+    }
+  },
+  {
+    "card_id": 96,
+    "original": "Deal 3x damage, skip next turn.",
+    "refined": "deal 3 x damage, skip next turn",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 96
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 96
+      }
+    }
+  },
+  {
+    "card_id": 97,
+    "original": "Take 3 turns, then 1.",
+    "refined": "take 3 turns, then 1",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 97
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 97
+      }
+    }
+  },
+  {
+    "card_id": 98,
+    "original": "Enemy's hit chance is squared ratio of damage to your Max HP. On first death awaken instead.",
+    "refined": "enemy's hit chance is squared ratio of damage to self max hp; on first death awaken instead",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 98
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 98
+      }
+    }
+  },
+  {
+    "card_id": 99,
+    "original": "Steala 75% of the stats from the card behind this card and banishes it. Counter attacks",
+    "refined": "steal 75 % of the stats from the card behind self and banishes it; counterattacks",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 99
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 99
+      }
+    }
+  },
+  {
+    "card_id": 100,
+    "original": "Inflict confusion for 3 turns on entry. Fails if opponent's ATK is 400% higher.",
+    "refined": "inflict confusion for 3 turns on entry; fails if enemy's atk is 400 % higher",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 100
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 100
+      }
+    }
+  },
+  {
+    "card_id": 101,
+    "original": "Evade lethal and switch with an ally.",
+    "refined": "dodge lethal and switch with an ally",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 101
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 101
+      }
+    }
+  },
+  {
+    "card_id": 102,
+    "original": "Evade first attack, bypass defenses.",
+    "refined": "dodge first attack, bypass defenses",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 102
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 102
+      }
+    }
+  },
+  {
+    "card_id": 103,
+    "original": "Enemies you see die after 2 turns.",
+    "refined": "enemies you see die after 2 turns",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 103
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 103
+      }
+    }
+  },
+  {
+    "card_id": 104,
+    "original": "If the card ahead would be hit by a lethal attack: this card takes its place, blocks the attack, and gains 2x stats.",
+    "refined": "if card ahead would take lethal attack: self takes its place, blocks attack, and gains 2 x stats",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 104
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 104
+      }
+    }
+  },
+  {
+    "card_id": 105,
+    "original": "Deal double damage on entry if an ally is dead.",
+    "refined": "deal 2 x damage on entry if an ally is dead",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 105
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 105
+      }
+    }
+  },
+  {
+    "card_id": 106,
+    "original": "Cancel all abilities while in play.",
+    "refined": "cancel all abilities while in play",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 106
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 106
+      }
+    }
+  },
+  {
+    "card_id": 107,
+    "original": "Deal 300% damage after 5 moves, even after death.",
+    "refined": "deal 300 % damage after 5 moves, even on death",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 107
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 107
+      }
+    }
+  },
+  {
+    "card_id": 108,
+    "original": "Gain 20% stat each turn for 9 turns.",
+    "refined": "gain 20 % stats each turn for 9 turns",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 108
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 108
+      }
+    }
+  },
+  {
+    "card_id": 109,
+    "original": "Gain 40% stats for each unique 'Friendship' card.",
+    "refined": "gain 40 % stats for each unique friendship card",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 109
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 109
+      }
+    }
+  },
+  {
+    "card_id": 110,
+    "original": "Gain 40% stats for each unique 'Friendship' card.",
+    "refined": "gain 40 % stats for each unique friendship card",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 110
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 110
+      }
+    }
+  },
+  {
+    "card_id": 111,
+    "original": "Deal 2x damage, gain extra turn, and +20% stats when defeating an enemy.",
+    "refined": "deal 2 x damage, gain extra turn, and + 20 % stats on kill",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 111
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 111
+      }
+    }
+  },
+  {
+    "card_id": 112,
+    "original": "Opoonent loses 20% Max HP each turn.",
+    "refined": "enemy loses 20 % max hp each turn",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 112
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 112
+      }
+    }
+  },
+  {
+    "card_id": 113,
+    "original": "Dodge first lethal hit then double damage.",
+    "refined": "dodge first lethal hit then 2 x damage",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 113
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 113
+      }
+    }
+  },
+  {
+    "card_id": 114,
+    "original": "Invincible for 3 turns then dies.",
+    "refined": "invincible for 3 turns then dies",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 114
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 114
+      }
+    }
+  },
+  {
+    "card_id": 115,
+    "original": "Lose 1/8 stats when damaged.",
+    "refined": "lose 1 / 8 stats when damaged",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 115
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 115
+      }
+    }
+  },
+  {
+    "card_id": 116,
+    "original": "Every 3 turns, opponents rests and you gain 100% damage.",
+    "refined": "every 3 turns, enemies rests and you gain 100 % damage",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 116
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 116
+      }
+    }
+  },
+  {
+    "card_id": 117,
+    "original": "Every other turn, opponent damages themself.",
+    "refined": "every other turn, enemy damages themselves",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 117
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 117
+      }
+    }
+  },
+  {
+    "card_id": 118,
+    "original": "Nullify ever other attack and heal 80% of its damage.",
+    "refined": "nullify every other attack and heal 80 % of its damage",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 118
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 118
+      }
+    }
+  },
+  {
+    "card_id": 119,
+    "original": "Inflicts confusion on entry. If the enemy self-hits: -20% ATK; else, confusion persists.",
+    "refined": "inflicts confusion on entry; if the enemy self-hits: - 20 % atk; else, confusion persists",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 119
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 119
+      }
+    }
+  },
+  {
+    "card_id": 120,
+    "original": "Stats increase by 30% for 2 turns. Awaken on the 3rd turn.",
+    "refined": "stats increase by 30 % for 2 turns; awaken after 2 turns",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 120
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 120
+      }
+    }
+  },
+  {
+    "card_id": 121,
+    "original": "Gain 30% ATK at the end of each turn.",
+    "refined": "gain 30 % atk each turn end",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 121
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 121
+      }
+    }
+  },
+  {
+    "card_id": 122,
+    "original": "50% chance to swap the enemy's current card and deal 3x damage.",
+    "refined": "50 % chance to swap the enemy's current card and deal 3 x damage",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 122
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 122
+      }
+    }
+  },
+  {
+    "card_id": 123,
+    "original": "Heal to full HP when defeating an enemy.",
+    "refined": "heal to full hp on kill",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 123
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 123
+      }
+    }
+  },
+  {
+    "card_id": 124,
+    "original": "Take 1/3 less damage from demons.",
+    "refined": "take 1 / 3 less damage from demons",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 124
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 124
+      }
+    }
+  },
+  {
+    "card_id": 125,
+    "original": "Heal by Max HP after allies take 3 turns.",
+    "refined": "heal by max hp after allies take 3 turns",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 125
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 125
+      }
+    }
+  },
+  {
+    "card_id": 126,
+    "original": "Gain 30% stats for 2 turns and awaken on the third.",
+    "refined": "gain 30 % stats for 2 turns and awaken on the third",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 126
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 126
+      }
+    }
+  },
+  {
+    "card_id": 127,
+    "original": "Enemy loses 30% of their current HP at the start of turn.",
+    "refined": "enemy loses 30 % of their current hp turn start",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 127
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 127
+      }
+    }
+  },
+  {
+    "card_id": 128,
+    "original": "Reduce damage by 35%. Boost allies' stats by 10% per turn.",
+    "refined": "reduce damage by 35 %; boost allies' stats by 10 % each turn",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 128
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 128
+      }
+    }
+  },
+  {
+    "card_id": 129,
+    "original": "On entry, manifest 1 of 6 weapons, gaining its unique ability.",
+    "refined": "on entry, manifest 1 of 6 weapons, gaining its unique ability",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 129
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 129
+      }
+    }
+  },
+  {
+    "card_id": 130,
+    "original": "Create a random card with your stats and place it at the end of your deck.",
+    "refined": "create a random card with self stats and place it at the end of ally deck",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 130
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 130
+      }
+    }
+  },
+  {
+    "card_id": 131,
+    "original": "Boost stats by 65% on entry.",
+    "refined": "boost stats by 65 % on entry",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 131
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 131
+      }
+    }
+  },
+  {
+    "card_id": 132,
+    "original": "Gain 200% ATK on entry, Lose ATK equal to damage taken. Heal 35% and gain 35% ATK per kill.",
+    "refined": "gain 200 % atk on entry, lose atk equal to damage taken; heal 35 % and gain 35 % atk on kill",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 132
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 132
+      }
+    }
+  },
+  {
+    "card_id": 133,
+    "original": "Redirect 50% of damage taken by allies to this card.",
+    "refined": "redirect 50 % of damage taken by allies to self",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 133
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 133
+      }
+    }
+  },
+  {
+    "card_id": 134,
+    "original": "Deal 150% damage on entry, ignoring defenses.",
+    "refined": "deal 150 % damage on entry, ignoring defenses",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 134
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 134
+      }
+    }
+  },
+  {
+    "card_id": 135,
+    "original": "Revive with half HP and double ATK; burn attackers for 2 turns.",
+    "refined": "revive with 1 / 2 hp and 2 x atk; burn attackers for 2 turns",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 135
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 135
+      }
+    }
+  },
+  {
+    "card_id": 136,
+    "original": "Recover 20% HP each turn, with 50% chance togain 30% ATK.",
+    "refined": "heal 20 % hp each turn, with 50 % chance to gain 30 % atk",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 136
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 136
+      }
+    }
+  },
+  {
+    "card_id": 137,
+    "original": "Opponent's cards cant use abilities for 3 turns.",
+    "refined": "enemy's cards cannot use abilities for 3 turns",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 137
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 137
+      }
+    }
+  },
+  {
+    "card_id": 138,
+    "original": "Transform when HP falls below 50%.",
+    "refined": "transform when hp falls below 50 %",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 138
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 138
+      }
+    }
+  },
+  {
+    "card_id": 139,
+    "original": "Revive a dead ally or heal a living one by 50% instead of attacking. Move to end of deck if fully healed.",
+    "refined": "revive a dead ally or heal a living one by 50 % instead of attacking; move to end of deck if fully healed",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 139
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 139
+      }
+    }
+  },
+  {
+    "card_id": 140,
+    "original": "Double HP and ATK every 3 turns.",
+    "refined": "2 x hp and atk every 3 turns",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 140
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 140
+      }
+    }
+  },
+  {
+    "card_id": 141,
+    "original": "On death, gain 3 fossils.",
+    "refined": "on death, gain 3 fossils",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 141
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 141
+      }
+    }
+  },
+  {
+    "card_id": 142,
+    "original": "Every other turn, gain a shield.",
+    "refined": "every other turn, gain a shield",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 142
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 142
+      }
+    }
+  },
+  {
+    "card_id": 143,
+    "original": "Attack a random living card in the opponent deck.",
+    "refined": "attack a random living card in the enemy deck",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 143
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 143
+      }
+    }
+  },
+  {
+    "card_id": 144,
+    "original": "Attack on entry. Excess damage from kill carries over to the next card.",
+    "refined": "attack on entry; excess damage from kill carries over to the next card",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 144
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 144
+      }
+    }
+  },
+  {
+    "card_id": 145,
+    "original": "Attack every other turn, dodges attack on turns it doesn't. 1.5x Damage.",
+    "refined": "attack every other turn, dodges attack on turns it does not; 1.5 x damage",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 145
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 145
+      }
+    }
+  },
+  {
+    "card_id": 146,
+    "original": "On entry, attack and apply Poison. Dodge the first lethal attack and swap with the next ally.",
+    "refined": "on entry, attack and apply poison; dodge the first lethal attack and swap with the next ally",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 146
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 146
+      }
+    }
+  },
+  {
+    "card_id": 147,
+    "original": "On entry freeze the enemy. Attacks twice.",
+    "refined": "on entry freeze the enemy; attacks twice",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 147
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 147
+      }
+    }
+  },
+  {
+    "card_id": 148,
+    "original": "40% chance to dodge attacks. If it does, next attack deals 2x damage.",
+    "refined": "40 % chance to dodge attacks; if it does, next attack deals 2 x damage",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 148
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 148
+      }
+    }
+  },
+  {
+    "card_id": 149,
+    "original": "Ignores defensive abilities.",
+    "refined": "ignores defense abilities",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 149
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 149
+      }
+    }
+  },
+  {
+    "card_id": 150,
+    "original": "40% chance every turn to heal to full.",
+    "refined": "40 % chance each turn to heal to full",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 150
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 150
+      }
+    }
+  },
+  {
+    "card_id": 151,
+    "original": "Attacks with 10x damage and dies. On death, +2 Fossils.",
+    "refined": "attacks with 10 x damage and dies; on death, + 2 fossils",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 151
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 151
+      }
+    }
+  },
+  {
+    "card_id": 152,
+    "original": "On entry, 50% chance to negate the enemy's blue aura card. Cannot be killed by abilities.",
+    "refined": "on entry, 50 % chance to negate the enemy's blue aura card; cannot be killed by abilities",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 152
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 152
+      }
+    }
+  },
+  {
+    "card_id": 153,
+    "original": "Takes 25% less damage. When attacked the enemy bleeds. Counterattacks.",
+    "refined": "takes 25 % less damage; when attacked the enemy bleeds; counterattacks",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 153
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 153
+      }
+    }
+  },
+  {
+    "card_id": 154,
+    "original": "On damage inflict Death in: 5 - Fossil Count (max 2) turns.",
+    "refined": "on damage inflict death in: 5 - fossil count (max 2) turns",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 154
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 154
+      }
+    }
+  },
+  {
+    "card_id": 155,
+    "original": "Charges for one turn before attacking. Deals 75% Damage. Damages Fossil Count + 1 enemies in the deck (max of 3).",
+    "refined": "charges for one turn before attack; deals 75 % damage; damages fossil count + 1 enemies in the deck (max of 3)",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 155
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 155
+      }
+    }
+  },
+  {
+    "card_id": 156,
+    "original": "Deal 2x damage if the enemy has 50% or less HP. +100% ATK upon defeating an enemy.",
+    "refined": "deal 2 x damage if the enemy has 50 % or less hp; + 100 % atk on kill",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 156
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 156
+      }
+    }
+  },
+  {
+    "card_id": 157,
+    "original": "Takes half damage. Deals 50% more damage. If Fossil Count > 2, counterattacks.",
+    "refined": "takes 1 / 2 damage; deals 50 % more damage; if fossil count > 2, counterattacks",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 157
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 157
+      }
+    }
+  },
+  {
+    "card_id": 158,
+    "original": "Add the opponent's attack to your damage.",
+    "refined": "add the enemy's attack to self damage",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 158
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 158
+      }
+    }
+  },
+  {
+    "card_id": 159,
+    "original": "On entry, for every Fossil, 1.5x damage.",
+    "refined": "on entry, for every fossil, 1.5 x damage",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 159
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 159
+      }
+    }
+  },
+  {
+    "card_id": 160,
+    "original": "This card gains +30% damage every turn.",
+    "refined": "self gains + 30 % damage each turn",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 160
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 160
+      }
+    }
+  },
+  {
+    "card_id": 161,
+    "original": "Attacks convert 15% Max HP into Damage.",
+    "refined": "attacks convert 15 % max hp into damage",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 161
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 161
+      }
+    }
+  },
+  {
+    "card_id": 162,
+    "original": "Deals 1X damage and takes 1X damage",
+    "refined": "deal 1 x damage and take 1 x damage",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 162
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 162
+      }
+    }
+  },
+  {
+    "card_id": 163,
+    "original": "Reduce opponent's HP by 15% on entering.",
+    "refined": "reduce enemy's hp by 15 % on entry",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 163
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 163
+      }
+    }
+  },
+  {
+    "card_id": 164,
+    "original": "The next card will dodge a lethal attack.",
+    "refined": "on death, the next card will dodge an attack",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 164
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 164
+      }
+    }
+  },
+  {
+    "card_id": 165,
+    "original": "Takes 1.5X damage, deals 1.5X damage.",
+    "refined": "take 1.5 x damage; deal 1.5 x damage",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 165
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 165
+      }
+    }
+  },
+  {
+    "card_id": 166,
+    "original": "5x attacks, each dealing 1/4 damage.",
+    "refined": "5 x attacks, each dealing 1 / 4 damage",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 166
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 166
+      }
+    }
+  },
+  {
+    "card_id": 167,
+    "original": "Burn opponent for 5 turns when attacked.",
+    "refined": "burn enemy for 5 turns when attacked",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 167
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 167
+      }
+    }
+  },
+  {
+    "card_id": 168,
+    "original": "Boost all cards' damage 20%.",
+    "refined": "boost all cards' damage 20 %",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 168
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 168
+      }
+    }
+  },
+  {
+    "card_id": 169,
+    "original": "This card must be defeated 3 times before it can die.",
+    "refined": "self must be defeated 3 times before it can die",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 169
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 169
+      }
+    }
+  },
+  {
+    "card_id": 170,
+    "original": "Deals damage equal to 50% of target's current HP. Losses 25% HP after attacking.",
+    "refined": "deals damage equal to 50 % of target's current hp; loses 25 % hp after attack",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 170
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 170
+      }
+    }
+  },
+  {
+    "card_id": 171,
+    "original": "The opponent loses 25% of its HP each turn.",
+    "refined": "the enemy loses 25 % of its hp each turn",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 171
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 171
+      }
+    }
+  },
+  {
+    "card_id": 172,
+    "original": "On entry, attack all enemies with 25% of damage.",
+    "refined": "on entry, attack all enemies with 25 % of damage",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 172
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 172
+      }
+    }
+  },
+  {
+    "card_id": 173,
+    "original": "Gain 30% stats for each fallen ally. Below 25% HP, damage taken is halved.",
+    "refined": "gain 30 % stats for each fallen ally; below 25 % hp, damage taken is halved",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 173
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 173
+      }
+    }
+  },
+  {
+    "card_id": 174,
+    "original": "Recover 50% of the damage dealt.",
+    "refined": "heal 50 % of the damage dealt",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 174
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 174
+      }
+    }
+  },
+  {
+    "card_id": 175,
+    "original": "Clear opponent stat changes on entry. End of enemy turn; Heal by and subtract 20% target's ATK.",
+    "refined": "clear enemy stat changes on entry; enemy turn end; heal by and subtract 20 % target's atk",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 175
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 175
+      }
+    }
+  },
+  {
+    "card_id": 176,
+    "original": "Heal 25% HP after being attacked.",
+    "refined": "heal 25 % hp after attacked",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 176
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 176
+      }
+    }
+  },
+  {
+    "card_id": 177,
+    "original": "Reflects 25% of ability damage taken (up to 800% of this card's damage).",
+    "refined": "reflects 25 % of ability damage taken (up to 800 % of self's damage)",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 177
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 177
+      }
+    }
+  },
+  {
+    "card_id": 178,
+    "original": "Survive for two turns once HP reaches zero. After attacking, poison the target for 15% of their Max HP.",
+    "refined": "survive for two turns once hp reaches zero; after attack, poison the target for 15 % of their max hp",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 178
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 178
+      }
+    }
+  },
+  {
+    "card_id": 179,
+    "original": "Attacks against enemies below 25% HP will kill.",
+    "refined": "attacks against enemies below 25 % hp will kill",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 179
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 179
+      }
+    }
+  },
+  {
+    "card_id": 180,
+    "original": "Attacks on entry. Attacks reduce the target's damage by 30%.",
+    "refined": "attacks on entry; attacks reduce the target's damage by 10 %",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 180
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 180
+      }
+    }
+  },
+  {
+    "card_id": 181,
+    "original": "+3 turns. Fades below 50% HP.",
+    "refined": "+ 3 turns; fades below 50 % hp",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 181
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 181
+      }
+    }
+  },
+  {
+    "card_id": 182,
+    "original": "Reduce opponent's damage by 40% on entering.",
+    "refined": "reduce enemy's damage by 40 % on entry",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 182
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 182
+      }
+    }
+  },
+  {
+    "card_id": 183,
+    "original": "After attacking, place a Block in front of Steve. Each block absrobs 40% of his Max HP in Damage. Steven can have up to 3 Blocks at once.",
+    "refined": "after attack, place block in front of self; each block absorbs 40 % self max hp damage; max 3 blocks",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 183
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 183
+      }
+    }
+  },
+  {
+    "card_id": 184,
+    "original": "Each turn gain 1 Void stack. At 3 Void, consume them to make the next attack deal 100% increased damage and heal 25% Max HP.",
+    "refined": "each turn gain 1 void stack; at 3 void, consume them to make the next attack deal 100 % increased damage and heal 25 % max hp",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 184
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 184
+      }
+    }
+  },
+  {
+    "card_id": 185,
+    "original": "Defeating an enemy fully restores HP and permanently increases damage by 50%, stacking with each kill.",
+    "refined": "defeating an enemy fully restores hp and permanently increases damage by 50 %, stacking with each kill",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 185
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 185
+      }
+    }
+  },
+  {
+    "card_id": 186,
+    "original": "On Entry, roll the D6 to randomly gain 1-50% Damage, 1-50% Max HP, and 1-30% Damage Reduction for the battle.",
+    "refined": "on entry, roll the d6 to randomly gain 1 - 50 % damage, 1 - 50 % max hp, and 1 - 30 % damage reduction for battle",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 186
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 186
+      }
+    }
+  },
+  {
+    "card_id": 187,
+    "original": "The first attack against each enemy deals 100% increased Damage and ignores defensive abilities.",
+    "refined": "the first attack against each enemy deals 100 % increased damage and ignores defense abilities",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 187
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 187
+      }
+    }
+  },
+  {
+    "card_id": 188,
+    "original": "For every 1% of Max HP lost, gain 1% increased Damage. Additionally, gain 0.5% Lifesteal for every 1% of Max HP lost.",
+    "refined": "for every 1 % of max hp lost, gain 1 % increased damage; additionally, gain 0.5 % lifesteal for every 1 % of max hp lost",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 188
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 188
+      }
+    }
+  },
+  {
+    "card_id": 189,
+    "original": "Attacks restore HP equal to 25% of Damage dealt. Every third attack performs Waterfowl Dance, striking 3 times for 50% Damage each.",
+    "refined": "attacks restore hp equal to 25 % of damage dealt; every third attack performs waterfowl dance, striking 3 times for 50 % damage each",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 189
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 189
+      }
+    }
+  },
+  {
+    "card_id": 190,
+    "original": "Before attacking, sacrifice 15% of current HP to gain 30% increased Damage. Defeating an enemy restores 20% of Max HP.",
+    "refined": "before attack, sacrifice 15 % of current hp to gain 30 % increased damage; defeating an enemy restores 20 % of max hp",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 190
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 190
+      }
+    }
+  },
+  {
+    "card_id": 191,
+    "original": "The first time NO. 2 would die, her Black Box overloads. She survives at 1 HP and deals damage equal to 50% of her Max HP to the enemy.",
+    "refined": "first time self would die: black box overloads; survive at 1 hp and deal 50 % self max hp damage to enemy",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 191
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 191
+      }
+    }
+  },
+  {
+    "card_id": 192,
+    "original": "While active, Freeze each enemy on their first turn. Deal 100% increased Damage to Frozen enemies.",
+    "refined": "while active, freeze each enemy on their first turn; deal 100 % increased damage to frozen enemies",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 192
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 192
+      }
+    }
+  },
+  {
+    "card_id": 193,
+    "original": "Deal 75% increased Damage while above the enemy's HP. While below the enemy's HP take 45% reduced Damage instead.",
+    "refined": "deal 75 % increased damage while above the enemys hp; while below the enemys hp take 45 % reduced damage instead",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 193
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 193
+      }
+    }
+  },
+  {
+    "card_id": 194,
+    "original": "30% chance to critically strike, dealing 50% increased Damage. Critical strikes immediately trigger a follow-up attack dealing 50% Damage.",
+    "refined": "30 % chance to critically strike, dealing 50 % increased damage; critical strikes immediately trigger a follow-up attack dealing 50 % damage",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 194
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 194
+      }
+    }
+  },
+  {
+    "card_id": 195,
+    "original": "On entry, summon two copies of this card to the back of your deck. Each copy has 35% of this card's Stats.",
+    "refined": "on entry, summon two copies of self to the back of ally deck; each copy has 35 % of self's stats",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 195
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 195
+      }
+    }
+  },
+  {
+    "card_id": 196,
+    "original": "While not the active card, gain 10% Damage and Max HP after each allied turn. Max of 300% base",
+    "refined": "while not the active card, gain 10 % damage and max hp after each allied turn; max of 300 % base",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 196
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 196
+      }
+    }
+  },
+  {
+    "card_id": 197,
+    "original": "On Death Give 25% of stats to the next ally and a 1 turn shield",
+    "refined": "on death, give 25 % stats to next ally and 1 turn shield",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 197
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 197
+      }
+    }
+  },
+  {
+    "card_id": 198,
+    "original": "Counter attacks and sets enemy on fire",
+    "refined": "counterattacks and sets enemy on fire",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 198
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 198
+      }
+    }
+  },
+  {
+    "card_id": 199,
+    "original": "Upon entering battle, shuffle the lineup.",
+    "refined": "on entry, shuffle the lineup",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 199
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 199
+      }
+    }
+  },
+  {
+    "card_id": 200,
+    "original": "Dodge first lethal attack and heal 50% of max hp",
+    "refined": "dodge first lethal attack and heal 50 % max hp",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 200
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 200
+      }
+    }
+  },
+  {
+    "card_id": 201,
+    "original": "Gain 20% dodge chance and every hit taken increases the Chance by 10% up to 50%",
+    "refined": "gain 20 % dodge chance and every hit taken increases the chance by 10 % up to 50 %",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 201
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 201
+      }
+    }
+  },
+  {
+    "card_id": 202,
+    "original": "Whenever an enemy is defeated by this card, permanently gain 30% stats of defeated card and immediately attack again.",
+    "refined": "whenever an enemy is defeated by self, permanently gain 30 % stats of defeated card and immediately extra attack",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 202
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 202
+      }
+    }
+  },
+  {
+    "card_id": 203,
+    "original": "Field ability: Attack alongside active card for 25% dmg",
+    "refined": "field: attack alongside active card for 25 % damage",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 203
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 203
+      }
+    }
+  },
+  {
+    "card_id": 204,
+    "original": "On entry, attack entire enemy team 1-8 times, dealing 10% Damage per hit.",
+    "refined": "on entry, attack all enemies 1 - 8 times, dealing 10 % damage per hit",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 204
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 204
+      }
+    }
+  },
+  {
+    "card_id": 205,
+    "original": "Steal 10% of enemy's ATK and HP on their entry.",
+    "refined": "steal 10 % of enemy's atk and hp on their entry",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 205
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 205
+      }
+    }
+  },
+  {
+    "card_id": 206,
+    "original": "+50% damage, -30% damage taken. Fades below half HP. Heal and gain damage by 20% after a kill.",
+    "refined": "+ 50 % damage, - 30 % damage taken; fades below 1 / 2 hp; heal and gain damage by 20 % on kill",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 206
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 206
+      }
+    }
+  },
+  {
+    "card_id": 207,
+    "original": "Heal and gain damage by 20% after a kill.",
+    "refined": "heal and gain damage by 20 % on kill",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 207
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 207
+      }
+    }
+  },
+  {
+    "card_id": 208,
+    "original": "Enemey's first 3 attacks drop its ATK by 35%.",
+    "refined": "enemy's first 3 attacks drop its atk by 35 %",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 208
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 208
+      }
+    }
+  },
+  {
+    "card_id": 209,
+    "original": "Recover 200% of ATK as HP each turn, lose 10% ATK.",
+    "refined": "heal 200 % of atk as hp each turn, lose 10 % atk",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 209
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 209
+      }
+    }
+  },
+  {
+    "card_id": 210,
+    "original": "Counterattack when damaged.",
+    "refined": "counterattack when damaged",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 210
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 210
+      }
+    }
+  },
+  {
+    "card_id": 211,
+    "original": "Enemy abilities apply to you instead.",
+    "refined": "enemy abilities apply to you instead",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 211
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 211
+      }
+    }
+  },
+  {
+    "card_id": 212,
+    "original": "Steal 15% of enemy stats every turn. Steal opponents ability on the first kill.",
+    "refined": "steal 15 % of enemy stats each turn; steal enemies ability on the first kill",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 212
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 212
+      }
+    }
+  },
+  {
+    "card_id": 213,
+    "original": "HP boosted by 100x. When attacked counterattack at 10% damage.",
+    "refined": "hp boosted by 100 x; when attacked counterattack at 10 % damage",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 213
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 213
+      }
+    }
+  },
+  {
+    "card_id": 214,
+    "original": "Transform and heal when HP drops below 65%.",
+    "refined": "transform and heal when hp drops below 65 %",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 214
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 214
+      }
+    }
+  },
+  {
+    "card_id": 215,
+    "original": "Buff next card's damage by 400%, but it dies after attacking.",
+    "refined": "buff next card's damage by 400 %, but it dies after attack",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 215
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 215
+      }
+    }
+  },
+  {
+    "card_id": 216,
+    "original": "Deal 1-5x damage at random.",
+    "refined": "deal 1 - 5 x damage at random",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 216
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 216
+      }
+    }
+  },
+  {
+    "card_id": 217,
+    "original": "+200% damage, -50% damage taken. Fades below 25% HP.",
+    "refined": "+ 200 % damage, - 50 % damage taken; fades below 25 % hp",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 217
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 217
+      }
+    }
+  },
+  {
+    "card_id": 218,
+    "original": "Chance to kill based on damage to HP ratio. 50% chance to self-destruct on death, inflicting Max HP as damage.",
+    "refined": "chance to kill based on damage to hp ratio; 50 % chance to self destruct on death, inflicting max hp as damage",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 218
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 218
+      }
+    }
+  },
+  {
+    "card_id": 219,
+    "original": "Double HP/ATK on entry but lose 15% per turn.",
+    "refined": "2 x hp/atk on entry but lose 15 % each turn",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 219
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 219
+      }
+    }
+  },
+  {
+    "card_id": 220,
+    "original": "40% chance to dodge attacks, increase damage by 20% on dodge.",
+    "refined": "40 % chance to dodge attacks, increase damage by 20 % on dodge",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 220
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 220
+      }
+    }
+  },
+  {
+    "card_id": 221,
+    "original": "Attack 3 times at 0.5x, 1x, and 2x damage.",
+    "refined": "attack 3 times at 0.5 x, 1 x, and 2 x damage",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 221
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 221
+      }
+    }
+  },
+  {
+    "card_id": 222,
+    "original": "Add half stats to next card upon death.",
+    "refined": "add 1 / 2 stats to next card on death",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 222
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 222
+      }
+    }
+  },
+  {
+    "card_id": 223,
+    "original": "Deals 100% more damage to younger cards.",
+    "refined": "deals 100 % more damage to younger cards",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 223
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 223
+      }
+    }
+  },
+  {
+    "card_id": 224,
+    "original": "When Piccolo uses its ability to swap with this card, Piccolo gains 1.5x stats.",
+    "refined": "when piccolo uses its ability to swap with self, piccolo gains 1.5 x stats",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 224
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 224
+      }
+    }
+  },
+  {
+    "card_id": 225,
+    "original": "Dies and transfer stats to 'Dad' cards.",
+    "refined": "dies and transfer stats to dad cards",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 225
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 225
+      }
+    }
+  },
+  {
+    "card_id": 226,
+    "original": "Your Max HP gets added to next ally's on death.",
+    "refined": "self max hp gets added to next ally's on death",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 226
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 226
+      }
+    }
+  },
+  {
+    "card_id": 227,
+    "original": "Doesn't attack. All damage taken (x1.5) is added to the next card's attack.",
+    "refined": "does not attack; all damage taken at 1.5 x is added to next card's attack",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 227
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 227
+      }
+    }
+  },
+  {
+    "card_id": 228,
+    "original": "Grants allies 40% Evasion, decreasing by 10% per successful evade to 20%. Max 2 per card. Gain 10% of prevented Damage. 200% Cap.",
+    "refined": "grants allies 40 % evasion, decreasing by 10 % per successful dodge to 20 %; max 2 per card; gain 10 % of prevented damage; 200 % cap",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 228
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 228
+      }
+    }
+  },
+  {
+    "card_id": 229,
+    "original": "Steal 50% of the enemy's stats and recover 30% HP when defeating them.",
+    "refined": "steal 50 % of the enemy's stats and heal 30 % hp when defeating them",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 229
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 229
+      }
+    }
+  },
+  {
+    "card_id": 230,
+    "original": "On death, split into Joy and Sorrow. Each inherits 50% of Max HP and 60% of Damage, entering battle one after another.",
+    "refined": "on death, split into joy and sorrow; each inherits 50 % of max hp and 60 % of damage, entering battle one after another",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 230
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 230
+      }
+    }
+  },
+  {
+    "card_id": 231,
+    "original": "Doesn't attack. All damage taken (1.25x) is added to your party's attack.",
+    "refined": "does not attack; all damage taken at 1.25 x is added to ally party attack",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 231
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 231
+      }
+    }
+  },
+  {
+    "card_id": 232,
+    "original": "Deals 2x Damage. 50% chance to skip opponent's turn.",
+    "refined": "deals 2 x damage; 50 % chance to skip enemy's turn",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 232
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 232
+      }
+    }
+  },
+  {
+    "card_id": 233,
+    "original": "Revive an ally with 75% of your stats for each fallen enemy.",
+    "refined": "revive an ally with 75 % of self stats for each fallen enemy",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 233
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 233
+      }
+    }
+  },
+  {
+    "card_id": 234,
+    "original": "If first in deck, ability is 'Safegaurding'; otherwise, 'Mother of Dragons.'",
+    "refined": "if first in deck, ability is safeguarding; otherwise, mother of dragons",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 234
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 234
+      }
+    }
+  },
+  {
+    "card_id": 235,
+    "original": "When an enemy sees this card, steal 20% of its stats.",
+    "refined": "when an enemy sees self, steal 20 % of its stats",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 235
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 235
+      }
+    }
+  },
+  {
+    "card_id": 236,
+    "original": "Upon entry, steals 5% of all other cards' stats, including allies. Stolen stats decay after 3 turns.",
+    "refined": "on entry, steals 5 % of all other cards' stats, including allies; stolen stats decay after 3 turns",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 236
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 236
+      }
+    }
+  },
+  {
+    "card_id": 237,
+    "original": "Inflict poison for 2 turns when dealing/receiving damage.",
+    "refined": "inflict poison for 2 turns when dealing/receiving damage",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 237
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 237
+      }
+    }
+  },
+  {
+    "card_id": 238,
+    "original": "Deal 3x damage, take 1/3 damage but lose 10% stats per attack.",
+    "refined": "deal 3 x damage, take 1 / 3 damage but lose 10 % stats per attack",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 238
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 238
+      }
+    }
+  },
+  {
+    "card_id": 239,
+    "original": "Enemies you see are inflicted with confusion eternally. When a confused enemy hits themselves, +50% stats.",
+    "refined": "enemies you see are inflicted with confusion eternally; when a confused enemy hits themselves, + 50 % stats",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 239
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 239
+      }
+    }
+  },
+  {
+    "card_id": 240,
+    "original": "On entry, permanently link the first 2 enemies. Damage dealt to one is shared with the other.",
+    "refined": "on entry, permanently link the first 2 enemies; damage dealt to one is shared with the other",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 240
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 240
+      }
+    }
+  },
+  {
+    "card_id": 241,
+    "original": "Opponent loses 25% stats at the start of their turn.",
+    "refined": "enemy loses 25 % stats enemy turn start",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 241
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 241
+      }
+    }
+  },
+  {
+    "card_id": 242,
+    "original": "Gain 100% ATK, then gain the initial boost each turn.",
+    "refined": "gain 100 % atk, then gain the initial boost each turn",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 242
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 242
+      }
+    }
+  },
+  {
+    "card_id": 243,
+    "original": "Gain 25% ATK for every card in your party.",
+    "refined": "gain 25 % atk for every card in ally party",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 243
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 243
+      }
+    }
+  },
+  {
+    "card_id": 244,
+    "original": "Deal 5x damage once.",
+    "refined": "deal 5 x damage once",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 244
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 244
+      }
+    }
+  },
+  {
+    "card_id": 245,
+    "original": "Inflicts death based on damage to HP ratio.",
+    "refined": "inflicts death based on damage to hp ratio",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 245
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 245
+      }
+    }
+  },
+  {
+    "card_id": 246,
+    "original": "Gain 25% stats for every fallen ally.",
+    "refined": "gain 25 % stats for every fallen ally",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 246
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 246
+      }
+    }
+  },
+  {
+    "card_id": 247,
+    "original": "Gain the ability of a fallen ally.",
+    "refined": "gain the ability of a fallen ally",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 247
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 247
+      }
+    }
+  },
+  {
+    "card_id": 248,
+    "original": "When this card falls below 30% HP: both it and the enemy are defeated.",
+    "refined": "when self falls below 30 % hp: both it and the enemy are defeated",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 248
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 248
+      }
+    }
+  },
+  {
+    "card_id": 249,
+    "original": "When the enemy falls below 30% HP: it is instantly defeated.",
+    "refined": "when the enemy falls below 30 % hp: it is instantly defeated",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 249
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 249
+      }
+    }
+  },
+  {
+    "card_id": 250,
+    "original": "On death, revive your party.",
+    "refined": "on death, revive ally party",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 250
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 250
+      }
+    }
+  },
+  {
+    "card_id": 251,
+    "original": "Upon death, inflict 'Frostbite.'",
+    "refined": "on death, inflict frostbite",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 251
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 251
+      }
+    }
+  },
+  {
+    "card_id": 252,
+    "original": "On entry, randomly inflict 3-turn 'Frostbite'/'Slow'/'Freeze'",
+    "refined": "on entry, randomly inflict 3-turn frostbite/slow/freeze",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 252
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 252
+      }
+    }
+  },
+  {
+    "card_id": 253,
+    "original": "Blind target on entry.",
+    "refined": "blind target on entry",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 253
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 253
+      }
+    }
+  },
+  {
+    "card_id": 254,
+    "original": "Dodge every other attack, and when you do, gain 1 more attack.",
+    "refined": "dodge every other attack, and when you do, gain 1 more attack",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 254
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 254
+      }
+    }
+  },
+  {
+    "card_id": 255,
+    "original": "Attacker takes damage equal to 1/2 your attack.",
+    "refined": "attacker takes damage equal to 1 / 2 your attack",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 255
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 255
+      }
+    }
+  },
+  {
+    "card_id": 256,
+    "original": "Steal 20% of enemy stats upon being attacked.",
+    "refined": "steal 20 % of enemy stats upon being attacked",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 256
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 256
+      }
+    }
+  },
+  {
+    "card_id": 257,
+    "original": "Slow target on entry. Attacks inflict 'Bleed.' Attacks twice.",
+    "refined": "slow target on entry; attacks inflict bleed; attacks twice",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 257
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 257
+      }
+    }
+  },
+  {
+    "card_id": 258,
+    "original": "Every other turn, freeze this card. This card cannot take damage that turn.",
+    "refined": "every other turn, freeze self; self cannot take damage that turn",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 258
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 258
+      }
+    }
+  },
+  {
+    "card_id": 259,
+    "original": "On death, double stats of next card and freeze it for 2 turns.",
+    "refined": "on death, 2 x stats of next card and freeze it for 2 turns",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 259
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 259
+      }
+    }
+  },
+  {
+    "card_id": 260,
+    "original": "Deal 4x damage with an 80% chance. Heal the enemy 50% otherwise.",
+    "refined": "deal 4 x damage with an 80 % chance; heal the enemy 50 % otherwise",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 260
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 260
+      }
+    }
+  },
+  {
+    "card_id": 261,
+    "original": "On entry, attack doubles.",
+    "refined": "on entry, attack doubles",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 261
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 261
+      }
+    }
+  },
+  {
+    "card_id": 262,
+    "original": "On entry, gain 3 attacks. Dealing 1/3 damage.",
+    "refined": "on entry, gain 3 attacks; dealing 1 / 3 damage",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 262
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 262
+      }
+    }
+  },
+  {
+    "card_id": 263,
+    "original": "Inflict confusion for 2 turns on entry.",
+    "refined": "inflict confusion for 2 turns on entry",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 263
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 263
+      }
+    }
+  },
+  {
+    "card_id": 264,
+    "original": "Damage can't exceed 1/2 Max HP.",
+    "refined": "damage cannot exceed 1 / 2 max hp",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 264
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 264
+      }
+    }
+  },
+  {
+    "card_id": 265,
+    "original": "On entry, every living ally gains 50% stats, but loses 10% stats every turn they're in play.",
+    "refined": "on entry, every living ally gains 50 % stats, but loses 10 % stats each turn they're in play",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 265
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 265
+      }
+    }
+  },
+  {
+    "card_id": 266,
+    "original": "Heal and boost ATK by 25% of damage dealt.",
+    "refined": "heal and boost atk by 25 % of damage dealt",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 266
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 266
+      }
+    }
+  },
+  {
+    "card_id": 267,
+    "original": "Stun attacker when HP drops below half.",
+    "refined": "stun attacker when hp drops below half",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 267
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 267
+      }
+    }
+  },
+  {
+    "card_id": 268,
+    "original": "Chance to steal 50% ATK on entry.",
+    "refined": "chance to steal 50 % atk on entry",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 268
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 268
+      }
+    }
+  },
+  {
+    "card_id": 269,
+    "original": "Inflict confusion to bird cards for 3 turns when you encounter one.",
+    "refined": "inflict confusion to bird cards for 3 turns when you encounter one",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 269
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 269
+      }
+    }
+  },
+  {
+    "card_id": 270,
+    "original": "50% chance to return when an ally dies.",
+    "refined": "50 % chance to return when an ally dies",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 270
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 270
+      }
+    }
+  },
+  {
+    "card_id": 271,
+    "original": "Reduce enemy's Max HP by damage dealt.",
+    "refined": "reduce enemy's max hp by damage dealt",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 271
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 271
+      }
+    }
+  },
+  {
+    "card_id": 272,
+    "original": "Add a Frankenstein with your stats to your deck after a kill.",
+    "refined": "add a frankenstein with self stats to ally deck on kill",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 272
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 272
+      }
+    }
+  },
+  {
+    "card_id": 273,
+    "original": "Swap 2 random enemies' stats/positions, reducing stats by 15% per swap.",
+    "refined": "swap 2 random enemies' stats/positions, reducing stats by 15 % per swap",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 273
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 273
+      }
+    }
+  },
+  {
+    "card_id": 274,
+    "original": "Attacks inflict Poison and Weakness (enemy takes 30% more damage).",
+    "refined": "attacks inflict poison and weakness (enemy takes 30 % more damage)",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 274
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 274
+      }
+    }
+  },
+  {
+    "card_id": 275,
+    "original": "Attacks inflict bleed. Heals 50% when below half health only once.",
+    "refined": "attacks inflict bleed; heals 50 % when below 1 / 2 hp only once",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 275
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 275
+      }
+    }
+  },
+  {
+    "card_id": 276,
+    "original": "Hex target, making RNG abilities fail.",
+    "refined": "hex target, making rng abilities fail",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 276
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 276
+      }
+    }
+  },
+  {
+    "card_id": 277,
+    "original": "Enemy that kills this card loses 25% health every turn.",
+    "refined": "enemy that kills self loses 25 % hp each turn",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 277
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 277
+      }
+    }
+  },
+  {
+    "card_id": 278,
+    "original": "Survive 1 turn when dead. While dead: gain a turn of lifespan kill.",
+    "refined": "survive 1 turn when dead; while dead: gain a turn of lifespan kill",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 278
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 278
+      }
+    }
+  },
+  {
+    "card_id": 279,
+    "original": "Reduce enemy stats by 35% of yours on entry.",
+    "refined": "reduce enemy stats by 35 % of yours on entry",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 279
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 279
+      }
+    }
+  },
+  {
+    "card_id": 280,
+    "original": "Every turn steal 25% of the enemy's health before attacking.",
+    "refined": "each turn steal 25 % of the enemy's hp before attack",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 280
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 280
+      }
+    }
+  },
+  {
+    "card_id": 281,
+    "original": "Field Effect: At the start of any ally's turn 10% chance to confuse target. Goes up 10% each turn.",
+    "refined": "field: at the start of any ally's turn 10 % chance to confuse target; goes up 10 % each turn",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 281
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 281
+      }
+    }
+  },
+  {
+    "card_id": 282,
+    "original": "Gain an extra turn. Heal 10% each turn.",
+    "refined": "gain an extra turn; heal 10 % each turn",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 282
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 282
+      }
+    }
+  },
+  {
+    "card_id": 283,
+    "original": "After attacking, switch places with a random ally.",
+    "refined": "after attack, switch places with a random ally",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 283
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 283
+      }
+    }
+  },
+  {
+    "card_id": 284,
+    "original": "Steals the ability of the first card it attacks.",
+    "refined": "steals the ability of the first card it attacks",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 284
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 284
+      }
+    }
+  },
+  {
+    "card_id": 285,
+    "original": "4x stats on entry, fades below half health.",
+    "refined": "4 x stats on entry, fades below 1 / 2 hp",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 285
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 285
+      }
+    }
+  },
+  {
+    "card_id": 286,
+    "original": "On entry, the enemy is stunned in 3 turns, both active cards die.",
+    "refined": "on entry, the enemy is stunned; in 3 turns, both active cards die",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 286
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 286
+      }
+    }
+  },
+  {
+    "card_id": 287,
+    "original": "Survives lethal attacks twice. Attack resets to normal if it has been lowered.",
+    "refined": "survives lethal attacks twice; attack resets to normal if it has been lowered",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 287
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 287
+      }
+    }
+  },
+  {
+    "card_id": 288,
+    "original": "Attack 8 times at half the damage.",
+    "refined": "attack 8 times at half the damage",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 288
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 288
+      }
+    }
+  },
+  {
+    "card_id": 289,
+    "original": "Every turn, becomes a different card.",
+    "refined": "each turn, becomes a different card",
+    "source": {
+      "original": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[4]",
+        "snap_value_id": "34126",
+        "variable": "Card Descriptions",
+        "item_1": 289
+      },
+      "refined": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[22]",
+        "snap_value_id": "34149",
+        "variable": "data-5_refined",
+        "item_1": 289
+      }
+    }
+  }
+]

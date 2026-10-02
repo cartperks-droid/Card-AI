@@ -1,0 +1,288 @@
+[
+  {
+    "weather_id": 1,
+    "name": "Base",
+    "multiplier": 1,
+    "multiplier_lexical": "1",
+    "source": {
+      "name": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[3]",
+        "snap_value_id": "34125",
+        "variable": "Weathers",
+        "item_1": 1
+      },
+      "multiplier": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[5]",
+        "snap_value_id": "34127",
+        "variable": "Weather Multiplers",
+        "item_1": 1
+      }
+    }
+  },
+  {
+    "weather_id": 2,
+    "name": "Storm",
+    "multiplier": 1.5,
+    "multiplier_lexical": "1.5",
+    "source": {
+      "name": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[3]",
+        "snap_value_id": "34125",
+        "variable": "Weathers",
+        "item_1": 2
+      },
+      "multiplier": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[5]",
+        "snap_value_id": "34127",
+        "variable": "Weather Multiplers",
+        "item_1": 2
+      }
+    }
+  },
+  {
+    "weather_id": 3,
+    "name": "Snow",
+    "multiplier": 1.5,
+    "multiplier_lexical": "1.5",
+    "source": {
+      "name": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[3]",
+        "snap_value_id": "34125",
+        "variable": "Weathers",
+        "item_1": 3
+      },
+      "multiplier": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[5]",
+        "snap_value_id": "34127",
+        "variable": "Weather Multiplers",
+        "item_1": 3
+      }
+    }
+  },
+  {
+    "weather_id": 4,
+    "name": "Shroud",
+    "multiplier": 2,
+    "multiplier_lexical": "2",
+    "source": {
+      "name": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[3]",
+        "snap_value_id": "34125",
+        "variable": "Weathers",
+        "item_1": 4
+      },
+      "multiplier": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[5]",
+        "snap_value_id": "34127",
+        "variable": "Weather Multiplers",
+        "item_1": 4
+      }
+    }
+  },
+  {
+    "weather_id": 5,
+    "name": "Aurora",
+    "multiplier": 1.75,
+    "multiplier_lexical": "1.75",
+    "source": {
+      "name": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[3]",
+        "snap_value_id": "34125",
+        "variable": "Weathers",
+        "item_1": 5
+      },
+      "multiplier": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[5]",
+        "snap_value_id": "34127",
+        "variable": "Weather Multiplers",
+        "item_1": 5
+      }
+    }
+  },
+  {
+    "weather_id": 6,
+    "name": "Rapture",
+    "multiplier": 3,
+    "multiplier_lexical": "3",
+    "source": {
+      "name": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[3]",
+        "snap_value_id": "34125",
+        "variable": "Weathers",
+        "item_1": 6
+      },
+      "multiplier": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[5]",
+        "snap_value_id": "34127",
+        "variable": "Weather Multiplers",
+        "item_1": 6
+      }
+    }
+  },
+  {
+    "weather_id": 7,
+    "name": "Meteor Shower",
+    "multiplier": 3.246,
+    "multiplier_lexical": "3.246",
+    "source": {
+      "name": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[3]",
+        "snap_value_id": "34125",
+        "variable": "Weathers",
+        "item_1": 7
+      },
+      "multiplier": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[5]",
+        "snap_value_id": "34127",
+        "variable": "Weather Multiplers",
+        "item_1": 7
+      }
+    }
+  },
+  {
+    "weather_id": 8,
+    "name": "Time Storm",
+    "multiplier": 4,
+    "multiplier_lexical": "4",
+    "source": {
+      "name": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[3]",
+        "snap_value_id": "34125",
+        "variable": "Weathers",
+        "item_1": 8
+      },
+      "multiplier": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[5]",
+        "snap_value_id": "34127",
+        "variable": "Weather Multiplers",
+        "item_1": 8
+      }
+    }
+  },
+  {
+    "weather_id": 9,
+    "name": "Eclipse",
+    "multiplier": 5,
+    "multiplier_lexical": "5",
+    "source": {
+      "name": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[3]",
+        "snap_value_id": "34125",
+        "variable": "Weathers",
+        "item_1": 9
+      },
+      "multiplier": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[5]",
+        "snap_value_id": "34127",
+        "variable": "Weather Multiplers",
+        "item_1": 9
+      }
+    }
+  },
+  {
+    "weather_id": 10,
+    "name": "Virus",
+    "multiplier": 6,
+    "multiplier_lexical": "6",
+    "source": {
+      "name": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[3]",
+        "snap_value_id": "34125",
+        "variable": "Weathers",
+        "item_1": 10
+      },
+      "multiplier": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[5]",
+        "snap_value_id": "34127",
+        "variable": "Weather Multiplers",
+        "item_1": 10
+      }
+    }
+  },
+  {
+    "weather_id": 11,
+    "name": "Blood Rain",
+    "multiplier": 8,
+    "multiplier_lexical": "8",
+    "source": {
+      "name": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[3]",
+        "snap_value_id": "34125",
+        "variable": "Weathers",
+        "item_1": 11
+      },
+      "multiplier": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[5]",
+        "snap_value_id": "34127",
+        "variable": "Weather Multiplers",
+        "item_1": 11
+      }
+    }
+  },
+  {
+    "weather_id": 12,
+    "name": "Armageddon",
+    "multiplier": 9,
+    "multiplier_lexical": "9",
+    "source": {
+      "name": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[3]",
+        "snap_value_id": "34125",
+        "variable": "Weathers",
+        "item_1": 12
+      },
+      "multiplier": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[5]",
+        "snap_value_id": "34127",
+        "variable": "Weather Multiplers",
+        "item_1": 12
+      }
+    }
+  },
+  {
+    "weather_id": 13,
+    "name": "Manga",
+    "multiplier": 10,
+    "multiplier_lexical": "10",
+    "source": {
+      "name": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[3]",
+        "snap_value_id": "34125",
+        "variable": "Weathers",
+        "item_1": 13
+      },
+      "multiplier": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[5]",
+        "snap_value_id": "34127",
+        "variable": "Weather Multiplers",
+        "item_1": 13
+      }
+    }
+  }
+]

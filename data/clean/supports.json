@@ -1,0 +1,948 @@
+[
+  {
+    "support_id": 1,
+    "color": "red",
+    "name": "Adventurer",
+    "description": "+0% Stats.",
+    "source": {
+      "name": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[6]",
+        "snap_value_id": "34128",
+        "variable": "Support Cards (Red)",
+        "item_1": 1
+      },
+      "description": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[26]",
+        "snap_value_id": "34815",
+        "variable": "Support Card Descriptions (Red)",
+        "item_1": 1
+      }
+    }
+  },
+  {
+    "support_id": 2,
+    "color": "red",
+    "name": "General Sun Tzu",
+    "description": "+4% HP.",
+    "source": {
+      "name": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[6]",
+        "snap_value_id": "34128",
+        "variable": "Support Cards (Red)",
+        "item_1": 2
+      },
+      "description": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[26]",
+        "snap_value_id": "34815",
+        "variable": "Support Card Descriptions (Red)",
+        "item_1": 2
+      }
+    }
+  },
+  {
+    "support_id": 3,
+    "color": "red",
+    "name": "Neko",
+    "description": "+6% Stats. +12% for Anime Pack cards.",
+    "source": {
+      "name": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[6]",
+        "snap_value_id": "34128",
+        "variable": "Support Cards (Red)",
+        "item_1": 3
+      },
+      "description": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[26]",
+        "snap_value_id": "34815",
+        "variable": "Support Card Descriptions (Red)",
+        "item_1": 3
+      }
+    }
+  },
+  {
+    "support_id": 4,
+    "color": "red",
+    "name": "Stormcaller",
+    "description": "+8% Stats. +16% for Storm cards.",
+    "source": {
+      "name": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[6]",
+        "snap_value_id": "34128",
+        "variable": "Support Cards (Red)",
+        "item_1": 4
+      },
+      "description": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[26]",
+        "snap_value_id": "34815",
+        "variable": "Support Card Descriptions (Red)",
+        "item_1": 4
+      }
+    }
+  },
+  {
+    "support_id": 5,
+    "color": "red",
+    "name": "Khione",
+    "description": "+8% Stats. +16% for Snow cards.",
+    "source": {
+      "name": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[6]",
+        "snap_value_id": "34128",
+        "variable": "Support Cards (Red)",
+        "item_1": 5
+      },
+      "description": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[26]",
+        "snap_value_id": "34815",
+        "variable": "Support Card Descriptions (Red)",
+        "item_1": 5
+      }
+    }
+  },
+  {
+    "support_id": 6,
+    "color": "red",
+    "name": "Shrinemaiden",
+    "description": "+8% Stats. +16% for Rising Sun cards.",
+    "source": {
+      "name": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[6]",
+        "snap_value_id": "34128",
+        "variable": "Support Cards (Red)",
+        "item_1": 6
+      },
+      "description": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[26]",
+        "snap_value_id": "34815",
+        "variable": "Support Card Descriptions (Red)",
+        "item_1": 6
+      }
+    }
+  },
+  {
+    "support_id": 7,
+    "color": "red",
+    "name": "Imp",
+    "description": "+9% Stats. +16% for demons.",
+    "source": {
+      "name": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[6]",
+        "snap_value_id": "34128",
+        "variable": "Support Cards (Red)",
+        "item_1": 7
+      },
+      "description": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[26]",
+        "snap_value_id": "34815",
+        "variable": "Support Card Descriptions (Red)",
+        "item_1": 7
+      }
+    }
+  },
+  {
+    "support_id": 8,
+    "color": "red",
+    "name": "Iris",
+    "description": "+10% Stats. +20% for Aurora cards.",
+    "source": {
+      "name": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[6]",
+        "snap_value_id": "34128",
+        "variable": "Support Cards (Red)",
+        "item_1": 8
+      },
+      "description": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[26]",
+        "snap_value_id": "34815",
+        "variable": "Support Card Descriptions (Red)",
+        "item_1": 8
+      }
+    }
+  },
+  {
+    "support_id": 9,
+    "color": "red",
+    "name": "Shatbi",
+    "description": "+11% Stats. +22% for Egypt cards.",
+    "source": {
+      "name": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[6]",
+        "snap_value_id": "34128",
+        "variable": "Support Cards (Red)",
+        "item_1": 9
+      },
+      "description": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[26]",
+        "snap_value_id": "34815",
+        "variable": "Support Card Descriptions (Red)",
+        "item_1": 9
+      }
+    }
+  },
+  {
+    "support_id": 10,
+    "color": "red",
+    "name": "Astrologist",
+    "description": "+12% Stats. +24% for Meteor Shower cards.",
+    "source": {
+      "name": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[6]",
+        "snap_value_id": "34128",
+        "variable": "Support Cards (Red)",
+        "item_1": 10
+      },
+      "description": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[26]",
+        "snap_value_id": "34815",
+        "variable": "Support Card Descriptions (Red)",
+        "item_1": 10
+      }
+    }
+  },
+  {
+    "support_id": 11,
+    "color": "red",
+    "name": "Kala",
+    "description": "+12% Stats. +24% for Time Storm cards.",
+    "source": {
+      "name": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[6]",
+        "snap_value_id": "34128",
+        "variable": "Support Cards (Red)",
+        "item_1": 11
+      },
+      "description": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[26]",
+        "snap_value_id": "34815",
+        "variable": "Support Card Descriptions (Red)",
+        "item_1": 11
+      }
+    }
+  },
+  {
+    "support_id": 12,
+    "color": "red",
+    "name": "Satan",
+    "description": "+14% Stats. +28% for Blood Rain cards.",
+    "source": {
+      "name": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[6]",
+        "snap_value_id": "34128",
+        "variable": "Support Cards (Red)",
+        "item_1": 12
+      },
+      "description": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[26]",
+        "snap_value_id": "34815",
+        "variable": "Support Card Descriptions (Red)",
+        "item_1": 12
+      }
+    }
+  },
+  {
+    "support_id": 13,
+    "color": "red",
+    "name": "Dragon King",
+    "description": "+14% Stats. +28% for Dragons.",
+    "source": {
+      "name": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[6]",
+        "snap_value_id": "34128",
+        "variable": "Support Cards (Red)",
+        "item_1": 13
+      },
+      "description": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[26]",
+        "snap_value_id": "34815",
+        "variable": "Support Card Descriptions (Red)",
+        "item_1": 13
+      }
+    }
+  },
+  {
+    "support_id": 14,
+    "color": "red",
+    "name": "Army's Reinforcements",
+    "description": "+14% Stats. +28% for Swordsmen.",
+    "source": {
+      "name": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[6]",
+        "snap_value_id": "34128",
+        "variable": "Support Cards (Red)",
+        "item_1": 14
+      },
+      "description": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[26]",
+        "snap_value_id": "34815",
+        "variable": "Support Card Descriptions (Red)",
+        "item_1": 14
+      }
+    }
+  },
+  {
+    "support_id": 15,
+    "color": "red",
+    "name": "Avian King",
+    "description": "+14% Stats. +28% for birds.",
+    "source": {
+      "name": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[6]",
+        "snap_value_id": "34128",
+        "variable": "Support Cards (Red)",
+        "item_1": 15
+      },
+      "description": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[26]",
+        "snap_value_id": "34815",
+        "variable": "Support Card Descriptions (Red)",
+        "item_1": 15
+      }
+    }
+  },
+  {
+    "support_id": 16,
+    "color": "red",
+    "name": "Taoist",
+    "description": "+15% Stats. +30% for Immortal Pack cards.",
+    "source": {
+      "name": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[6]",
+        "snap_value_id": "34128",
+        "variable": "Support Cards (Red)",
+        "item_1": 16
+      },
+      "description": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[26]",
+        "snap_value_id": "34815",
+        "variable": "Support Card Descriptions (Red)",
+        "item_1": 16
+      }
+    }
+  },
+  {
+    "support_id": 17,
+    "color": "red",
+    "name": "Niflheim",
+    "description": "+16% Stats. +32% for Shroud cards.",
+    "source": {
+      "name": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[6]",
+        "snap_value_id": "34128",
+        "variable": "Support Cards (Red)",
+        "item_1": 17
+      },
+      "description": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[26]",
+        "snap_value_id": "34815",
+        "variable": "Support Card Descriptions (Red)",
+        "item_1": 17
+      }
+    }
+  },
+  {
+    "support_id": 18,
+    "color": "red",
+    "name": "Eclipse Chaser",
+    "description": "+18% Stats. +36% for Eclipse cards.",
+    "source": {
+      "name": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[6]",
+        "snap_value_id": "34128",
+        "variable": "Support Cards (Red)",
+        "item_1": 18
+      },
+      "description": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[26]",
+        "snap_value_id": "34815",
+        "variable": "Support Card Descriptions (Red)",
+        "item_1": 18
+      }
+    }
+  },
+  {
+    "support_id": 19,
+    "color": "red",
+    "name": "The Sequel",
+    "description": "+22% Stats. +36% for Era 2 cards.",
+    "source": {
+      "name": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[6]",
+        "snap_value_id": "34128",
+        "variable": "Support Cards (Red)",
+        "item_1": 19
+      },
+      "description": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[26]",
+        "snap_value_id": "34815",
+        "variable": "Support Card Descriptions (Red)",
+        "item_1": 19
+      }
+    }
+  },
+  {
+    "support_id": 20,
+    "color": "red",
+    "name": "Myths",
+    "description": "+24% Stats. +37% for Cryptid Pack cards.",
+    "source": {
+      "name": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[6]",
+        "snap_value_id": "34128",
+        "variable": "Support Cards (Red)",
+        "item_1": 20
+      },
+      "description": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[26]",
+        "snap_value_id": "34815",
+        "variable": "Support Card Descriptions (Red)",
+        "item_1": 20
+      }
+    }
+  },
+  {
+    "support_id": 21,
+    "color": "red",
+    "name": "Gamer",
+    "description": "+24% Stats. +37% for Video Game Pack cards.",
+    "source": {
+      "name": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[6]",
+        "snap_value_id": "34128",
+        "variable": "Support Cards (Red)",
+        "item_1": 21
+      },
+      "description": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[26]",
+        "snap_value_id": "34815",
+        "variable": "Support Card Descriptions (Red)",
+        "item_1": 21
+      }
+    }
+  },
+  {
+    "support_id": 22,
+    "color": "red",
+    "name": "Elohim",
+    "description": "+25% Stats. +36% for Rapture cards.",
+    "source": {
+      "name": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[6]",
+        "snap_value_id": "34128",
+        "variable": "Support Cards (Red)",
+        "item_1": 22
+      },
+      "description": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[26]",
+        "snap_value_id": "34815",
+        "variable": "Support Card Descriptions (Red)",
+        "item_1": 22
+      }
+    }
+  },
+  {
+    "support_id": 23,
+    "color": "red",
+    "name": "Mangeka",
+    "description": "+25% Stats. +36% for Manga cards.",
+    "source": {
+      "name": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[6]",
+        "snap_value_id": "34128",
+        "variable": "Support Cards (Red)",
+        "item_1": 23
+      },
+      "description": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[26]",
+        "snap_value_id": "34815",
+        "variable": "Support Card Descriptions (Red)",
+        "item_1": 23
+      }
+    }
+  },
+  {
+    "support_id": 24,
+    "color": "red",
+    "name": "Disease",
+    "description": "+26% Stats. +36% for Virus cards.",
+    "source": {
+      "name": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[6]",
+        "snap_value_id": "34128",
+        "variable": "Support Cards (Red)",
+        "item_1": 24
+      },
+      "description": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[26]",
+        "snap_value_id": "34815",
+        "variable": "Support Card Descriptions (Red)",
+        "item_1": 24
+      }
+    }
+  },
+  {
+    "support_id": 25,
+    "color": "red",
+    "name": "Yggdrasil",
+    "description": "+28% Stats. +36% for Armageddon cards.",
+    "source": {
+      "name": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[6]",
+        "snap_value_id": "34128",
+        "variable": "Support Cards (Red)",
+        "item_1": 25
+      },
+      "description": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[26]",
+        "snap_value_id": "34815",
+        "variable": "Support Card Descriptions (Red)",
+        "item_1": 25
+      }
+    }
+  },
+  {
+    "support_id": 26,
+    "color": "red",
+    "name": "Dinosaur King",
+    "description": "+32% Stats. +51% for Prehistoric cards.",
+    "source": {
+      "name": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[6]",
+        "snap_value_id": "34128",
+        "variable": "Support Cards (Red)",
+        "item_1": 26
+      },
+      "description": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[26]",
+        "snap_value_id": "34815",
+        "variable": "Support Card Descriptions (Red)",
+        "item_1": 26
+      }
+    }
+  },
+  {
+    "support_id": 27,
+    "color": "red",
+    "name": "Desmond Of Despair",
+    "description": "+32% Stats. +51% for Seven Sins cards.",
+    "source": {
+      "name": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[6]",
+        "snap_value_id": "34128",
+        "variable": "Support Cards (Red)",
+        "item_1": 27
+      },
+      "description": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[26]",
+        "snap_value_id": "34815",
+        "variable": "Support Card Descriptions (Red)",
+        "item_1": 27
+      }
+    }
+  },
+  {
+    "support_id": 28,
+    "color": "red",
+    "name": "The One Ring",
+    "description": "+39% Stats to all non-Weather cards / Boss cards.",
+    "source": {
+      "name": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[6]",
+        "snap_value_id": "34128",
+        "variable": "Support Cards (Red)",
+        "item_1": 28
+      },
+      "description": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[26]",
+        "snap_value_id": "34815",
+        "variable": "Support Card Descriptions (Red)",
+        "item_1": 28
+      }
+    }
+  },
+  {
+    "support_id": 1,
+    "color": "blue",
+    "name": "Shielder",
+    "description": "Reduce damage taken by 2%.",
+    "source": {
+      "name": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[7]",
+        "snap_value_id": "34129",
+        "variable": "Support Cards (Blue)",
+        "item_1": 1
+      },
+      "description": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[27]",
+        "snap_value_id": "34816",
+        "variable": "Support Card Descriptions (Blue)",
+        "item_1": 1
+      }
+    }
+  },
+  {
+    "support_id": 2,
+    "color": "blue",
+    "name": "Flame Wizard",
+    "description": "15% chance to inflict burn for 2 turns after attacking.",
+    "source": {
+      "name": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[7]",
+        "snap_value_id": "34129",
+        "variable": "Support Cards (Blue)",
+        "item_1": 2
+      },
+      "description": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[27]",
+        "snap_value_id": "34816",
+        "variable": "Support Card Descriptions (Blue)",
+        "item_1": 2
+      }
+    }
+  },
+  {
+    "support_id": 3,
+    "color": "blue",
+    "name": "Berserker",
+    "description": "Cards have a 5% chance to counterattack.",
+    "source": {
+      "name": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[7]",
+        "snap_value_id": "34129",
+        "variable": "Support Cards (Blue)",
+        "item_1": 3
+      },
+      "description": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[27]",
+        "snap_value_id": "34816",
+        "variable": "Support Card Descriptions (Blue)",
+        "item_1": 3
+      }
+    }
+  },
+  {
+    "support_id": 4,
+    "color": "blue",
+    "name": "Phantom",
+    "description": "Cards have a 5% chance to stun the target.",
+    "source": {
+      "name": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[7]",
+        "snap_value_id": "34129",
+        "variable": "Support Cards (Blue)",
+        "item_1": 4
+      },
+      "description": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[27]",
+        "snap_value_id": "34816",
+        "variable": "Support Card Descriptions (Blue)",
+        "item_1": 4
+      }
+    }
+  },
+  {
+    "support_id": 5,
+    "color": "blue",
+    "name": "Vampire Matron",
+    "description": "Enhnace existing life drain abilities by 25% and grant 5% life drain to other allies.",
+    "source": {
+      "name": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[7]",
+        "snap_value_id": "34129",
+        "variable": "Support Cards (Blue)",
+        "item_1": 5
+      },
+      "description": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[27]",
+        "snap_value_id": "34816",
+        "variable": "Support Card Descriptions (Blue)",
+        "item_1": 5
+      }
+    }
+  },
+  {
+    "support_id": 6,
+    "color": "blue",
+    "name": "Synth Human",
+    "description": "Avoid damage below 8% of your HP. The threshold is 12% for Time Storm cards.",
+    "source": {
+      "name": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[7]",
+        "snap_value_id": "34129",
+        "variable": "Support Cards (Blue)",
+        "item_1": 6
+      },
+      "description": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[27]",
+        "snap_value_id": "34816",
+        "variable": "Support Card Descriptions (Blue)",
+        "item_1": 6
+      }
+    }
+  },
+  {
+    "support_id": 7,
+    "color": "blue",
+    "name": "Executioner",
+    "description": "Deal 15% increased damage to enemies below 30% HP.",
+    "source": {
+      "name": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[7]",
+        "snap_value_id": "34129",
+        "variable": "Support Cards (Blue)",
+        "item_1": 7
+      },
+      "description": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[27]",
+        "snap_value_id": "34816",
+        "variable": "Support Card Descriptions (Blue)",
+        "item_1": 7
+      }
+    }
+  },
+  {
+    "support_id": 8,
+    "color": "blue",
+    "name": "Fate",
+    "description": "25% chance to retry a failed ability.",
+    "source": {
+      "name": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[7]",
+        "snap_value_id": "34129",
+        "variable": "Support Cards (Blue)",
+        "item_1": 8
+      },
+      "description": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[27]",
+        "snap_value_id": "34816",
+        "variable": "Support Card Descriptions (Blue)",
+        "item_1": 8
+      }
+    }
+  },
+  {
+    "support_id": 9,
+    "color": "blue",
+    "name": "Mirror Knight",
+    "description": "Reflect 10% of damage taken back to the attacker.",
+    "source": {
+      "name": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[7]",
+        "snap_value_id": "34129",
+        "variable": "Support Cards (Blue)",
+        "item_1": 9
+      },
+      "description": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[27]",
+        "snap_value_id": "34816",
+        "variable": "Support Card Descriptions (Blue)",
+        "item_1": 9
+      }
+    }
+  },
+  {
+    "support_id": 10,
+    "color": "blue",
+    "name": "Final Testament",
+    "description": "When ally dies, the next ally inherits 5% of its Stats.",
+    "source": {
+      "name": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[7]",
+        "snap_value_id": "34129",
+        "variable": "Support Cards (Blue)",
+        "item_1": 10
+      },
+      "description": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[27]",
+        "snap_value_id": "34816",
+        "variable": "Support Card Descriptions (Blue)",
+        "item_1": 10
+      }
+    }
+  },
+  {
+    "support_id": 11,
+    "color": "blue",
+    "name": "Storm Spirit",
+    "description": "10% chance after attacking to immediately attack again at 50% damage.",
+    "source": {
+      "name": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[7]",
+        "snap_value_id": "34129",
+        "variable": "Support Cards (Blue)",
+        "item_1": 11
+      },
+      "description": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[27]",
+        "snap_value_id": "34816",
+        "variable": "Support Card Descriptions (Blue)",
+        "item_1": 11
+      }
+    }
+  },
+  {
+    "support_id": 12,
+    "color": "blue",
+    "name": "Magical Elf",
+    "description": "If you have 4 or more unique 'Toys' in your deck, awaken them.",
+    "source": {
+      "name": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[7]",
+        "snap_value_id": "34129",
+        "variable": "Support Cards (Blue)",
+        "item_1": 12
+      },
+      "description": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[27]",
+        "snap_value_id": "34816",
+        "variable": "Support Card Descriptions (Blue)",
+        "item_1": 12
+      }
+    }
+  },
+  {
+    "support_id": 13,
+    "color": "blue",
+    "name": "Jurassic World",
+    "description": "Prehistoric cards gain 10% stats for every prehistoric card in your deck.",
+    "source": {
+      "name": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[7]",
+        "snap_value_id": "34129",
+        "variable": "Support Cards (Blue)",
+        "item_1": 13
+      },
+      "description": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[27]",
+        "snap_value_id": "34816",
+        "variable": "Support Card Descriptions (Blue)",
+        "item_1": 13
+      }
+    }
+  },
+  {
+    "support_id": 14,
+    "color": "blue",
+    "name": "End Times",
+    "description": "10% chance for an opponent's ability to fail.",
+    "source": {
+      "name": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[7]",
+        "snap_value_id": "34129",
+        "variable": "Support Cards (Blue)",
+        "item_1": 14
+      },
+      "description": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[27]",
+        "snap_value_id": "34816",
+        "variable": "Support Card Descriptions (Blue)",
+        "item_1": 14
+      }
+    }
+  },
+  {
+    "support_id": 15,
+    "color": "blue",
+    "name": "Guardian Angel",
+    "description": "10% chance to prevent an ally from taking lethal damage, leaving them at 1HP. Can activate once per ally.",
+    "source": {
+      "name": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[7]",
+        "snap_value_id": "34129",
+        "variable": "Support Cards (Blue)",
+        "item_1": 15
+      },
+      "description": {
+        "file": "Cards-2.xml",
+        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[27]",
+        "snap_value_id": "34816",
+        "variable": "Support Card Descriptions (Blue)",
+        "item_1": 15
+      }
+    }
+  }
+]

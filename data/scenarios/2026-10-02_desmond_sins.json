@@ -1,0 +1,25 @@
+{
+ "note": "Enemy from the user's screenshot 2026-10-02 (HP-solved): Sable Ga, Noveau Riche GaCrPl, Malik GaCrPl, Parallax Pl; Galaxy Desmond Of Despair + Vampire Matron (tier assumed Galaxy). The player's cards and supports come from data/my_deck.json; candidates from the restricted deck (--mode). Suggested --max-rolls: the rarity of the lowest-rarity card the user showed (7.8e10). Weather availability: card_engine/availability.py (user's rules).",
+ "enemy": {
+  "cards": [
+   211,
+   169,
+   206,
+   65
+  ],
+  "borders": [
+   9,
+   12,
+   12,
+   2
+  ],
+  "red": [
+   27,
+   5
+  ],
+  "blue": [
+   5,
+   5
+  ]
+ }
+}

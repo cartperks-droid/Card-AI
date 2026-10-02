@@ -1,0 +1,25 @@
+{
+  "source": "data/raw/IMG_0290.MOV",
+  "duration_seconds": 168.6,
+  "frame_sampling": "4 fps via AVFoundation",
+  "setup": {
+    "player": "Malik The Sovereign (#206), displayed 655,360",
+    "dummy": [
+      "Frosty The Snowman (#251)",
+      "Titan (#28)"
+    ]
+  },
+  "rounds_detected": 33,
+  "user_reported_rounds": 32,
+  "findings": {
+    "frostbite_source": "Frosty's on-death frostbite lands on Malik when Malik kills Frosty; Malik's art darkens",
+    "outcome_split": {
+      "hp_loss_and_lost_turn": 18,
+      "no_effect": 15
+    },
+    "hp_loss_fraction": "bar length ratio 0.79-0.80 (about 20% of max HP), once per round at the turn change after the kill",
+    "lost_turn": "in every loss round Titan hits Malik twice before Malik kills it; in no-loss rounds once",
+    "interpretation": "one 50% roll: on success 20% max HP damage and the next own turn is skipped (provisional)"
+  },
+  "method": "HP bar = longest red horizontal run per side; darkness = mean luminance above Malik's bar"
+}

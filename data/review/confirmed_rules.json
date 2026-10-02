@@ -1,0 +1,241 @@
+{
+  "status": "user_observations_and_rules; incomplete battle specification",
+  "rounding": {
+    "user_rule": "Always round up",
+    "damage_policy": "ceil",
+    "intermediate_stat_policy": "unrounded",
+    "intermediate_stat_policy_status": "working interpretation consistent with the reported 531 ATK; not unique proof of internal representation",
+    "evidence": "Good Boy reduces Poseidon before Poseidon boosts his own stats. Final displayed ATK is 531. Rounding up separately after each stat change predicts 532.",
+    "supersedes": "Earlier assumption that every percentage stat effect rounds up immediately."
+  },
+  "card_modifier": {
+    "applies_to": [
+      "hp",
+      "attack"
+    ],
+    "source": "User correction",
+    "confirmed_borderless_stats": {
+      "33": {
+        "hp": 2560,
+        "attack": 1280
+      },
+      "38": {
+        "hp": 2560,
+        "attack": 1280
+      }
+    }
+  },
+  "weather": {
+    "intrinsic": true,
+    "source": "User clarification"
+  },
+  "border": {
+    "scales_via_effective_rarity": true,
+    "source": "User clarification",
+    "border16_poseidon_check": "User-read 81,736,447 ATK for a GaRuCrPl (border 16) Poseidon after +40% matches ceil(58,383,176 x 1.4) exactly."
+  },
+  "observations": [
+    {
+      "match": "Good Boy vs Good Boy",
+      "both_entry_reductions_before_attack": true,
+      "player_entry_first": true,
+      "player_attack_first": true,
+      "winner": "player",
+      "universal_initiative_rule_confirmed": false,
+      "both_entry_reductions_before_attack_status": "interpreted from response to timing question; no complete event log"
+    },
+    {
+      "match": "Chronus The Hoarder vs Poseidon",
+      "borders": "none",
+      "supports": "none",
+      "order": [
+        "Poseidon stat boost",
+        "Chronus steals 10 percent"
+      ],
+      "winner": "Poseidon",
+      "own_entry_trigger_confirmed": false
+    },
+    {
+      "match": "Good Boy then Chronus The Hoarder versus Poseidon",
+      "player_team": [
+        3,
+        205
+      ],
+      "opponent_team": [
+        44
+      ],
+      "chronus_steals_on_own_replacement_entry": false,
+      "poseidon_final_displayed_attack": 531,
+      "poseidon_hp": null,
+      "order": [
+        "Good Boy attack reduction",
+        "Poseidon self stat boost",
+        "Good Boy dies",
+        "Chronus enters without theft"
+      ],
+      "scope": "User-reported order and attack; exact HP and internal arithmetic were not visible."
+    },
+    {
+      "match": "Dancer versus Horus",
+      "cards": [
+        67,
+        73
+      ],
+      "first_individual_hit_blocked": true,
+      "later_hits_calculated_normally": true,
+      "retarget_after_ko": null
+    }
+  ],
+  "capabilities": {
+    "no_supports_battle_observed": true,
+    "player_cards": "lit cards in supplied screenshots",
+    "training_dummy_opponents": "any card",
+    "confirmed_player_cards_from_tests": [
+      3,
+      205
+    ]
+  },
+  "initiative": {
+    "initiator_attacks_first": true,
+    "initiator_must_finish_with_survivor": true,
+    "both_teams_depleted_winner": "defender"
+  },
+  "multi_hit": {
+    "on_ko": "cancel_remaining_hits"
+  },
+  "counter": {
+    "after_each_damaging_hit": true,
+    "counter_triggers_counter": false,
+    "after_lethal_hit": false
+  },
+  "arthur": {
+    "lethal_survival_uses": 1,
+    "surviving_hp": 1
+  },
+  "mutation_eligibility": {
+    "weather_cards_eligible": false,
+    "weather_and_mutation_are_distinct": true
+  },
+  "weather_mapping": {
+    "status": "User-confirmed identities preserved, with later explicit Bad Boys Base and Pandora Eclipse corrections; Toy Bear remains Snow.",
+    "reorder": false
+  },
+  "entry_attacks": {
+    "knightmare_mirror_order": [
+      "initiator_entry_hit",
+      "defender_entry_hit",
+      "initiator_normal_attack"
+    ],
+    "raze_counters_entry_hit_immediately": true,
+    "replacement_after_initial_entry_ko": "replacement entry hit precedes initiator normal attack",
+    "scope": "User-tested Knightmare fixtures; ordering against unrelated entry passives remains provisional."
+  },
+  "inari": {
+    "invincible": true,
+    "dies_after_own_attack_number": 3,
+    "death_vs_third_counter": "after_counter_resolves"
+  },
+  "extra_turns": {
+    "wind_spirit_actions_each_cycle": 2,
+    "unused_extra_turn_attacks_replacement_enemy": true,
+    "distinct_from_multi_hit_ko_cancellation": true
+  },
+  "martial_artist": {
+    "observed_displayed_attack": [
+      260,
+      338,
+      440
+    ],
+    "current_attack_multiplier": 1.3,
+    "phase": "own normal action end, after counter reactions and before enemy normal action",
+    "blocked_hit_still_boosts": true,
+    "lethal_counter_prevents_boost": true,
+    "intermediate_rounding": "retain fractions as existing working interpretation; these two boosts do not uniquely settle it"
+  },
+  "healing": {
+    "capped_at_max_hp": true,
+    "immortal_witch_phase": "own normal action start, before attack",
+    "immortal_witch_activates_at_full_hp": true,
+    "immortal_witch_amount_basis": "35% maximum HP is the working interpretation: 868 HP and 290 ATK reproduce the observed 100-turn mirror; 35% current HP would end on turn 9. Exact uncapped heal amount/rounding not observed.",
+    "forest_spirit_phase": "after its attack, before defender counter",
+    "count_muscula_phase": "after damage, before defender counter",
+    "forest_spirit_unverified": [
+      "maximum/current HP percentage basis",
+      "multi-hit frequency",
+      "blocked/dodged-hit activation"
+    ],
+    "count_muscula_unverified": [
+      "overkill basis",
+      "exact healing rounding"
+    ],
+    "shu_lethal_hit": "Shu dies to a lethal Raze hit; damage recovery does not revive or prevent death.",
+    "display": "User: HP appears only on the card before battle; in battle it can only be inferred from the red bar. Recovery shows as a healing effect."
+  },
+  "repeat_safeguard": {
+    "observed_turns": 100,
+    "observed_rounds": 50,
+    "scope": "Immortal Witch mirror with ordinary alternating actions, user-counted from video",
+    "both_active_cards_removed": true,
+    "default_repeat_cycles": 50,
+    "supersedes": "Earlier provisional approximately 70-cycle assumption",
+    "not_yet_verified": [
+      "extra-turn or multi-hit counting",
+      "reset after replacement",
+      "death-trigger or revival interactions"
+    ]
+  },
+  "immortal_witch_stats": {
+    "borderless_hp": 868,
+    "hp_evidence": "user read card outside battle",
+    "borderless_attack": 290,
+    "attack_evidence": "IMG_0289.MOV",
+    "hp_ratio": 1.2,
+    "attack_ratio": 0.8,
+    "ratio_source": "https://card-rng.fandom.com/wiki/Immortal_Witch",
+    "variant_scaling": "extrapolated, unverified",
+    "border2_check": "User-read Platinum (border 2) Witch 3471 HP matches ceil(3470.80) with the 1.2 HP ratio."
+  },
+  "boss_stats": {
+    "pack": "Bosses",
+    "shared_stat_multiplier": 2,
+    "scope": "all eight cards, user confirmed",
+    "numeric_snapshots": [
+      205,
+      210
+    ]
+  },
+  "interception": {
+    "piccolo_phase": "replaces the active card when a hit would be lethal, including a Raze counter; the hit is blocked",
+    "piccolo_stat_multiplier": "2x HP and ATK working interpretation; the observed kill requires at least 1.62x ATK",
+    "following_turns": "the enemy's normal turn follows, then Piccolo acts",
+    "unverified": [
+      "order of Piccolo's 2x versus Chronus theft (2x first)",
+      "theft from a returning card never stolen from (assumed yes)",
+      "entry hits, multi-hit remainder, and turn-end effects of a displaced actor"
+    ],
+    "displaced_card": "user-confirmed: swaps into the interceptor's slot and returns after the interceptor dies; a later Piccolo directly behind it intercepts again",
+    "lethal_survival_precedence": "user-confirmed: Arthur's own 1-HP survival is used before Piccolo intercepts",
+    "returning_card_entry_effects": "user-confirmed for Poseidon, Knightmare and Good Boy: a returning card keeps its stats and repeats no entry ability",
+    "enemy_entry_theft": "user-observed: Chronus steals from a swapping-in Piccolo and never from the same card twice"
+  },
+  "lethal_dodge": {
+    "true_prophet": "user-stated on-death ability; user-observed: the next card dodges its next hit, lethal (Raze) or not (mirror), despite the 'lethal' card text",
+    "shu_recovery_on_dodge": "user-observed: recovery still shows on the dodge, proportional to the dodged damage, never above max HP (visible as a healing effect even at full HP)",
+    "implementation": "one charge granted on the Prophet's death to the card coming in; consumed by that card's next hit after blocks",
+    "unverified": [
+      "recovery basis on a dodge when damage exceeds current HP (implemented as excluding overkill)"
+    ]
+  },
+  "protection_order": "user-stated: True Prophet dodge > survive at 1 HP > Piccolo swap",
+  "statuses": {
+    "timing": "ticks and duration decrements at the end of every turn, both sides' (fit to bleed/burn tests)",
+    "refresh_and_stack": "user: re-applying refreshes duration; different statuses stack",
+    "burn": "about 10% max HP per tick (fit)",
+    "bleed": "about 16% max HP per tick (fit; user estimate ~15%)",
+    "poison": "user: not percent based; borderless Dilophosaurus did no visible damage to Ru 100 Men (not implemented)",
+    "freeze": "user: blocks counters; a 1-turn freeze expires before the frozen card's next normal turn",
+    "slow": "user: target loses a turn before attacking",
+    "confusion": "user: self-attack at about 50% (implemented as raw own damage, action consumed)",
+    "frostbite": "video 0290 plus Yeti and Old Man Winter reports: each tick rolls 50%; success deals 20% max HP and the card loses its next turn (implemented)"
+  }
+}

@@ -1,0 +1,255 @@
+{
+  "purpose": "integration diagnostic; random weights, not trained team recommendations",
+  "mutation_variants_enabled": true,
+  "first_side": 0,
+  "training_labels_allowed": false,
+  "search_config": {
+    "candidate_count": 2,
+    "steps": 2,
+    "learning_rate": 0.1,
+    "nearest_k": 8,
+    "distance_temperature": 0.25,
+    "initial_noise": 0.02,
+    "anchor_penalty": 0.001,
+    "seed": 1
+  },
+  "description_architecture": {
+    "vocabulary_size": 441,
+    "pad_id": 0,
+    "bos_id": 439,
+    "card_id": 440,
+    "width": 128,
+    "layers": 2,
+    "heads": 4,
+    "feedforward_width": 512,
+    "max_length": 64,
+    "projection_hidden_width": 768,
+    "output_width": 768,
+    "dropout": 0.0
+  },
+  "strategic_architecture": {
+    "width": 768,
+    "layers": 4,
+    "heads": 8,
+    "attention_width": 192,
+    "feedforward_width": 3072,
+    "dropout": 0.0,
+    "class_names": [],
+    "mutation_names": [
+      "None",
+      "Storm",
+      "Snow",
+      "Aurora",
+      "Shroud",
+      "Meteor Shower",
+      "Time Storm",
+      "Eclipse",
+      "Virus",
+      "Blood Rain",
+      "Armageddon",
+      "Manga"
+    ]
+  },
+  "candidates_a": [
+    {
+      "team": [
+        {
+          "card_id": 3,
+          "border_id": 1,
+          "mutation": "None"
+        },
+        {
+          "card_id": 44,
+          "border_id": 1,
+          "mutation": "None"
+        },
+        {
+          "card_id": 38,
+          "border_id": 1,
+          "mutation": "None"
+        },
+        {
+          "card_id": 205,
+          "border_id": 1,
+          "mutation": "None"
+        }
+      ],
+      "model_probabilities": [
+        0.6537359952926636,
+        0.21888095140457153,
+        0.1273830682039261
+      ],
+      "target_score": 0.6537359952926636,
+      "seed": 11648155844520588584
+    },
+    {
+      "team": [
+        {
+          "card_id": 44,
+          "border_id": 1,
+          "mutation": "None"
+        },
+        {
+          "card_id": 38,
+          "border_id": 1,
+          "mutation": "None"
+        },
+        {
+          "card_id": 3,
+          "border_id": 1,
+          "mutation": "None"
+        },
+        {
+          "card_id": 205,
+          "border_id": 1,
+          "mutation": "None"
+        }
+      ],
+      "model_probabilities": [
+        0.6536269783973694,
+        0.21877925097942352,
+        0.12759383022785187
+      ],
+      "target_score": 0.6536269783973694,
+      "seed": 3977797131680002097
+    }
+  ],
+  "candidates_b": [
+    {
+      "team": [
+        {
+          "card_id": 205,
+          "border_id": 1,
+          "mutation": "None"
+        },
+        {
+          "card_id": 38,
+          "border_id": 1,
+          "mutation": "None"
+        },
+        {
+          "card_id": 44,
+          "border_id": 1,
+          "mutation": "Manga"
+        },
+        {
+          "card_id": 3,
+          "border_id": 1,
+          "mutation": "None"
+        }
+      ],
+      "model_probabilities": [
+        0.6514973640441895,
+        0.21981075406074524,
+        0.12869182229042053
+      ],
+      "target_score": 0.21981075406074524,
+      "seed": 3651363569004447465
+    },
+    {
+      "team": [
+        {
+          "card_id": 205,
+          "border_id": 1,
+          "mutation": "None"
+        },
+        {
+          "card_id": 38,
+          "border_id": 1,
+          "mutation": "None"
+        },
+        {
+          "card_id": 3,
+          "border_id": 1,
+          "mutation": "Manga"
+        },
+        {
+          "card_id": 44,
+          "border_id": 1,
+          "mutation": "None"
+        }
+      ],
+      "model_probabilities": [
+        0.6514120697975159,
+        0.219805046916008,
+        0.12878286838531494
+      ],
+      "target_score": 0.219805046916008,
+      "seed": 8970774702037025483
+    }
+  ],
+  "crossplay": [
+    {
+      "index_a": 0,
+      "index_b": 0,
+      "p_a": 0.0,
+      "p_b": 1.0,
+      "tie": 0.0,
+      "unresolved": 0.0,
+      "expanded_states": 22,
+      "merged_states": 0,
+      "rules_status": "experimental_subset",
+      "training_labels_allowed": false,
+      "simulation_mode": "branch"
+    },
+    {
+      "index_a": 0,
+      "index_b": 1,
+      "p_a": 1.0,
+      "p_b": 0.0,
+      "tie": 0.0,
+      "unresolved": 0.0,
+      "expanded_states": 25,
+      "merged_states": 0,
+      "rules_status": "experimental_subset",
+      "training_labels_allowed": false,
+      "simulation_mode": "branch"
+    },
+    {
+      "index_a": 1,
+      "index_b": 0,
+      "p_a": 0.0,
+      "p_b": 1.0,
+      "tie": 0.0,
+      "unresolved": 0.0,
+      "expanded_states": 22,
+      "merged_states": 0,
+      "rules_status": "experimental_subset",
+      "training_labels_allowed": false,
+      "simulation_mode": "branch"
+    },
+    {
+      "index_a": 1,
+      "index_b": 1,
+      "p_a": 1.0,
+      "p_b": 0.0,
+      "tie": 0.0,
+      "unresolved": 0.0,
+      "expanded_states": 25,
+      "merged_states": 0,
+      "rules_status": "experimental_subset",
+      "training_labels_allowed": false,
+      "simulation_mode": "branch"
+    }
+  ],
+  "experimental_mean_win_bounds_a": [
+    [
+      0.5,
+      0.5
+    ],
+    [
+      0.5,
+      0.5
+    ]
+  ],
+  "experimental_mean_win_bounds_b": [
+    [
+      1.0,
+      1.0
+    ],
+    [
+      0.0,
+      0.0
+    ]
+  ]
+}

@@ -1,0 +1,254 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:card-engine:clean-dataset:1",
+  "title": "Organized card source data, not a verified battle simulator",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "simulation_ready",
+    "cards",
+    "descriptions",
+    "supports",
+    "borders",
+    "weathers",
+    "registry",
+    "tokens"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "1.0.0"
+    },
+    "simulation_ready": {
+      "const": false
+    },
+    "cards": {
+      "type": "array",
+      "minItems": 289,
+      "maxItems": 289,
+      "items": {
+        "$ref": "#/$defs/card"
+      }
+    },
+    "descriptions": {
+      "type": "array",
+      "minItems": 289,
+      "maxItems": 289,
+      "items": {
+        "$ref": "#/$defs/description"
+      }
+    },
+    "supports": {
+      "type": "array",
+      "minItems": 43,
+      "maxItems": 43,
+      "items": {
+        "$ref": "#/$defs/support"
+      }
+    },
+    "borders": {
+      "type": "array",
+      "minItems": 16,
+      "maxItems": 16,
+      "items": {
+        "$ref": "#/$defs/border"
+      }
+    },
+    "weathers": {
+      "type": "array",
+      "minItems": 13,
+      "maxItems": 13,
+      "items": {
+        "$ref": "#/$defs/weather"
+      }
+    },
+    "registry": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "card_id",
+          "verification_status",
+          "source"
+        ],
+        "properties": {
+          "card_id": {
+            "$ref": "#/$defs/id"
+          },
+          "verification_status": {
+            "const": "unverified"
+          }
+        }
+      }
+    },
+    "tokens": {
+      "type": "object",
+      "required": [
+        "vocabulary",
+        "rows",
+        "special_ids",
+        "tokenizer"
+      ]
+    }
+  },
+  "$defs": {
+    "id": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "nullable_strings": {
+      "type": [
+        "array",
+        "null"
+      ],
+      "items": {
+        "type": "string"
+      }
+    },
+    "card": {
+      "type": "object",
+      "required": [
+        "card_id",
+        "name",
+        "rarity",
+        "rarity_lexical",
+        "weather_id",
+        "card_modifier",
+        "card_modifier_lexical",
+        "packs",
+        "classes",
+        "source"
+      ],
+      "properties": {
+        "card_id": {
+          "$ref": "#/$defs/id"
+        },
+        "name": {
+          "type": "string"
+        },
+        "rarity": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "rarity_lexical": {
+          "type": "string"
+        },
+        "weather_id": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 13
+        },
+        "card_modifier": {
+          "type": "number"
+        },
+        "card_modifier_lexical": {
+          "type": "string"
+        },
+        "packs": {
+          "$ref": "#/$defs/nullable_strings"
+        },
+        "classes": {
+          "$ref": "#/$defs/nullable_strings"
+        },
+        "source": {
+          "type": "object"
+        }
+      }
+    },
+    "description": {
+      "type": "object",
+      "required": [
+        "card_id",
+        "original",
+        "refined",
+        "source"
+      ],
+      "properties": {
+        "card_id": {
+          "$ref": "#/$defs/id"
+        },
+        "original": {
+          "type": "string"
+        },
+        "refined": {
+          "type": "string"
+        }
+      }
+    },
+    "support": {
+      "type": "object",
+      "required": [
+        "support_id",
+        "color",
+        "name",
+        "description",
+        "source"
+      ],
+      "properties": {
+        "support_id": {
+          "$ref": "#/$defs/id"
+        },
+        "color": {
+          "enum": [
+            "red",
+            "blue"
+          ]
+        },
+        "name": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        }
+      }
+    },
+    "border": {
+      "type": "object",
+      "required": [
+        "border_id",
+        "name",
+        "rarity",
+        "rarity_lexical",
+        "source"
+      ],
+      "properties": {
+        "border_id": {
+          "$ref": "#/$defs/id"
+        },
+        "name": {
+          "type": "string"
+        },
+        "rarity": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "rarity_lexical": {
+          "type": "string"
+        }
+      }
+    },
+    "weather": {
+      "type": "object",
+      "required": [
+        "weather_id",
+        "name",
+        "multiplier",
+        "multiplier_lexical",
+        "source"
+      ],
+      "properties": {
+        "weather_id": {
+          "$ref": "#/$defs/id"
+        },
+        "name": {
+          "type": "string"
+        },
+        "multiplier": {
+          "type": "number"
+        },
+        "multiplier_lexical": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}

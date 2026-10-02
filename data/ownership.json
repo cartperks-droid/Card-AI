@@ -1,0 +1,15 @@
+{
+ "total_players": 300,
+ "effective_players": null,
+ "copies": {},
+ "dispersion": 1.0,
+ "independence": null,
+ "coupling": null,
+ "samples": {},
+ "displays": {},
+ "progression": null,
+ "kappa": 1.0,
+ "owner_counts": {
+  "171@11": 6
+ }
+}

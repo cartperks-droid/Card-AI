@@ -1,0 +1,21 @@
+{
+ "excluded_packs": [
+  "Christmas",
+  "Halloween",
+  "Halloween 2025",
+  "Limited"
+ ],
+ "limited_exceptions": [
+  240,
+  228,
+  231,
+  227,
+  230
+ ],
+ "disabled_borders": [
+  16
+ ],
+ "added_cards": [],
+ "removed_cards": [],
+ "border_overrides": {}
+}
