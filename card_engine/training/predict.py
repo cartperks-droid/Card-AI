@@ -11,7 +11,8 @@ import torch
 
 from ..catalog import load_catalog
 from ..model.checkpoint import load_checkpoint
-from .labels import ART_NAMES, label_specs, rules_fingerprint
+from .flags import snapshot
+from .labels import ART_NAMES, label_specs
 from .tablebase import Tablebase
 from .train import RUN_DIR, Inputs, card_table
 
@@ -34,7 +35,7 @@ def predict(spec, *, run_dir=RUN_DIR, device="cpu"):
     rows = {key: torch.tensor([value], device=device) for key, value in spec.items()}
     with torch.no_grad():
         model_p = model(**inputs(rows, card_table(model, inputs.data.description_tokens))).softmax(-1)[0].tolist()
-    probs, exact = label_specs(load_catalog(), [spec], seed=12345, tablebase=Tablebase(rules_fingerprint()))
+    probs, exact = label_specs(load_catalog(), [spec], seed=12345, tablebase=Tablebase(snapshot()))
     probs, exact = probs[0], bool(exact[0])
     finished = max(1e-12, float(probs[:2].sum()))
     return {"model": dict(zip(("A", "B"), (round(p, 3) for p in model_p))),

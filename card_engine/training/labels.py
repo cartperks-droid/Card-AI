@@ -128,8 +128,11 @@ def label_specs(catalog, specs, *, seed, tablebase=None, **overrides):
     return probs, exact
 
 
+STORE = SHARD_DIR / "store"  # every rules version's shards; validity per row comes from flags.valid_rows
+
+
 def _worker(args):
-    shard_seed, rows, out_dir, fingerprint, *tablebase_root = args
+    shard_seed, rows, out_dir, fingerprint, *tablebase_root = args  # fingerprint: the rules snapshot id
     catalog = load_catalog()
     rng = random.Random(shard_seed)
     specs = [random_spec(rng, catalog) for _ in range(rows)]
@@ -137,16 +140,18 @@ def _worker(args):
     arrays = {name: np.array([spec[name] for spec in specs], dtype=np.int16) for name in FIELDS}
     path = Path(out_dir) / f"shard_{shard_seed:08d}.npz"
     tmp = path.with_name(f"partial_{path.name}")  # not matched by shard_*.npz until complete
-    np.savez_compressed(tmp, probs=probs, exact=exact, fingerprint=np.array(fingerprint), **arrays)
+    np.savez_compressed(tmp, probs=probs, exact=exact, snapshot=np.array(fingerprint), **arrays)
     os.replace(tmp, path)
     return path.name, rows, int(exact.sum())
 
 
-def generate(shards, *, rows=2000, workers=None, first_seed=None, out_dir=SHARD_DIR):
-    """Write `shards` new shards (skipping seeds already on disk) with a process pool."""
-    out_dir = Path(out_dir) / rules_fingerprint().replace(":", "_")
+def generate(shards, *, rows=2000, workers=None, first_seed=None, out_dir=STORE):
+    """Write `shards` new shards (seeds continue after those on disk) with a process pool, stamped with the
+    current rules snapshot (training.flags)."""
+    from .flags import snapshot
+    out_dir = Path(out_dir)
     out_dir.mkdir(parents=True, exist_ok=True)
-    fingerprint = rules_fingerprint()
+    fingerprint = snapshot()
     existing = {int(p.stem.split("_")[1]) for p in out_dir.glob("shard_*.npz")}
     seed = first_seed if first_seed is not None else (max(existing) + 1 if existing else 1)
     jobs = []
@@ -166,14 +171,18 @@ def generate(shards, *, rows=2000, workers=None, first_seed=None, out_dir=SHARD_
     return out_dir
 
 
-def load_shards(directory):
-    """Concatenate every shard in one fingerprint directory."""
-    parts = [np.load(path) for path in sorted(Path(directory).glob("shard_*.npz"))]
+def load_shards(directory=STORE):
+    """Concatenate the rows still valid under the current rules (training.flags) from every shard."""
+    from .flags import entity_hashes, valid_rows
+    current = entity_hashes()
+    parts = []
+    for path in sorted(Path(directory).glob("shard_*.npz")):
+        with np.load(path) as shard:
+            arrays = {name: shard[name] for name in (*FIELDS, "probs", "exact")}
+            mask = valid_rows(arrays, str(shard["snapshot"]), current)
+        parts.append({k: v[mask] for k, v in arrays.items()})
     if not parts:
         raise FileNotFoundError(f"No label shards in {directory}")
-    fingerprints = {str(part["fingerprint"]) for part in parts}
-    if len(fingerprints) != 1:
-        raise ValueError(f"Mixed rule fingerprints: {fingerprints}")
     return {name: np.concatenate([part[name] for part in parts]) for name in (*FIELDS, "probs", "exact")}
 
 

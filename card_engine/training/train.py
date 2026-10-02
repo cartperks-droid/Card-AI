@@ -24,14 +24,12 @@ RUN_DIR = Path(__file__).resolve().parents[2] / "data" / "training"
 VALIDATION_EVERY = 25  # shard seeds divisible by this are held out
 
 
-def latest_label_dir(root=SHARD_DIR, min_shards=100):
-    """The newest rules' labels once they have `min_shards` shards (else the newest that does, else the largest)."""
-    dirs = [d for d in Path(root).iterdir() if d.is_dir() and any(d.glob("shard_*.npz"))]
-    if not dirs:
-        raise FileNotFoundError(f"No label shards under {root}")
-    newest = lambda d: max(p.stat().st_mtime for p in d.glob("shard_*.npz"))
-    ready = [d for d in dirs if len(list(d.glob("shard_*.npz"))) >= min_shards]
-    return max(ready, key=newest) if ready else max(dirs, key=lambda d: len(list(d.glob("shard_*.npz"))))
+def latest_label_dir(root=SHARD_DIR):
+    """The label store (every rules version's shards; rows are filtered by training.flags when loading)."""
+    store = Path(root) / "store"
+    if not any(store.glob("shard_*.npz")):
+        raise FileNotFoundError(f"No label shards in {store}")
+    return store
 
 
 _STAT_FAVOURITE = {}
@@ -55,15 +53,23 @@ def stat_favourite(path, catalog=None):
 
 
 def load_split(directory, device):
-    """(train, validation) tensors; validation = shards whose seed is divisible by VALIDATION_EVERY."""
+    """(train, validation) tensors of the rows still valid under the current rules (training.flags);
+    validation = shards whose seed is divisible by VALIDATION_EVERY."""
+    from .flags import entity_hashes, valid_rows
+    current = entity_hashes()
     split = {"train": [], "val": []}
     favourites = []
     for path in sorted(Path(directory).glob("shard_*.npz")):
         seed = int(path.stem.split("_")[1])
         validation = seed % VALIDATION_EVERY == 0
-        split["val" if validation else "train"].append(np.load(path))
+        with np.load(path) as shard:
+            arrays = {key: shard[key] for key in (*FIELDS, "probs")}
+            mask = valid_rows(arrays, str(shard["snapshot"]), current)
+        if not mask.any():
+            continue
+        split["val" if validation else "train"].append({k: v[mask] for k, v in arrays.items()})
         if validation:
-            favourites.append(stat_favourite(path))
+            favourites.append(stat_favourite(path)[mask])
     out = {}
     for name, parts in split.items():
         if not parts:
@@ -187,8 +193,10 @@ def train(*, steps=None, batch_size=512, lr=3e-4, warmup=1000, weight_decay=0.05
         step, best = state["step"], state.get("best")
     inputs = Inputs(device)
     tokens = inputs.data.description_tokens
+    from .flags import snapshot
     label_dir = latest_label_dir(label_root)
     train_rows, val_rows = load_split(label_dir, device)
+    rules_id = snapshot()  # the current rules; probes and the best checkpoint reset when it changes
     # Grokking probes: fixed subsets of the training and validation rows, so the curves stay comparable
     # (the full validation set grows with new shards and changes with the rules).
     probe_gen = torch.Generator(device="cpu").manual_seed(0)
@@ -196,7 +204,7 @@ def train(*, steps=None, batch_size=512, lr=3e-4, warmup=1000, weight_decay=0.05
         picks = torch.randperm(rows["target"].shape[0], generator=probe_gen)[:n].to(device)  # one draw for every field
         return {k: v[picks] for k, v in rows.items()}
     train_probe, val_probe = probe(train_rows, 8192), (probe(val_rows, 8192) if val_rows is not None else None)
-    probe_labels = label_dir.name
+    probe_labels = rules_id
     log = log_path.open("a")
     frozen_table = None
 
@@ -217,6 +225,7 @@ def train(*, steps=None, batch_size=512, lr=3e-4, warmup=1000, weight_decay=0.05
             if step and step % reload_every == 0:  # new shards, or new rules
                 label_dir = latest_label_dir(label_root)
                 train_rows, val_rows = load_split(label_dir, device)
+                rules_id = snapshot()
             count = train_rows["target"].shape[0]
             picks = torch.randint(count, (batch_size,), generator=generator).to(device)
             batch = {k: v[picks] for k, v in train_rows.items()}
@@ -233,27 +242,27 @@ def train(*, steps=None, batch_size=512, lr=3e-4, warmup=1000, weight_decay=0.05
             if step % 100 == 0:
                 now = time.time()
                 record = {"step": step, "loss": round(loss.item(), 4), "steps_per_s": round(100 / (now - last), 2),
-                          "train_rows": count, "labels": label_dir.name}
+                          "train_rows": count, "labels": rules_id}
                 last = now
                 if step % eval_every == 0 and val_rows is not None:
                     record["val"] = {k: round(v, 4) for k, v in evaluate(model, inputs, tokens, val_rows).items()}
                     record["val_rows"] = int(val_rows["target"].shape[0])
-                    if label_dir.name != probe_labels:  # new rules: new probes
-                        train_probe, val_probe, probe_labels = probe(train_rows, 8192), probe(val_rows, 8192), label_dir.name
+                    if rules_id != probe_labels:  # new rules: new probes
+                        train_probe, val_probe, probe_labels = probe(train_rows, 8192), probe(val_rows, 8192), rules_id
                     record["grok"] = {"train_probe": {k: round(v, 4) for k, v in evaluate(model, inputs, tokens, train_probe).items()
                                                       if k in ("kl", "accuracy", "decisive_accuracy")},
                                       "val_probe": {k: round(v, 4) for k, v in evaluate(model, inputs, tokens, val_probe).items()
                                                     if k in ("kl", "accuracy", "upset_accuracy", "decisive_accuracy", "probabilistic_error")},
                                       "weight_norm": round(weight_norm(model), 2)}
                     kl = record["val"]["kl"]
-                    if best is None or kl < best["kl"] or best.get("labels") != label_dir.name:
-                        best = {"kl": kl, "step": step, "labels": label_dir.name}
+                    if best is None or kl < best["kl"] or best.get("labels") != rules_id:
+                        best = {"kl": kl, "step": step, "labels": rules_id}
                         save_checkpoint(model, run_dir / "best.checkpoint", metadata={**best, "val": record["val"]})
                 log.write(json.dumps(record) + "\n")
                 log.flush()
                 print(json.dumps(record), flush=True)
             if step % checkpoint_every == 0:
-                save_checkpoint(model, model_path, metadata={"step": step, "labels": label_dir.name,
+                save_checkpoint(model, model_path, metadata={"step": step, "labels": rules_id,
                                                              "objective": "A initiates; outcome frequencies"})
                 tmp = state_path.with_suffix(".tmp")
                 torch.save({"optimizer": optimizer.state_dict(), "step": step, "best": best}, tmp)

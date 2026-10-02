@@ -49,7 +49,10 @@ python -m card_engine.training.train --batch-size 512 --weight-decay 0.05 --drop
   - Card, border and mutation are decoded by an exact factorised nearest-k match, filtered to a pool: own deck, restricted deck, or everything.
   - A commitment penalty and an entropy check stop slots blurring between several cards.
   - Enemies are generated broadly (high temperature); 32 counters are generated tightly; the simulator verifies every team.
-- **Label location:** labels live in `data/labels/<kernel version>_<rules hash>/`. A rule change starts a new directory automatically.
+- **Label storage:** every shard lives in `data/labels/store/`, stamped with a rules snapshot ID (`training/flags.py`).
+  - **Automatic invalidation:** each snapshot records per-entity fingerprints (cards, arts, supports at each tier, borders, mutations, support logic, the random-ability pool, the engine core). When an entity changes, only the rows involving it drop out.
+  - **Core changes:** an engine-code change must be declared with `python -m card_engine.training.flags declare --cards ... | --all | --none --note "..."`. Until then, older labels are held back. `flags status` shows the state.
+  - **Storage:** nothing extra is stored per row.
 
 ## Working with the user
 - Fast, large-batch progress. Resolve every interaction rather than refusing it.
