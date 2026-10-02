@@ -16,3 +16,5 @@ data/raw/**/*.mov
 data/raw/**/*.mp4
 *.3way.bak
 *.checkpoint
+/Card AI/
+/card-engine/
