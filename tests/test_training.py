@@ -107,6 +107,29 @@ class TrainingTests(unittest.TestCase):
                 torch.nn.init.zeros_(layer.weight)
             torch.testing.assert_close(model.strategy(**common, card_stats=stats), model.strategy(**common))
 
+    def test_upset_weight_reaches_only_the_description_encoder(self):
+        """Scaling each row's gradient where card vectors enter the strategic transformer equals weighting the
+        upsets' loss for the description encoder alone."""
+        torch.manual_seed(0)
+        model, inputs, rng = BattleModel(), Inputs("cpu"), random.Random(3)
+        model.eval()  # no dropout, so the passes below are identical
+        specs = [labels.random_spec(rng, load_catalog()) for _ in range(6)]
+        rows = {name: torch.tensor([spec[name] for spec in specs]) for name in labels.FIELDS}
+        target = torch.softmax(torch.randn(6, 2), -1)
+        weight = 1 + 2 * torch.tensor([1.0, 0, 0, 1, 0, 1])  # upset weight 3 on rows 0, 3, 5
+        def grads(row_weight, hook):
+            model.zero_grad()
+            kw = inputs(rows, card_table(model, inputs.data.description_tokens))
+            if hook:
+                kw["card_embeddings"].register_hook(lambda g: g * weight[:, None, None, None])
+            per_row = -(target * model(**kw).log_softmax(-1)).sum(-1)
+            (per_row * row_weight).mean().backward()
+            return {n: p.grad.clone() for n, p in model.named_parameters() if p.grad is not None}
+        hooked, plain, weighted = grads(torch.ones(6), True), grads(torch.ones(6), False), grads(weight, False)
+        for name, grad in hooked.items():
+            expected = weighted[name] if name.startswith("description.") else plain[name]
+            torch.testing.assert_close(grad, expected, rtol=1e-4, atol=1e-7)
+
     def test_training_runs_and_resumes(self):
         root = Path(self.temp.name) / "labels"
         directory = root / "store"
@@ -125,7 +148,8 @@ class TrainingTests(unittest.TestCase):
         train(steps=2, batch_size=4, warmup=1, eval_every=100, checkpoint_every=2, device="cpu", run_dir=run, label_root=root)
         state = torch.load(run / "trainer.pt", weights_only=True)
         self.assertEqual(state["step"], 2)
-        train(steps=4, batch_size=4, warmup=1, eval_every=100, checkpoint_every=2, device="cpu", run_dir=run, label_root=root)
+        train(steps=4, batch_size=4, warmup=1, eval_every=100, checkpoint_every=2, device="cpu", run_dir=run, label_root=root,
+              upset_weight=3.0)
         self.assertEqual(torch.load(run / "trainer.pt", weights_only=True)["step"], 4)
         from card_engine.model.checkpoint import load_checkpoint
         before = {k: v.clone() for k, v in load_checkpoint(run / "model.checkpoint")[0].description.state_dict().items()}
