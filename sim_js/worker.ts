@@ -1,17 +1,46 @@
 // Label worker: one JSON request per input line, one JSON result per output line, in order.
-//   request: {"a": TeamLoadout, "b": TeamLoadout, "options": {...}}   (side A moves first)
-//   result:  {"a": P(A wins), "b": P(B wins), "draw": P(draw), "exact": bool, "nodes": n, "playouts": n, "unsupported": [...]}
+//   battle:  {"a": TeamLoadout, "b": TeamLoadout, "options": {...}}   (side A moves first)
+//            -> {"a": P(A wins), "b": P(B wins), "draw": P(draw), "exact", "nodes", "playouts", "unsupported": [...]}
+//   initial: {"op": "initial", "a": ..., "b": ...} -> {"a": [[hp, attack] per card], "b": [...]} at the start of battle
+//   tables:  {"op": "tables", "cards": [names], "borders": [[border names] per border id], "mutations": [names],
+//             "reds": [aura names], "tiers": [aura border or null per tier]}
+//            -> {"base": [card][border][mutation] = [hp, attack], "red": [card][mutation][red][tier] = [hp x, attack x]}
 import { createInterface } from 'node:readline'
 import { solve } from './search'
 import { createTwoSidedState } from './vendor/CardRngExpansionDepths/src/engine/battle-v2.label'
+import { getAttack, getHealth } from './vendor/CardRngExpansionDepths/src/engine/stats'
+import { getAura, statAuraPercentForCard } from './vendor/CardRngExpansionDepths/src/engine/auras'
+import cards from './vendor/CardRngExpansionDepths/src/data/cards'
+
+const byName = new Map(cards.map((card: any) => [card.name, card]))
+
+function tables(req: any) {
+  const defs = req.cards.map((name: string) => byName.get(name))
+  const base = defs.map((d: any) => req.borders.map((b: any) => req.mutations.map((m: string | null) =>
+    [getHealth(d, b, m as any), getAttack(d, b, m as any)])))
+  const red = defs.map((d: any) => req.mutations.map((m: string | null) => req.reds.map((name: string) => {
+    const aura = getAura(name)
+    return req.tiers.map((border: any) => {
+      const value = statAuraPercentForCard(aura as any, { definition: d, mutationWeather: m } as any, border)
+      return [1 + value / 100, name === 'General Sun Tzu' ? 1 : 1 + value / 100]
+    })
+  })))
+  return { base, red }
+}
 
 const lines = createInterface({ input: process.stdin })
 lines.on('line', (line) => {
   let reply: any
   try {
-    const { a, b, options } = JSON.parse(line)
-    const unsupported = [...createTwoSidedState(a, b).unsupportedAbilities]
-    reply = { ...solve(a, b, options || {}), unsupported }
+    const req = JSON.parse(line)
+    if (req.op === 'tables') reply = tables(req)
+    else if (req.op === 'initial') {
+      const state = createTwoSidedState(req.a, req.b)
+      reply = { a: state.teams.Allies.map((c: any) => [c.hp, c.damage]), b: state.teams.Enemies.map((c: any) => [c.hp, c.damage]) }
+    } else {
+      const unsupported = [...createTwoSidedState(req.a, req.b).unsupportedAbilities]
+      reply = { ...solve(req.a, req.b, req.options || {}), unsupported }
+    }
   } catch (error: any) {
     reply = { error: String(error?.message || error) }
   }

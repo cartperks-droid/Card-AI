@@ -98,8 +98,8 @@ class Worker:
         self.process = subprocess.Popen(["npx", "--no-install", "tsx", "worker.ts"], cwd=SIM_DIR, text=True, bufsize=1,
                                         stdin=subprocess.PIPE, stdout=subprocess.PIPE)
 
-    def solve(self, a, b, options):
-        self.process.stdin.write(json.dumps({"a": a, "b": b, "options": options}) + "\n")
+    def request(self, message):
+        self.process.stdin.write(json.dumps(message) + "\n")
         reply = json.loads(self.process.stdout.readline())
         if "error" in reply:
             raise RuntimeError(f"DaddyDrago engine: {reply['error']}")
@@ -113,19 +113,52 @@ class Worker:
 _WORKER = None
 
 
-def evaluate(catalog, spec, seed, b_stats=None, **overrides):
-    """((P(A wins), P(B wins), P(draw), unfinished), exact) for a label spec; side A moves first.
-
-    b_stats optionally fixes side B's (HP, ATK) per card (event or Tower teams). A battle with an ability or aura
-    his engine marks unsupported gets no answer: ((0, 0, 0, 1), False)."""
+def worker():
     global _WORKER
     if _WORKER is None:
         _WORKER = Worker()
+    return _WORKER
+
+
+def initial_stats(catalog, spec):
+    """[side][card] = (HP, ATK) as his engine starts the battle (supports and deck passives applied)."""
+    a, b = loadouts(catalog, spec)
+    reply = worker().request({"op": "initial", "a": a, "b": b})
+    return [reply["a"], reply["b"]]
+
+
+def stat_tables(catalog):
+    """(base, red) from his engine: base[card id, border id, mutation] = (HP, ATK); red[card id, mutation, red support,
+    tier] = (HP, ATK) multiplier of the side's red (stat) support. Tier 4 (Ruby) doesn't exist and stays 1."""
+    import numpy as np
+    from ..mutations import MUTATION_NAMES
+    cards, red, _ = names(catalog)
+    ids = sorted(cards)
+    reds = sorted(red)
+    reply = worker().request({"op": "tables", "cards": [cards[i] for i in ids],
+                              "borders": [border_names(catalog, b) for b in range(1, 17)],
+                              "mutations": [None if m == "None" else m for m in MUTATION_NAMES],
+                              "reds": [red[r] for r in reds], "tiers": [AURA_BORDERS[t] for t in (1, 2, 3, 5)]})
+    base = np.ones((max(ids) + 1, 17, len(MUTATION_NAMES), 2))
+    base[np.array(ids)[:, None, None], np.arange(1, 17)[None, :, None], np.arange(len(MUTATION_NAMES))[None, None, :]] = reply["base"]
+    table = np.ones((max(ids) + 1, len(MUTATION_NAMES), max(reds) + 1, 6, 2))
+    values = np.array(reply["red"])  # [card, mutation, red, tier 1/2/3/5, 2]
+    for slot, tier in enumerate((1, 2, 3, 5)):
+        table[np.array(ids)[:, None, None], np.arange(len(MUTATION_NAMES))[None, :, None], np.array(reds)[None, None, :], tier] = values[:, :, :, slot]
+    return base, table
+
+
+def evaluate(catalog, spec, seed, b_stats=None, **overrides):
+    """((P(A wins), P(B wins), 0, unfinished), exact) for a label spec; side A moves first, and a draw counts as B's.
+
+    b_stats optionally fixes side B's (HP, ATK) per card (event or Tower teams). A battle with an ability or aura
+    his engine marks unsupported gets no answer: ((0, 0, 0, 1), False)."""
     a, b = loadouts(catalog, spec)
     options = {**SEARCH, **overrides, "seed": int(seed) % 2 ** 31 or 1}
     if b_stats is not None:
         options["bStats"] = [[float(hp), float(attack)] for hp, attack in b_stats]
-    reply = _WORKER.solve(a, b, options)
+    reply = worker().request({"a": a, "b": b, "options": options})
     if reply["unsupported"]:
         return (0.0, 0.0, 0.0, 1.0), False
-    return (reply["a"], reply["b"], reply["draw"], 0.0), bool(reply["exact"])
+    # User (2026-10-03): a draw (both wiped out, or the turn cap) counts as the attacker A's loss.
+    return (reply["a"], reply["b"] + reply["draw"], 0.0, 0.0), bool(reply["exact"])

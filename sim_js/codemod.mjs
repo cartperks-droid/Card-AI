@@ -93,7 +93,7 @@ export function createTwoSidedState(a: TeamLoadout, b: TeamLoadout): BattleState
   const enemies = b.cards
     .map((slot, index) => makePlayerCard(slot.cardName, slot.borders, index + 1, slot.mutationWeather))
     .filter((card): card is CombatCard => Boolean(card))
-  for (const card of enemies) card.team = 'Enemies'
+  for (const card of enemies) { card.team = 'Enemies'; card.id = card.id.replace(/^Allies:/, 'Enemies:') }
   state.teams.Enemies = enemies
   applyDeckPassives(enemies)
   applyDraconianSetup(enemies)
