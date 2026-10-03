@@ -1,0 +1,13 @@
+{
+ "note": "The user's friend vs an event team (user, 2026-10-03): borderless Shennong, Volcano Spirit, Ra and Bad Boys, each fixed at 6M HP / 3M ATK, lineup order as listed; enemy supports unknown, taken as none. The friend's supports are read from his binder screenshot by matching the user's binder (docs/my_collection.md: same art, same shown rarity): red Khione, Neko, General Sun Tzu, Adventurer (Galaxy); blue Storm Spirit, Final Testament, Mirror Knight, Fate, Berserker, Flame Wizard (Galaxy), Guardian Angel and Jurassic World (Platinum). Left out (tier unknown): Executioner, Synth Human, Vampire Matron, Phantom, Shielder; left out (not identified): the 1/120M teal blue support. Cards: the restricted deck capped at his rarest deck card, 30qd (--max-rolls 3e16).",
+ "enemy": {
+  "cards": [136, 167, 79, 36],
+  "borders": [1, 1, 1, 1],
+  "hp": [6000000, 6000000, 6000000, 6000000],
+  "attack": [3000000, 3000000, 3000000, 3000000],
+  "red": [0, 0],
+  "blue": [0, 0]
+ },
+ "red": [[5, 5], [3, 5], [2, 5], [1, 5]],
+ "blue": [[11, 5], [10, 5], [9, 5], [8, 5], [3, 5], [2, 5], [15, 2], [13, 2]]
+}

@@ -22,6 +22,7 @@ import math
 import multiprocessing as mp
 import os
 import random
+from dataclasses import replace
 from pathlib import Path
 
 from ..availability import DEFAULT_WEATHER, roll_rarity
@@ -51,11 +52,23 @@ def _init():
     _CATALOG = load_catalog()
 
 
+def _with_stats(battle, side, stats):
+    """The battle with `side`'s lineup set to fixed (HP, ATK) per card; None keeps the catalogue's stats."""
+    if stats is None:
+        return battle
+    team = list(battle.teams[side])
+    for slot, (hp, attack) in enumerate(stats):
+        team[slot] = replace(team[slot], hp=float(hp), attack=float(attack))
+    teams = list(battle.teams)
+    teams[side] = tuple(team)
+    return replace(battle, teams=tuple(teams))
+
+
 def _evaluate(job):
     """(player win probability attacking first, ... defending first)."""
-    player, enemy, seed = job
-    first, _ = evaluate(compile_spec(_CATALOG, _spec(player, enemy)), seed)
-    second, _ = evaluate(compile_spec(_CATALOG, _spec(enemy, player)), seed + 1)
+    player, enemy, seed, enemy_stats = job
+    first, _ = evaluate(_with_stats(compile_spec(_CATALOG, _spec(player, enemy)), 1, enemy_stats), seed)
+    second, _ = evaluate(_with_stats(compile_spec(_CATALOG, _spec(enemy, player)), 0, enemy_stats), seed + 1)
     return first[0], second[1]
 
 
@@ -64,6 +77,8 @@ class Search:
         enemy = scenario["enemy"]
         self.enemy = _side(enemy["cards"], enemy["borders"], enemy.get("mutations", ["None"] * len(enemy["cards"])),
                            enemy["red"], enemy["blue"])
+        # Optional fixed enemy stats (e.g. an event's cards): "hp" and "attack", one per card, replace the catalogue's.
+        self.enemy_stats = list(zip(enemy["hp"], enemy["attack"], strict=True)) if "hp" in enemy else None
         self.catalog = catalog
         # Entries: (card, border, mutation, cost, owned). Owned cards first; then the candidate (card, border) pairs
         # the search may add (the restricted deck in semi/restricted mode).
@@ -132,7 +147,7 @@ class Search:
             chosen = [self.entries[i] for i in lineup]
             player = _side([e[0] for e in chosen], [e[1] for e in chosen], [e[2] for e in chosen], red, blue)
             self.counter += 2
-            jobs.append((player, self.enemy, self.counter))
+            jobs.append((player, self.enemy, self.counter, self.enemy_stats))
         for team, probs in zip(fresh, self.executor.map(_evaluate, jobs, chunksize=4)):
             self.seen[self.key(team)] = probs
         return [(self.seen[self.key(t)], t) for t in teams]
@@ -308,9 +323,9 @@ def main():
         scenario["red"], scenario["blue"] = [list(r) for r in red] or [[0, 0]], [list(b) for b in blue] or [[0, 0]]
     else:
         scenario["owned"] = []
-        # The player base: every support at every tier.
-        scenario["red"] = [[s, t] for s, (_, _, tiers) in RED_SUPPORTS.items() for t in range(1, 6) if tiers[t - 1] is not None]
-        scenario["blue"] = [[s, t] for s, tiers in BLUE_SUPPORTS.items() for t in range(1, 6) if tiers[t - 1] is not None]
+        # The scenario's supports (another player's), else the player base: every support at every tier.
+        scenario.setdefault("red", [[s, t] for s, (_, _, tiers) in RED_SUPPORTS.items() for t in range(1, 6) if tiers[t - 1] is not None])
+        scenario.setdefault("blue", [[s, t] for s, tiers in BLUE_SUPPORTS.items() for t in range(1, 6) if tiers[t - 1] is not None])
     scenario["candidates"] = ([] if args.mode == "own" else
                               restricted_entries(load_restricted(), catalog, limited=not args.no_limited))
     search = Search(scenario, catalog, workers=args.workers, max_rolls=args.max_rolls)
