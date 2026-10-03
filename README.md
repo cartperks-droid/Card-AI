@@ -40,7 +40,7 @@ Only the authorized trailing weather `1` and proven duplicate trailing card/Blue
 
 ## Battle engine
 
-Battles run on DaddyDrago's engine (github.com/daddydrag0/CardRngExpansionDepths, user decision 2026-10-03). It has no license, so it is never copied here. `bash sim_js/setup.sh` clones it at the pinned commit into the gitignored `sim_js/vendor/`. It then patches every random draw into a chance point (`sim_js/codemod.mjs`). `sim_js/search.ts` searches the chance tree best-first and resolves the rest with pooled playouts. `card_engine/simulator/drago.py` translates our cards, borders, mutations and supports into his loadouts. A draw counts as the attacker's loss. Our own Python/C simulator was deleted when his engine replaced it; the rule observations behind it stay in `docs/simulator_questions.md`.
+Battles run on DaddyDrago's engine (github.com/daddydrag0/CardRngExpansionDepths, user decision 2026-10-03). `bash sim_js/setup.sh` clones it at the pinned commit into the gitignored `sim_js/vendor/`. It then patches every random draw into a chance point (`sim_js/codemod.mjs`). `sim_js/search.ts` searches the chance tree best-first and resolves the rest with pooled playouts. `card_engine/simulator/drago.py` translates our cards, borders, mutations and supports into his loadouts. A draw counts as the attacker's loss. Labels run on `sim_c/`, a C port of his battle code and of the search; it gives identical answers about 11× faster, and `setup.sh` builds it. Our own Python/C simulator was deleted when his engine replaced it; the rule observations behind it stay in `docs/simulator_questions.md`.
 
 ## Mutations
 
@@ -57,3 +57,7 @@ Weather cards retain their separate intrinsic multiplier and are ineligible for 
 The description model is 128-wide with two layers/four heads. The strategic model is 768-wide with four layers/eight heads and 192-wide attention. It has exactly 16 border embeddings, separate support embeddings, fixed ordered team slots, and whole-slot hidden-information masking. Checkpointing and detached embedding precomputation are available in `card_engine.model`.
 
 `python -m card_engine.training.predict` gives the classifier's win rate for named teams. `python -m card_engine.training.generate` builds counter teams by gradient ascent on the frozen classifier and verifies them with the engine. Both are described in `docs/training.md`.
+
+## License
+
+This project is MIT licensed (`LICENSE`). The battle rules in `sim_c/engine.c` are translated from DaddyDrago's engine (github.com/daddydrag0/CardRngExpansionDepths), shared here with his permission; credit for those mechanics is his. His own TypeScript is fetched by `sim_js/setup.sh`, not included.
