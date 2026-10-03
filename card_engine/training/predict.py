@@ -53,6 +53,7 @@ def main():
         parser.add_argument(f"--red-{side}", help="red support id[:tier]")
         parser.add_argument(f"--blue-{side}", help="blue support id[:tier]")
         parser.add_argument(f"--art-{side}", choices=ART_NAMES, help="Astraeus art for every Astraeus on this side")
+    parser.add_argument("--run-dir", default=RUN_DIR, help="training run whose model.checkpoint is used")
     args = parser.parse_args()
     spec = {"cards": [], "borders": [], "mutations": [], "arts": [], "red": [], "red_tier": [], "blue": [], "blue_tier": []}
     for side in ("a", "b"):
@@ -66,7 +67,7 @@ def main():
             support, tier = _support(getattr(args, f"{color}_{side}"))
             spec[color].append(support)
             spec[color + "_tier"].append(tier if support else 0)
-    print(json.dumps(predict(spec), indent=2))
+    print(json.dumps(predict(spec, run_dir=args.run_dir), indent=2))
 
 
 if __name__ == "__main__":

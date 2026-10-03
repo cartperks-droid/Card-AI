@@ -36,6 +36,7 @@
 - **Validation:** shards whose seed is divisible by 25 are held out.
 - **Data refresh:** every 1,000 steps the newest label directory is reloaded, which picks up new shards or new rules.
 - **Resuming:** the model checkpoint, optimiser state and step count live in `data/training/`. The log is `data/training/log.jsonl`.
+- **Separate runs:** `--run-dir` puts a run elsewhere. A new directory starts from random weights; `predict.py --run-dir` reads that run's model.
 
 ```sh
 ../.venv/bin/python -m card_engine.training.train --batch-size 512

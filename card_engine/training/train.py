@@ -332,6 +332,8 @@ if __name__ == "__main__":
     parser.add_argument("--freeze-language-at", type=int, help="step after which the description transformer is frozen")
     parser.add_argument("--device")
     parser.add_argument("--reload-every", type=int, default=1000)
+    parser.add_argument("--run-dir", default=RUN_DIR, help="checkpoints and log; a new directory starts from random weights")
     parsed = parser.parse_args()
     train(steps=parsed.steps, batch_size=parsed.batch_size, lr=parsed.lr, device=parsed.device, reload_every=parsed.reload_every,
-          weight_decay=parsed.weight_decay, dropout=parsed.dropout, freeze_language_at=parsed.freeze_language_at)
+          weight_decay=parsed.weight_decay, dropout=parsed.dropout, freeze_language_at=parsed.freeze_language_at,
+          run_dir=parsed.run_dir)
