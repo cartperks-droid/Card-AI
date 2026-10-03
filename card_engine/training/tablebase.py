@@ -7,10 +7,13 @@ evaluation, team search). Keys are hashes of the canonical battle spec; side A a
 
 import hashlib
 import json
+import os
 import sqlite3
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parents[2] / "data" / "tablebase"
+# SQLite's WAL locking needs a local disk: on a pod whose project sits on a network volume, point
+# CARD_ENGINE_TABLEBASE at a local folder (the tablebase is only a cache of exact results).
+ROOT = Path(os.environ.get("CARD_ENGINE_TABLEBASE") or Path(__file__).resolve().parents[2] / "data" / "tablebase")
 EXACT_TOLERANCE = 1e-6
 
 
