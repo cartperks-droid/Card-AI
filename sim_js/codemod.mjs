@@ -52,26 +52,37 @@ src = src.replace('/*RAND*/', randBody)
 
 // The runtime carries the chance source; a battle may arrive with a prebuilt (two-sided) state.
 exact('  rng: SeededRng\n', '  rng: SeededRng\n  chance: any\n')
-// Ability lookups (user: precompute like a chess engine's lookup tables): each card keeps one entry with its ability,
-// its ability names and their set, rebuilt only when what they depend on changes (ability override, identity
-// override, bonus abilities, definition; bonus lists are only ever replaced, never edited in place). The entry is a
-// non-enumerable property, so a copied card never inherits it. hasAbility reads the entry: same checks, same order.
+// Ability lookups (user: precomputed entries, as a chess engine's lookup tables): an entry holds a card's ability, its
+// ability names and their set. A card with no ability or identity override and no bonus abilities reads the shared
+// entry at its card index; a card whose abilities changed in battle keeps its own, rebuilt only when what it depends
+// on changes (overrides, bonus abilities, definition; bonus lists are only ever replaced, never edited in place). The
+// own entry is non-enumerable, so a copied card never inherits it. hasAbility reads entries: same checks, same order.
 exact('function ability(card: CombatCard | undefined): string | null {\n  if (!card) return null\n  if (card.abilityOverride !== undefined)',
       'function ability(card: CombatCard | undefined): string | null {\n  return card ? abilityEntry(card).ability : null\n}\n\n'
       + 'function uncachedAbility(card: CombatCard): string | null {\n  if (card.abilityOverride !== undefined)')
 exact('function abilityNames(card: CombatCard | undefined): string[] {\n  if (!card) return []\n  return [...new Set([ability(card), ...(card.bonusAbilities || [])].filter((name): name is string => Boolean(name)))]\n}',
       'interface AbilityEntry { override: any; identity: any; bonus: any; definition: any; ability: string | null; names: string[]; set: Set<string> }\n'
       + 'const ENTRY = Symbol(\'abilities\')\n\n'
+      + '// By card index (user: entries at the card ID\'s index): the entry of a card with no ability or identity override and\n'
+      + '// no bonus abilities depends only on its definition, so it is built once per card and shared by every copy.\n'
+      + 'const CARD_INDEX = Symbol(\'index\')\n'
+      + 'cards.forEach((card: any, index: number) => Object.defineProperty(card, CARD_INDEX, { value: index }))\n'
+      + 'const BASE_ENTRIES: AbilityEntry[] = []\n\n'
       + 'function abilityEntry(card: CombatCard): AbilityEntry {\n'
+      + '  const index: number | undefined = (card.definition as any)[CARD_INDEX]\n'
+      + '  if (index !== undefined && card.abilityOverride === undefined && card.identityOverride == null && !card.bonusAbilities?.length) {\n'
+      + '    return BASE_ENTRIES[index] ??= buildEntry(card)\n  }\n'
       + '  const hit: AbilityEntry | undefined = (card as any)[ENTRY]\n'
       + '  if (hit && hit.override === card.abilityOverride && hit.identity === card.identityOverride && hit.bonus === card.bonusAbilities\n'
       + '      && hit.definition === card.definition) return hit\n'
-      + '  const own = uncachedAbility(card)\n'
-      + '  const names = Object.freeze([...new Set([own, ...(card.bonusAbilities || [])].filter((name): name is string => Boolean(name)))]) as string[]\n'
-      + '  const entry = { override: card.abilityOverride, identity: card.identityOverride, bonus: card.bonusAbilities, definition: card.definition,\n'
-      + '    ability: own, names, set: new Set(names) }\n'
+      + '  const entry = buildEntry(card)\n'
       + '  Object.defineProperty(card, ENTRY, { value: entry, writable: true, configurable: true, enumerable: false })\n'
       + '  return entry\n}\n\n'
+      + 'function buildEntry(card: CombatCard): AbilityEntry {\n'
+      + '  const own = uncachedAbility(card)\n'
+      + '  const names = Object.freeze([...new Set([own, ...(card.bonusAbilities || [])].filter((name): name is string => Boolean(name)))]) as string[]\n'
+      + '  return { override: card.abilityOverride, identity: card.identityOverride, bonus: card.bonusAbilities, definition: card.definition,\n'
+      + '    ability: own, names, set: new Set(names) }\n}\n\n'
       + 'function abilityNames(card: CombatCard | undefined): string[] {\n  return card ? abilityEntry(card).names : []\n}')
 exact("  const ownName = effectiveCardName(card)\n  const opposingName = effectiveCardName(opposingCard)\n  let matched = abilityNames(card).includes(name)\n"
       + "  if (!matched && ability(card) === 'Jealousy' && opposingCard && opposingName !== 'Amenhotep') {\n"
