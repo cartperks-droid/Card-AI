@@ -1,0 +1,420 @@
+{
+ "note": "Fixed Tower teams for every fifth floor (his src/depths-ui.js TOWER_FIXED; floors 80-105 also sent directly), the floor-65 Astraeus arts, and the Tower cheese pool, from DaddyDrago (author of the Card RNG Expansion Depths calculator, github.com/daddydrag0/CardRngExpansionDepths) via the user, 2026-10-03. Enemy stats follow his engine (src/engine/tower.ts): power = ceil(2 * sqrt((6000 + floor^3 * 50) / 2) * 4^(difficulty id - 1)), ATK = ceil(power / 2), HP = ceil(power * the card's HP multiplier) on Normal and Impossible, else ceil(power). HP multipliers are his card data's. His Tower Cheese Maker defaults to Impossible.",
+ "difficulty_ids": {
+  "Normal": 1,
+  "Hard": 2,
+  "Extreme": 3,
+  "Hell": 5,
+  "Impossible": 6
+ },
+ "teams": {
+  "105": [
+   [
+    "Heaven's Armor",
+    1
+   ],
+   [
+    "Hell's Army",
+    1
+   ],
+   [
+    "Judgement Day",
+    1
+   ],
+   [
+    "Sable The Envious",
+    1
+   ]
+  ],
+  "100": [
+   [
+    "Shuten-dōji",
+    1
+   ],
+   [
+    "Susanoo",
+    2
+   ],
+   [
+    "Tsukuyomi",
+    1
+   ],
+   [
+    "Amaterasu",
+    1
+   ]
+  ],
+  "95": [
+   [
+    "Shu",
+    1.7
+   ],
+   [
+    "Sekhmet",
+    1.7
+   ],
+   [
+    "Set",
+    1
+   ],
+   [
+    "Ra",
+    1
+   ]
+  ],
+  "90": [
+   [
+    "Gilgamesh",
+    1
+   ],
+   [
+    "Ragon",
+    1
+   ],
+   [
+    "Fafnir",
+    1
+   ],
+   [
+    "Raze The Destroyer",
+    1
+   ]
+  ],
+  "85": [
+   [
+    "Savior",
+    1
+   ],
+   [
+    "Lucifer",
+    1
+   ],
+   [
+    "Lucifer",
+    1
+   ],
+   [
+    "Lucifer",
+    1
+   ]
+  ],
+  "80": [
+   [
+    "Mastermind",
+    1
+   ],
+   [
+    "Domain Master",
+    1
+   ],
+   [
+    "Kira",
+    1
+   ],
+   [
+    "Priest",
+    1.3
+   ]
+  ],
+  "75": [
+   [
+    "Deus Ex",
+    1
+   ],
+   [
+    "Bad Boys",
+    1
+   ],
+   [
+    "Bad Boys",
+    1
+   ],
+   [
+    "Morpheus the Slumberer",
+    1
+   ]
+  ],
+  "70": [
+   [
+    "Cronus",
+    1
+   ],
+   [
+    "Ixion",
+    1
+   ],
+   [
+    "Cronus",
+    1
+   ],
+   [
+    "Sciron",
+    1.1
+   ]
+  ],
+  "65": [
+   [
+    "Astraeus",
+    1,
+    "virgo"
+   ],
+   [
+    "Astraeus",
+    1,
+    "scorpio"
+   ],
+   [
+    "Astraeus",
+    1,
+    "taurus"
+   ],
+   [
+    "Astraeus",
+    1,
+    "gemini"
+   ]
+  ],
+  "60": [
+   [
+    "Bad Boys",
+    1
+   ],
+   [
+    "Poseidon",
+    1
+   ],
+   [
+    "Hades",
+    1
+   ],
+   [
+    "Lilith the Enchantress",
+    1
+   ]
+  ],
+  "55": [
+   [
+    "Boreas",
+    1
+   ],
+   [
+    "Wind Spirit",
+    1
+   ],
+   [
+    "Wind Spirit",
+    1
+   ],
+   [
+    "Wind Spirit",
+    1
+   ]
+  ],
+  "50": [
+   [
+    "Admiral Ice",
+    1
+   ],
+   [
+    "Ice Queen",
+    1
+   ],
+   [
+    "Hoarfrost Phoenix",
+    1
+   ],
+   [
+    "Ice Queen",
+    1
+   ]
+  ],
+  "45": [
+   [
+    "Frankenstein",
+    1
+   ],
+   [
+    "Phoenix",
+    1
+   ],
+   [
+    "Phoenix",
+    1
+   ],
+   [
+    "Gideon The Insatiable",
+    1
+   ]
+  ],
+  "40": [
+   [
+    "Zeus",
+    1
+   ],
+   [
+    "Arcane Avian",
+    1
+   ],
+   [
+    "Zeus",
+    1
+   ],
+   [
+    "Arcane Avian",
+    1
+   ]
+  ],
+  "35": [
+   [
+    "Ice Queen",
+    1
+   ],
+   [
+    "Kitsune",
+    1
+   ],
+   [
+    "A0-ON1",
+    1
+   ],
+   [
+    "AK4-ON1",
+    1
+   ]
+  ],
+  "30": [
+   [
+    "Crown Prince",
+    1
+   ],
+   [
+    "Three-Legged Golden Crow",
+    1
+   ],
+   [
+    "Leviathan",
+    1
+   ],
+   [
+    "Malik The Sovereign",
+    1
+   ]
+  ],
+  "25": [
+   [
+    "Black Cat",
+    1
+   ],
+   [
+    "Black Cat",
+    1
+   ],
+   [
+    "Black Cat",
+    1
+   ],
+   [
+    "Black Cat",
+    1
+   ]
+  ],
+  "20": [
+   [
+    "Demon Hunter",
+    1
+   ],
+   [
+    "Gunslinger",
+    1
+   ],
+   [
+    "Stone Scientist",
+    1
+   ],
+   [
+    "Darling",
+    1
+   ]
+  ],
+  "15": [
+   [
+    "Chronus The Hoarder",
+    1
+   ],
+   [
+    "Greedy Belly",
+    1
+   ],
+   [
+    "Greedy Belly",
+    1
+   ],
+   [
+    "Arthur of Excalibur",
+    1
+   ]
+  ],
+  "10": [
+   [
+    "Sorceror",
+    1
+   ],
+   [
+    "Sorceror",
+    1
+   ],
+   [
+    "Trainee",
+    1
+   ],
+   [
+    "Trainee",
+    1
+   ]
+  ],
+  "5": [
+   [
+    "Good Boy",
+    1
+   ],
+   [
+    "Good Boy",
+    1
+   ],
+   [
+    "Good Boy",
+    1
+   ],
+   [
+    "Shining Armor",
+    1
+   ]
+  ]
+ },
+ "cheese_cards": [
+  "Judgement Day",
+  "Robin Hood",
+  "Parallax",
+  "Piccolo",
+  "Pandora",
+  "Kuchisake-onna",
+  "Fate Seamstress",
+  "Kira",
+  "Hell's Army",
+  "Noveau Riche"
+ ],
+ "single_copy": [
+  "Parallax",
+  "Fate Seamstress"
+ ],
+ "cheese_blue_supports": [
+  0,
+  14,
+  2,
+  11,
+  15,
+  7,
+  9,
+  10
+ ]
+}

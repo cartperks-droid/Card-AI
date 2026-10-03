@@ -3,9 +3,12 @@
     python -m card_engine.training.verify --checkpoint data/training/best.checkpoint --suite coherent --n 300
     python -m card_engine.training.verify --checkpoint data/training/best.checkpoint --suite random --n 300
     python -m card_engine.training.verify --checkpoint data/training/best.checkpoint --file my_matchups.json
+    python -m card_engine.training.verify --checkpoint data/training/best.checkpoint --suite tower --n 20
 
 Suites: "random" draws matchups the way training does (fresh seeds, so not training rows); "coherent" builds each
-side from one class or pack, the themed teams real decks use and random training rarely produces. A --file holds a
+side from one class or pack, the themed teams real decks use and random training rarely produces; "tower" plays
+borderless teams from the restricted deck (--pool restricted) or DaddyDrago's cheese pool (--pool cheese) against
+the fixed Tower teams (data/scenarios/tower_teams.json) with floor-set stats, --n per floor; any win is an upset. A --file holds a
 JSON list of matchups, cards by name or ID and borders by name ("GaPl") or ID:
 
     [{"a": {"cards": ["Vampire Lord", "Set", "Good Boy", "Archer"], "borders": ["GaPl", 1, 1, 1], "red": "3:5", "blue": "11:5"},
@@ -28,9 +31,9 @@ from ..catalog import load_catalog
 from ..model.checkpoint import load_checkpoint
 from ..mutations import MUTATION_NAMES
 from ..simulator.catalog_rules import ASTRAEUS, SUPPORTED
-from .counter import BORDER_NAMES
-from .labels import ART_NAMES, FIELDS, label_specs, random_spec
-from .train import Inputs, card_table, stat_favourite
+from .counter import BORDER_NAMES, _with_stats
+from .labels import ART_NAMES, FIELDS, compile_spec, evaluate, label_specs, random_spec
+from .train import Inputs, card_table
 
 BORDER_IDS = {name.lower(): border for border, name in BORDER_NAMES.items()}
 FRESH_SEED = 10 ** 9  # far from the label shards' seeds, so suites never replay training rows
@@ -100,39 +103,94 @@ def theme_groups(catalog):
     return sorted((label, ids) for label, ids in groups.items() if len(ids) >= 4)
 
 
+TOWER_FILE = Path(__file__).resolve().parents[2] / "data" / "scenarios" / "tower_teams.json"
+
+
+def tower_stats(floor, difficulty, hp_multipliers, difficulty_ids):
+    """Fixed (HP, ATK) per enemy card, as DaddyDrago's engine sets Tower enemies (see TOWER_FILE's note)."""
+    power = -(-2 * ((6000 + floor ** 3 * 50) / 2) ** 0.5 * 4 ** (difficulty_ids[difficulty] - 1) // 1)
+    keep_hp = difficulty in ("Normal", "Impossible")
+    return [(float(-(-power * (m if keep_hp else 1) // 1)), float(-(-power // 2))) for m in hp_multipliers]
+
+
+def tower_suite(rng, catalog, n, difficulty, aura_tier, pool_name="restricted"):
+    """Per floor, n borderless teams (random cards with replacement, order and blue support) against that floor's team.
+
+    pool "restricted": the restricted deck's cards (player-base availability), all borderless (user: tests stay
+    borderless, or a max-stat card would win everything); "cheese": DaddyDrago's Tower cheese pool."""
+    data = json.loads(TOWER_FILE.read_text())
+    if pool_name == "cheese":
+        pool = [_card(catalog, name) for name in data["cheese_cards"]]
+    else:
+        from ..restricted import cards as restricted_cards, load as load_restricted
+        pool = sorted(c for c in restricted_cards(load_restricted(), catalog) if c in SUPPORTED)
+    single = {_card(catalog, name) for name in data["single_copy"]}
+    specs, enemy_stats, floors = [], [], []
+    for floor, team in data["teams"].items():
+        enemy = [_card(catalog, entry[0]) for entry in team]
+        enemy_arts = [ART_NAMES.index(entry[2]) + 1 if len(entry) > 2 else 0 for entry in team]
+        stats = tower_stats(int(floor), difficulty, [entry[1] for entry in team], data["difficulty_ids"])
+        for _ in range(n):
+            while True:
+                cards = [rng.choice(pool) for _ in range(4)]
+                if all(cards.count(c) <= 1 for c in single):
+                    break
+            blue = rng.choice(data["cheese_blue_supports"])
+            specs.append({"cards": [cards, enemy], "borders": [[1] * 4, [1] * 4], "mutations": [[0] * 4, [0] * 4],
+                          "arts": [[1 if c == ASTRAEUS else 0 for c in cards], [a or (1 if c == ASTRAEUS else 0) for c, a in zip(enemy, enemy_arts)]],
+                          "red": [0, 0], "red_tier": [0, 0], "blue": [blue, 0], "blue_tier": [aura_tier if blue else 0, 0]})
+            enemy_stats.append(stats)
+            floors.append(int(floor))
+    return specs, enemy_stats, floors
+
+
 def _simulate(job):
-    specs, seed = job
-    probs, exact = label_specs(load_catalog(), specs, seed=seed)
+    specs, stats, seed = job
+    catalog = load_catalog()
+    if stats is None:
+        return label_specs(catalog, specs, seed=seed)
+    probs = np.zeros((len(specs), 4), dtype=np.float32)
+    exact = np.zeros(len(specs), dtype=bool)
+    for i, (spec, enemy) in enumerate(zip(specs, stats)):
+        outcome, is_exact = evaluate(_with_stats(compile_spec(catalog, spec), 1, enemy), seed * 1_000_003 + i)
+        probs[i], exact[i] = outcome, is_exact
     return probs, exact
 
 
-def simulate(specs, workers, seed):
-    chunks = [specs[i:i + 8] for i in range(0, len(specs), 8)]
+def simulate(specs, workers, seed, enemy_stats=None):
+    """Simulator outcomes (A, B, tie, unfinished) and exactness; enemy_stats fixes side B's (HP, ATK) per matchup."""
+    chunks = [(specs[i:i + 8], None if enemy_stats is None else enemy_stats[i:i + 8]) for i in range(0, len(specs), 8)]
     with mp.get_context("spawn").Pool(workers) as pool:
-        parts = pool.map(_simulate, [(chunk, seed + i) for i, chunk in enumerate(chunks)])
+        parts = pool.map(_simulate, [(chunk, stats, seed + i) for i, (chunk, stats) in enumerate(chunks)])
     return np.concatenate([p for p, _ in parts]), np.concatenate([e for _, e in parts])
 
 
-def predict(model, inputs, specs, device, batch=1024):
-    out = []
+def predict(model, inputs, specs, device, enemy_stats=None, batch=1024):
+    """Model A-win probabilities, and the (HP, ATK) it was given per card ([N, 2, 4, 2]); enemy_stats overrides side B's."""
+    out, given = [], []
     with torch.no_grad():
         table = card_table(model, inputs.data.description_tokens)
         for start in range(0, len(specs), batch):
             part = specs[start:start + batch]
             rows = {key: torch.tensor([s[key] for s in part], device=device) for key in FIELDS}
-            out.append(model(**inputs(rows, table)).softmax(-1)[:, 0].float().cpu())
-    return torch.cat(out).numpy()
+            kwargs = inputs(rows, table)
+            if enemy_stats is not None:
+                kwargs["card_stats"][:, 1] = torch.tensor(enemy_stats[start:start + batch], dtype=kwargs["card_stats"].dtype, device=device)
+            out.append(model(**kwargs).softmax(-1)[:, 0].float().cpu())
+            given.append(kwargs["card_stats"].double().cpu())
+    return torch.cat(out).numpy(), torch.cat(given)
 
 
 def describe(catalog, spec, side):
     return [f"{catalog.card(c).name} ({BORDER_NAMES[b]})" for c, b in zip(spec["cards"][side], spec["borders"][side])]
 
 
-def report(catalog, specs, model_a, sim_probs, exact, show):
+def report(catalog, specs, model_a, sim_probs, exact, show, stats):
     finished = sim_probs[:, :2].sum(1)
     keep = finished > 0
     sim_a = np.where(keep, sim_probs[:, 0] / np.maximum(finished, 1e-12), np.nan)
-    favourite = stat_favourite({key: torch.tensor([s[key] for s in specs]) for key in FIELDS}).numpy()
+    strength = (stats[..., 0] * stats[..., 1]).sqrt().sum(-1)  # the stat rule on the stats actually played
+    favourite = (strength[:, 1] > strength[:, 0]).long().numpy()
     sim_winner, model_winner = (sim_a < 0.5).astype(int), (model_a < 0.5).astype(int)
     deterministic = keep & ((sim_a >= 0.999) | (sim_a <= 0.001))
     upset = keep & (favourite != sim_winner)
@@ -155,7 +213,12 @@ def main():
     import argparse
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--checkpoint", required=True)
-    parser.add_argument("--suite", choices=("random", "coherent"), default="coherent")
+    parser.add_argument("--suite", choices=("random", "coherent", "tower"), default="coherent")
+    parser.add_argument("--difficulty", choices=("Normal", "Hard", "Extreme", "Hell", "Impossible"), default="Impossible",
+                        help="tower suite: sets the enemies' stats (his Tower Cheese Maker defaults to Impossible)")
+    parser.add_argument("--aura-tier", type=int, default=1, help="tower suite: tier of the cheese team's blue support")
+    parser.add_argument("--pool", choices=("restricted", "cheese"), default="restricted",
+                        help="tower suite: draw player cards from the restricted deck or DaddyDrago's cheese pool (always borderless)")
     parser.add_argument("--file", help="JSON list of matchups (see above); replaces --suite")
     parser.add_argument("--n", type=int, default=300)
     parser.add_argument("--seed", type=int, default=1)
@@ -166,8 +229,12 @@ def main():
     args = parser.parse_args()
 
     catalog = load_catalog()
+    enemy_stats = floors = None
     if args.file:
         specs = [spec_from_entry(catalog, entry) for entry in json.loads(Path(args.file).read_text())]
+    elif args.suite == "tower":
+        specs, enemy_stats, floors = tower_suite(random.Random(FRESH_SEED + args.seed), catalog, args.n, args.difficulty,
+                                                 args.aura_tier, args.pool)
     else:
         rng = random.Random(FRESH_SEED + args.seed)
         groups = theme_groups(catalog)
@@ -176,10 +243,18 @@ def main():
 
     model, metadata = load_checkpoint(args.checkpoint, map_location=args.device)
     model.eval()
-    model_a = predict(model, Inputs(args.device), specs, args.device)
-    sim_probs, exact = simulate(specs, args.workers, FRESH_SEED + args.seed)
-    summary, worst = report(catalog, specs, model_a, sim_probs, exact, args.show)
+    model_a, stats = predict(model, Inputs(args.device), specs, args.device, enemy_stats)
+    sim_probs, exact = simulate(specs, args.workers, FRESH_SEED + args.seed, enemy_stats)
+    summary, worst = report(catalog, specs, model_a, sim_probs, exact, args.show, stats)
     summary = {"checkpoint_step": metadata.get("step"), "suite": "file" if args.file else args.suite, **summary}
+    if floors is not None:
+        summary["difficulty"] = args.difficulty
+        finished = sim_probs[:, :2].sum(1)
+        sim_a = sim_probs[:, 0] / np.maximum(finished, 1e-12)
+        summary["by_floor"] = {f: {"simulator_win_rate": round(float(sim_a[[i for i, x in enumerate(floors) if x == f]].mean()), 3),
+                                   "model_win_rate": round(float(model_a[[i for i, x in enumerate(floors) if x == f]].mean()), 3),
+                                   "winner_agreement": f"{((model_a < 0.5) == (sim_a < 0.5))[[i for i, x in enumerate(floors) if x == f]].mean():.1%}"}
+                               for f in sorted(set(floors), reverse=True)}
     print(json.dumps({"summary": summary, "largest_disagreements": worst}, indent=2))
     if args.out:
         Path(args.out).write_text(json.dumps([{"spec": s, "model_A_win": float(m), "simulator": [float(x) for x in p],

@@ -10,6 +10,12 @@ These are open rule and class questions, most important first. The daily task pi
 4. **Kira vs Noveau Riche.** Does Kira's doom kill Noveau Riche through its 3 lives?
 5. **Parallax and status damage.** Does burn or poison kill Parallax without triggering "the enemy dies instead"?
 6. **Border rarities.** RuPl was corrected to 1e7 and GaCrPl to 1e12, from the deck screenshots. Confirm with a stat readout of one RuPl or GaCrPl card.
+7. **Cross-check with DaddyDrago's engine** (`docs/drago_crosscheck.md`). His widely used simulator differs from ours on:
+   - **Double KO:** is it a draw (his) or a loss for the attacker (ours)?
+   - **Rarities:** Buddha, Azure Witch, Xīfāng Báihǔ and The Curse.
+   - **Borderless stats:** 36 cards, many by a clean ×1.5 or ×2. One stat readout per card settles it.
+   - **Final Testament:** 7/12 or 7.5/12.5 at Platinum/Galaxy.
+   - **New cards:** about 16 cards in his data but not ours.
 
 ## Answered
 - 2026-10-02 **Buddha:**
