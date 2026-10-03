@@ -32,6 +32,6 @@ Many teams win 100%, so they're ranked by **headroom**: the mean win chance with
 
 ## Caveats
 
-- **Vampire Lord's ability is unverified.** "Steal ATK and HP equal to damage dealt" is the simulator's reading of the card text: it heals by the damage dealt and lowers the target's max HP and ATK by the same amount. It has never been checked in game. If the steal works differently, these teams may fail.
+- **Vampire Lord's steal is confirmed in game** (`data/review/oracle_observations.json`). Videos IMG_0336 and IMG_0338 show the ATK steal: the target loses ATK equal to the damage dealt, capped at what it has left, and Vampire Lord gains exactly that. The user confirmed the HP steal: the target's max HP drops by the HP removed, and Vampire Lord gains it. The simulator implements both.
 - **He may not own Vampire Lord at GaPl.** It sits right at his range limit.
 - **The enemy's supports and the left-out blue supports** could change the outcome.
