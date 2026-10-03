@@ -42,6 +42,7 @@
 - **Validation:** shards whose seed is divisible by 25 are held out.
 - **Data refresh:** every 1,000 steps the newest label directory is reloaded, which picks up new shards or new rules.
 - **Resuming:** the model checkpoint, optimiser state and step count live in `data/training/`. The log is `data/training/log.jsonl`.
+- **Moving machines:** `--init-from <model.checkpoint>` starts a run directory that has no optimiser state from that model. It keeps the step count and uses a fresh optimiser that warms up again over 1,000 steps. Use it when only the checkpoint can be copied over, e.g. when the pod's own disk is out of reach.
 - **Tried and dropped (2026-10-03):** amplifying upsets' gradients for the description encoder only (weight 2) made the two encoders chase different losses. Validation KL rose from 0.055 to 0.186 within 15,000 steps, and upsets fell from 78% to 52%. The same resume without it held at 0.0535.
 - **Separate runs:** `--run-dir` puts a run elsewhere. A new directory starts from random weights; `predict.py --run-dir` reads that run's model.
 

@@ -170,6 +170,12 @@ class TrainingTests(unittest.TestCase):
               freeze_language_at=4)
         after = load_checkpoint(run / "model.checkpoint")[0].description.state_dict()
         self.assertTrue(all(torch.equal(before[k], after[k]) for k in before))  # frozen language transformer
+        # a new machine: continue from the downloaded model with a fresh optimizer, keeping the step
+        moved = Path(self.temp.name) / "moved"
+        train(steps=8, batch_size=4, warmup=1, eval_every=100, checkpoint_every=2, device="cpu", run_dir=moved, label_root=root,
+              init_from=run / "model.checkpoint")
+        state = torch.load(moved / "trainer.pt", weights_only=True)
+        self.assertEqual((state["step"], state["warm_from"]), (8, 6))
 
 
 if __name__ == "__main__":

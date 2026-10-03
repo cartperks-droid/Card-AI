@@ -200,26 +200,33 @@ def weight_norm(model):
 
 
 def train(*, steps=None, batch_size=512, lr=3e-4, warmup=1000, weight_decay=0.05, dropout=0.1, freeze_language_at=None,
-          eval_every=1000,
+          eval_every=1000, init_from=None,
           checkpoint_every=1000, reload_every=1000, device=None, run_dir=RUN_DIR, label_root=SHARD_DIR):
+    """Train in run_dir, resuming its model and optimizer if both are there. Otherwise init_from (a model checkpoint,
+    e.g. one downloaded from another machine) gives the starting weights and step, with a fresh optimizer whose learning
+    rate warms up again; with neither, training starts from random weights."""
     device = device or ("cuda" if torch.cuda.is_available() else "mps" if torch.backends.mps.is_available() else "cpu")
     run_dir = Path(run_dir)
     run_dir.mkdir(parents=True, exist_ok=True)
     model_path, state_path, log_path = run_dir / "model.checkpoint", run_dir / "trainer.pt", run_dir / "log.jsonl"
+    warm_from = 0  # step the learning-rate warmup counts from (a fresh optimizer warms up again)
     if model_path.exists() and state_path.exists():
         model, _ = load_checkpoint(model_path, map_location=device)
         state = torch.load(state_path, map_location="cpu", weights_only=True)
+    elif init_from is not None:
+        model, metadata = load_checkpoint(init_from, map_location=device)
+        state, warm_from = None, int(metadata["step"])
     else:
         model, state = BattleModel().to(device), None
     set_dropout(model, dropout)
     model.train()
     optimizer = torch.optim.AdamW(model.parameters(), lr=lr, weight_decay=weight_decay)
-    step, best = 0, None
+    step, best = warm_from, None
     if state is not None:
         optimizer.load_state_dict(state["optimizer"])
         for group in optimizer.param_groups:
             group["weight_decay"] = weight_decay
-        step, best = state["step"], state.get("best")
+        step, best, warm_from = state["step"], state.get("best"), state.get("warm_from", 0)
     inputs = Inputs(device)
     tokens = inputs.data.description_tokens
     from .flags import snapshot
@@ -269,7 +276,7 @@ def train(*, steps=None, batch_size=512, lr=3e-4, warmup=1000, weight_decay=0.05
             picks = torch.randint(count, (batch_size,), generator=generator).to(device)
             batch = {k: v[picks] for k, v in train_rows.items()}
             for group in optimizer.param_groups:
-                group["lr"] = lr * min(1.0, (step + 1) / warmup)
+                group["lr"] = lr * min(1.0, (step - warm_from + 1) / warmup)
             logits = model(**inputs(batch, current_table()))
             loss = -(batch["target"] * logits.log_softmax(-1)).sum(-1).mean()
             total = loss + model.strategy.identity_penalty()
@@ -305,7 +312,7 @@ def train(*, steps=None, batch_size=512, lr=3e-4, warmup=1000, weight_decay=0.05
                 save_checkpoint(model, model_path, metadata={"step": step, "labels": rules_id,
                                                              "objective": "A initiates; outcome frequencies"})
                 tmp = state_path.with_suffix(".tmp")
-                torch.save({"optimizer": optimizer.state_dict(), "step": step, "best": best}, tmp)
+                torch.save({"optimizer": optimizer.state_dict(), "step": step, "best": best, "warm_from": warm_from}, tmp)
                 tmp.replace(state_path)
     finally:
         log.close()
@@ -321,6 +328,8 @@ if __name__ == "__main__":
     parser.add_argument("--weight-decay", type=float, default=0.05)
     parser.add_argument("--dropout", type=float, default=0.1, help="at the GELU upscale only")
     parser.add_argument("--freeze-language-at", type=int, help="step after which the description transformer is frozen")
+    parser.add_argument("--init-from", help="model checkpoint to start from when the run directory has no trainer state "
+                        "(its step is kept; the optimizer starts fresh)")
     parser.add_argument("--device")
     parser.add_argument("--reload-every", type=int, default=1000)
     parser.add_argument("--eval-every", type=int, default=1000,
@@ -329,5 +338,5 @@ if __name__ == "__main__":
     parsed = parser.parse_args()
     train(steps=parsed.steps, batch_size=parsed.batch_size, lr=parsed.lr, device=parsed.device, reload_every=parsed.reload_every,
           weight_decay=parsed.weight_decay, dropout=parsed.dropout, freeze_language_at=parsed.freeze_language_at,
-          eval_every=parsed.eval_every,
+          eval_every=parsed.eval_every, init_from=parsed.init_from,
           run_dir=parsed.run_dir)
