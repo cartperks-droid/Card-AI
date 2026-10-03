@@ -13,19 +13,22 @@
 
 ## Result
 
-Every winning team (2,034 at 100%) is built on **Vampire Lord at GaPl** (1 in 2.5e16 rolls; a Blood Rain card, Anime pack) with **Neko (Galaxy)**, which doubles Anime cards' stats.
+Every winning team (2,035 at 100%) is built on **Vampire Lord at GaPl** (1 in 2.5e16 rolls; a Blood Rain card, Anime pack) with **Neko (Galaxy)**, which doubles Anime cards' stats. Without Vampire Lord, the best team wins 6% (Hathor, Useless Seer, Pandora, Samurai).
 
-| # | Lineup (in order) | Red | Blue | Win, attacking | Win, defending |
-|---|---|---|---|---|---|
-| 1 | Useless Seer, True Prophet, **Vampire Lord (GaPl)**, Archer (all others no border) | Neko | Storm Spirit | 100% | 100% |
-| 2 | Jersey Devil, Set, Baby Skeleton (no border), **Vampire Lord (GaPl)** | Neko | Storm Spirit | 100% | 100% |
-| 3 | Good Boy, True Prophet, **Vampire Lord (GaPl)**, Useless Seer | Neko | Storm Spirit | 100% | 100% |
-| 4 | Shining Armor, Set (RuPl), **Vampire Lord (GaPl)**, Useless Seer | Neko | Berserker | 100% | 100% |
+Many teams win 100%, so they're ranked by **headroom**: the mean win chance with the enemy's HP and ATK multiplied by 1.5, 2 and 3. That shows how much margin the other three cards add. "Ability never matters" marks a card whose ability can be removed (stats kept) without losing anything; it's there only as a body.
 
+| # | Lineup (in order, all borderless except Vampire Lord) | Red | Blue | Win, attacking / defending | Headroom | Ability never matters |
+|---|---|---|---|---|---|---|
+| 1 | Vicious, True Prophet, **Vampire Lord (GaPl)**, Good Boy | Neko | Storm Spirit | 100% / 100% | 77% | Good Boy |
+| 2 | Useless Seer, Hard Claws, **Vampire Lord (GaPl)**, Pandora | Neko | Storm Spirit | 100% / 100% | 42% | Useless Seer |
+| 3 | Jersey Devil, Set, **Vampire Lord (GaPl)**, Wizard | Neko | Storm Spirit | 100% / 100% | 19% | Wizard |
+| 4 | Samurai, Sable The Envious, **Vampire Lord (GaPl)**, Archer | Neko | Guardian Angel | 100% / 100% | 3% | Archer |
+
+- **Pick team 1.** It wins even against an enemy twice as strong most of the time. Team 4 wins today but has almost no margin.
 - **Why it wins:** each hit steals about 1M ATK and HP from the enemy, so Vampire Lord snowballs while the enemy shrinks.
-- **The other three cards matter only when defending:** alone with random base cards, Vampire Lord (GaPl) wins attacking first but loses defending. The listed partners hold the front until it arrives.
-- **Border:** below GaPl it loses (Galaxy, RuPl, Ruby and Platinum all fail).
-- **Without Vampire Lord** the best team wins 6% (Hathor, Useless Seer, Pandora, Samurai).
+- **The other three cards hold the front** until Vampire Lord arrives. Alone with random base cards, it wins attacking first but loses defending.
+- **Border:** below GaPl Vampire Lord loses (Galaxy, RuPl, Ruby and Platinum all fail).
+- **Teams share at most one card** (Vampire Lord), so these are real alternatives.
 
 ## Caveats
 
