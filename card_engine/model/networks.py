@@ -225,6 +225,52 @@ class StrategicModel(nn.Module):
             return self.bos.new_zeros(())
         return self.config.identity_l2 * self.identity_embedding.weight.square().sum()
 
+    def card_part(self, card_embeddings: Tensor, pack_ids: Tensor | None = None,
+                  class_weights: Tensor | None = None, identity_keys: Tensor | None = None) -> Tensor:
+        """The card-determined part of a card token: description + pack + classes + identity (ids already checked)."""
+        cards = card_embeddings
+        if pack_ids is not None:
+            cards = cards + torch.where(pack_ids[..., None].gt(0), self.pack_embedding(pack_ids.clamp_min(1) - 1), 0.0)
+        if class_weights is not None:
+            cards = cards + class_weights @ self.class_embedding.weight
+        if identity_keys is not None and self.identity_embedding is not None:
+            identities = self.identity_embedding(identity_keys)
+            if self.training and self.config.identity_dropout:
+                keep = torch.rand(identity_keys.shape, device=identity_keys.device) >= self.config.identity_dropout
+                identities = identities * keep[..., None].to(identities.dtype)
+            cards = cards + identities
+        return cards
+
+    def mutation_vectors(self, mutation_ids: Tensor) -> Tensor:
+        if self.mutation_embedding is None:
+            return torch.zeros(*mutation_ids.shape, self.config.width, device=mutation_ids.device)
+        return torch.where(mutation_ids[..., None].gt(0), self.mutation_embedding(mutation_ids), 0.0)
+
+    def support_vectors(self, index: int, ids: Tensor, tiers: Tensor | None) -> Tensor:
+        """Support tokens for one colour (0 red, 1 blue); id 0 = absent."""
+        embedding = (self.red_support_embedding, self.blue_support_embedding)[index]
+        values = embedding(ids.clamp_min(1) - 1)
+        if tiers is not None:
+            values = values + torch.where(tiers[..., None].gt(0), self.support_tier_embedding(index * 5 + tiers.clamp_min(1) - 1), 0.0)
+        return torch.where(ids[..., None].gt(0), values, 0.0)
+
+    def assemble(self, cards: Tensor, supports: list[Tensor], mode_ids: Tensor) -> Tensor:
+        """The token sequence from final card tokens [B, 2, 4, W] and support tokens (red, blue) [B, 2, W]."""
+        batch = cards.shape[0]
+        sequence = torch.cat([
+            self.bos.expand(batch, 1, -1),
+            supports[0][:, 0:1], supports[1][:, 0:1], cards[:, 0],
+            supports[0][:, 1:2], supports[1][:, 1:2], cards[:, 1],
+            self.mode_embedding(mode_ids)[:, None], self.predict.expand(batch, 1, -1),
+        ], dim=1)
+        return sequence + self.position_embedding(torch.arange(len(SLOT_NAMES), device=cards.device))[None]
+
+    def outcome(self, sequence: Tensor) -> Tensor:
+        """Logits (A win, B win) for an assembled sequence."""
+        for block in self.blocks:
+            sequence = block(sequence)
+        return self.outcome_head(sequence[:, -1])
+
     def build_sequence(self, card_embeddings: Tensor, border_ids: Tensor,
                        red_support_ids: Tensor, blue_support_ids: Tensor, *,
                        pack_ids: Tensor | None = None, class_weights: Tensor | None = None,
@@ -250,13 +296,9 @@ class StrategicModel(nn.Module):
         if mutation_ids is not None:
             mutation_ids = self._metadata_ids(mutation_ids, (batch, 2, 4), "mutation_ids", cv,
                                                0, max(0, len(c.mutation_names)-1), 0)
-            if self.mutation_embedding is not None:
-                mutations = self.mutation_embedding(mutation_ids)
-                cards = cards + torch.where(mutation_ids[..., None].gt(0), mutations, 0.0)
+            cards = cards + self.mutation_vectors(mutation_ids)
         if pack_ids is not None:
             pack_ids = self._metadata_ids(pack_ids, (batch, 2, 4), "pack_ids", cv, 0, 14, 0)
-            packs = self.pack_embedding(pack_ids.clamp_min(1) - 1)
-            cards = cards + torch.where(pack_ids[..., None].gt(0), packs, 0.0)
         if class_weights is not None:
             expected = (batch, 2, 4, len(c.class_names))
             if self.class_embedding is None:
@@ -265,17 +307,14 @@ class StrategicModel(nn.Module):
                     or not class_weights.is_floating_point() or class_weights.device != device
                     or class_weights.dtype != cards.dtype):
                 raise ValueError(f"class_weights must be floating-point {expected} on the model device/dtype")
-            classes = torch.where(cv[..., None], class_weights, 0.0)
-            if not bool(torch.isfinite(classes).all()) or bool((classes < 0).any()):
+            class_weights = torch.where(cv[..., None], class_weights, 0.0)
+            if not bool(torch.isfinite(class_weights).all()) or bool((class_weights < 0).any()):
                 raise ValueError("Visible class weights must be finite and nonnegative")
-            cards = cards + classes @ self.class_embedding.weight
         if identity_keys is not None and self.identity_embedding is not None:
             identity_keys = self._metadata_ids(identity_keys, (batch, 2, 4), "identity_keys", cv, 0, c.identity_capacity, 0)
-            identities = self.identity_embedding(identity_keys)
-            if self.training and c.identity_dropout:
-                keep = torch.rand(identity_keys.shape, device=device) >= c.identity_dropout
-                identities = identities * keep[..., None].to(identities.dtype)
-            cards = cards + identities
+        else:
+            identity_keys = None
+        cards = self.card_part(cards, pack_ids, class_weights, identity_keys)
         if card_stats is not None:
             if (not isinstance(card_stats, Tensor) or tuple(card_stats.shape) != (batch, 2, 4, 2)
                     or card_stats.device != device or card_stats.dtype != cards.dtype):
@@ -291,12 +330,9 @@ class StrategicModel(nn.Module):
                 (red_support_ids, self.red_support_embedding, 28, "red_support_ids"),
                 (blue_support_ids, self.blue_support_embedding, 15, "blue_support_ids"))):
             ids = self._metadata_ids(ids, (batch, 2), name, sv[:, :, index], 0, count, 0)
-            values = embedding(ids.clamp_min(1) - 1)
-            if support_tiers is not None:
-                tiers = self._metadata_ids(support_tiers[..., index], (batch, 2), "support_tiers", sv[:, :, index], 0, 5, 0)
-                tier_values = self.support_tier_embedding(index * 5 + tiers.clamp_min(1) - 1)
-                values = values + torch.where(tiers[..., None].gt(0), tier_values, 0.0)
-            values = torch.where(ids[..., None].gt(0), values, 0.0)
+            tiers = (None if support_tiers is None else
+                     self._metadata_ids(support_tiers[..., index], (batch, 2), "support_tiers", sv[:, :, index], 0, 5, 0))
+            values = self.support_vectors(index, ids, tiers)
             supports.append(torch.where(sv[:, :, index, None], values, self.hidden_support[index]))
         if mode_ids is None:
             # Mode 0 = observed enemy; mode 1 = at least one hidden enemy slot.
@@ -305,23 +341,14 @@ class StrategicModel(nn.Module):
         if mode_ids.device != device:
             raise ValueError("mode_ids must be on the input device")
         _range(mode_ids, "mode_ids", 0, 1)
-        sequence = torch.cat([
-            self.bos.expand(batch, 1, -1),
-            supports[0][:, 0:1], supports[1][:, 0:1], cards[:, 0],
-            supports[0][:, 1:2], supports[1][:, 1:2], cards[:, 1],
-            self.mode_embedding(mode_ids)[:, None], self.predict.expand(batch, 1, -1),
-        ], dim=1)
-        return sequence + self.position_embedding(torch.arange(len(SLOT_NAMES), device=device))[None]
+        return self.assemble(cards, supports, mode_ids)
 
     def forward(self, card_embeddings: Tensor, border_ids: Tensor,
                 red_support_ids: Tensor, blue_support_ids: Tensor, **metadata) -> Tensor:
         """Return logits ordered (A win, B win), not calibrated probabilities."""
-        sequence = self.build_sequence(card_embeddings, border_ids, red_support_ids,
-                                       blue_support_ids, **metadata)
         # Full strategic context is visible to PREDICT; lineup positions never move.
-        for block in self.blocks:
-            sequence = block(sequence)
-        return self.outcome_head(sequence[:, -1])
+        return self.outcome(self.build_sequence(card_embeddings, border_ids, red_support_ids,
+                                                blue_support_ids, **metadata))
 
     def probabilities(self, *args, **kwargs) -> Tensor:
         return self(*args, **kwargs).softmax(-1)

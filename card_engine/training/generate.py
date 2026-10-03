@@ -1,0 +1,369 @@
+"""Generate teams that beat an enemy, by gradient ascent on the frozen classifier (the user's design).
+
+Every candidate starts from noise in the slot space. Each slot has a card vector, a border vector and a mutation
+vector, the three factors a card token is built from:
+  - card: description + pack + classes + identity;
+  - border: the border embedding;
+  - mutation: the mutation embedding.
+Each side also has a distribution over the pool's red and blue supports.
+
+Adam ascends the classifier's log win probability: the ally attacking first and defending, averaged. The
+classifier's weights never change.
+  - Stats: a slot's stats depend on the discrete choice. So the slot gets the expected log stats over the pool's
+    entries under p(entry) = softmax(-distance / temperature). The distance factorises over card, border and
+    mutation, each measured in units of its table's typical gap between neighbouring options.
+  - Commitment: a penalty, the distance to the slot's nearest entry, ramps up during the ascent and pulls each slot
+    onto one entry.
+  - Entropy check: while any slot still spreads over several entries (effective count above --max-blur), the
+    ascent continues with a doubled penalty.
+
+Decoding is an exact factorised nearest-k match over the pool. Each slot keeps its k nearest (card, border,
+mutation) entries, and each colour keeps its two most likely supports. The classifier rescores every
+combination exactly and keeps the best per candidate. Distinct teams are ranked by the model; DaddyDrago's engine
+verifies the best --counters of them.
+
+Pools:
+  - own: data/my_deck.json, with copy counts.
+  - restricted: the player base's cards and borders, no mutations.
+  - all: every card, border and eligible mutation.
+--borders limits the borders (e.g. --borders none).
+
+Enemies: an explicit team (--enemy), or --enemies N generated broadly. A broad enemy is a team ascended against
+a random pool opponent and decoded by sampling at a high temperature.
+
+    python -m card_engine.training.generate --enemy "Immortal Witch" Archer "Good Boy" Set --pool restricted --borders none
+    python -m card_engine.training.generate --enemies 4 --pool restricted --borders none
+"""
+
+import argparse
+import itertools
+import json
+import multiprocessing as mp
+import os
+from dataclasses import dataclass
+from pathlib import Path
+
+import numpy as np
+import torch
+
+from ..catalog import load_catalog
+from ..deck import BORDERS, DECK_FILE, load as load_deck
+from ..mutations import MUTATION_NAMES
+from ..restricted import entries as restricted_entries, load as load_restricted
+from ..teams import describe, parse_side, side
+from .predict import Classifier
+from .train import RUN_DIR, card_stats
+
+
+@dataclass
+class Pool:
+    entries: np.ndarray  # [E, 3]: card, border, mutation
+    copies: np.ndarray | None  # [E]: how many of each the player owns (None: unlimited)
+    reds: list  # [(support id, tier)]; (0, 0) = none
+    blues: list
+
+
+def make_pool(catalog, kind, borders=None, limited=True, deck_path=DECK_FILE):
+    every_support = lambda table: [(s.id, tier) for s in table for tier in range(1, 6)]
+    copies = None
+    if kind == "own":
+        if not Path(deck_path).exists():
+            raise SystemExit(f"No deck at {deck_path}; add cards with python -m card_engine.deck add ...")
+        deck = load_deck(deck_path)
+        owned = {}
+        for e in deck["cards"]:
+            key = (e["card"], e["border"], MUTATION_NAMES.index(e["mutation"]))
+            owned[key] = owned.get(key, 0) + e["count"]
+        rows = sorted(owned)
+        copies = np.array([owned[r] for r in rows])
+        reds = sorted({(e["support"], e["tier"]) for e in deck["supports"] if e["color"] == "red"}) or [(0, 0)]
+        blues = sorted({(e["support"], e["tier"]) for e in deck["supports"] if e["color"] == "blue"}) or [(0, 0)]
+    elif kind == "restricted":
+        rows = [(card, border, 0) for card, border in restricted_entries(load_restricted(), catalog, limited=limited)]
+        reds, blues = every_support(catalog.red_supports), every_support(catalog.blue_supports)
+    else:
+        rows = [(c.id, border, mutation) for c in catalog.cards for border in range(1, 17)
+                for mutation in (range(len(MUTATION_NAMES)) if c.weather_id == 1 else (0,))]
+        reds, blues = every_support(catalog.red_supports), every_support(catalog.blue_supports)
+    entries = np.array(rows, dtype=np.int64).reshape(-1, 3)
+    if borders:
+        keep = np.isin(entries[:, 1], borders)
+        entries, copies = entries[keep], None if copies is None else copies[keep]
+    if not len(entries):
+        raise SystemExit("The pool is empty")
+    return Pool(entries, copies, reds, blues)
+
+
+def _sqdist(x, table):
+    """Squared distances [..., U], centred on the table's mean so the expansion keeps its precision."""
+    centre = table.mean(0)
+    x, table = x - centre, table - centre
+    return (x.square().sum(-1, keepdim=True) + table.square().sum(-1) - 2 * x @ table.T).clamp_min(0)
+
+
+class SlotSpace:
+    """The classifier's token factors over one pool, and the forward pass for relaxed ally slots."""
+
+    def __init__(self, classifier, pool):
+        self.classifier, self.pool = classifier, pool
+        self.model = strategy = classifier.model.strategy
+        device = self.device = classifier.device
+        data = classifier.inputs.data
+        width = strategy.config.width
+        with torch.no_grad():
+            parts = strategy.card_part(classifier.table, data.pack_ids, data.class_weights, data.identity_keys)
+            self.card_table = torch.cat([parts.new_zeros(1, width), parts])  # by card id
+            self.border_table = strategy.border_embedding.weight  # by border id - 1
+            self.mutation_table = strategy.mutation_vectors(torch.arange(len(MUTATION_NAMES), device=device))
+            entries = torch.as_tensor(pool.entries, device=device)
+            self.entries = entries
+            self.factors = []  # (options [U, W], entry -> option index [E], mean [W], std [W], median nearest gap)
+            for column, table in ((0, self.card_table), (1, None), (2, self.mutation_table)):
+                values, inverse = torch.unique(entries[:, column], return_inverse=True)
+                options = self.border_table[values - 1] if column == 1 else table[values]
+                std = options.std(0, unbiased=False)
+                gaps = _sqdist(options, options).fill_diagonal_(float("inf")).amin(-1) if len(options) > 1 else std.new_ones(1)
+                self.factors.append((options, inverse, options.mean(0), std, float(gaps.median().clamp_min(1e-12))))
+            base, red, _, _ = classifier.inputs.stat_tables
+            card, border, mutation = entries.unbind(1)
+            self.log_base = base[card, border, mutation].log()  # [E, 2]
+            self.reds = torch.as_tensor(pool.reds, device=device)
+            self.blues = torch.as_tensor(pool.blues, device=device)
+            self.log_red = red[card[:, None], mutation[:, None], self.reds[None, :, 0], self.reds[None, :, 1]].log()  # [E, R, 2]
+            self.red_vectors = strategy.support_vectors(0, self.reds[:, 0], self.reds[:, 1])
+            self.blue_vectors = strategy.support_vectors(1, self.blues[:, 0], self.blues[:, 1])
+
+    def distances(self, vectors):
+        """[N, 4, E]: each slot's factorised distance to every pool entry."""
+        total = 0
+        for x, (options, inverse, _, _, scale) in zip(vectors, self.factors):
+            if len(options) > 1:  # a factor with one option is fixed at it
+                total = total + (_sqdist(x, options) / scale)[..., inverse]
+        return total
+
+    def fixed(self, sides):
+        """Exact tokens of discrete sides: card tokens without stats [N, 4, W], log stats [N, 4, 2], red, blue [N, W]."""
+        rows = {key: torch.tensor([[s[key], s[key]] for s in sides], device=self.device)
+                for key in ("cards", "borders", "mutations", "red", "red_tier", "blue", "blue_tier")}
+        tokens = (self.card_table[rows["cards"][:, 0]] + self.border_table[rows["borders"][:, 0] - 1]
+                  + self.mutation_table[rows["mutations"][:, 0]])
+        stats = card_stats(rows, self.classifier.inputs.stat_tables)[:, 0].log()
+        red = self.model.support_vectors(0, rows["red"][:, 0], rows["red_tier"][:, 0])
+        blue = self.model.support_vectors(1, rows["blue"][:, 0], rows["blue_tier"][:, 0])
+        return tokens, stats, red, blue
+
+    def logits(self, a, b):
+        """Outcome logits with side A and side B each given as (card tokens, log stats, red, blue)."""
+        cards = torch.stack([a[0], b[0]], 1)
+        stats = torch.stack([a[1], b[1]], 1)
+        visible = torch.ones(stats.shape[:3], dtype=torch.bool, device=self.device)
+        cards = cards + self.model.stat_vectors(self.model.normalized_stats(stats.exp(), visible))
+        supports = [torch.stack([a[2], b[2]], 1), torch.stack([a[3], b[3]], 1)]
+        mode = torch.zeros(cards.shape[0], dtype=torch.long, device=self.device)
+        return self.model.outcome(self.model.assemble(cards, supports, mode))
+
+
+@dataclass
+class Settings:
+    steps: int = 300
+    lr: float = 0.05
+    temperature: float = 0.1  # distance temperature of p(entry)
+    commitment: float = 1.0  # final weight of the commitment penalty
+    max_blur: float = 1.5  # entropy check: effective entries per slot
+    rechecks: int = 3  # extra ascent rounds (doubled penalty) while slots stay blurred
+    nearest: int = 3  # decoding: k nearest entries per slot
+    both_orders: bool = True
+
+
+def ascend(space, opponents, settings, generator):
+    """Relaxed ally slots ascended against one discrete opponent each; returns (distances [N,4,E], red, blue probs)."""
+    n = len(opponents)
+    enemy = space.fixed(opponents)
+    width = space.card_table.shape[1]
+    z = [torch.randn(n, 4, width, generator=generator, device="cpu").to(space.device).requires_grad_() for _ in range(3)]
+    red_logits = torch.zeros(n, len(space.reds), device=space.device, requires_grad=True)
+    blue_logits = torch.zeros(n, len(space.blues), device=space.device, requires_grad=True)
+    optimizer = torch.optim.Adam([*z, red_logits, blue_logits], lr=settings.lr)
+
+    def state():
+        vectors = [mean + std * zi for zi, (_, _, mean, std, _) in zip(z, space.factors)]
+        distance = space.distances(vectors)
+        p = (-distance / settings.temperature).softmax(-1)
+        return vectors, distance, p, red_logits.softmax(-1), blue_logits.softmax(-1)
+
+    def step(weight):
+        vectors, distance, p, red, blue = state()
+        log_red = torch.einsum("erk,nr->nek", space.log_red, red)
+        stats = torch.einsum("nse,ek->nsk", p, space.log_base) + torch.einsum("nse,nek->nsk", p, log_red)
+        ally = (vectors[0] + vectors[1] + vectors[2], stats, red @ space.red_vectors, blue @ space.blue_vectors)
+        objective = space.logits(ally, enemy).log_softmax(-1)[:, 0]
+        if settings.both_orders:
+            objective = (objective + space.logits(enemy, ally).log_softmax(-1)[:, 1]) / 2
+        entropy = lambda q: -(q * q.clamp_min(1e-12).log()).sum(-1)
+        # Commitment: the distance to each slot's nearest entry (an expected distance would settle between entries).
+        commit = distance.amin(-1).mean(-1) + entropy(red) + entropy(blue)
+        loss = (-objective + weight * commit).sum()
+        optimizer.zero_grad()
+        loss.backward()
+        optimizer.step()
+
+    for t in range(settings.steps):
+        step(settings.commitment * ((t + 1) / settings.steps) ** 2)
+    weight = settings.commitment
+    for _ in range(settings.rechecks):
+        with torch.no_grad():
+            p = state()[2]
+            blur = (-(p * p.clamp_min(1e-12).log()).sum(-1)).exp()  # effective entries per slot
+        if blur.max() <= settings.max_blur:
+            break
+        weight *= 2
+        for _ in range(settings.steps // 3):
+            step(weight)
+    with torch.no_grad():
+        _, distance, p, red, blue = state()
+        blur = (-(p * p.clamp_min(1e-12).log()).sum(-1)).exp().amax(-1)
+    return distance, red, blue, blur
+
+
+def _team(space, entry_ids, red, blue):
+    entries = space.pool.entries
+    return side([tuple(int(v) for v in entries[e]) for e in entry_ids], space.pool.reds[red], space.pool.blues[blue])
+
+
+def _allowed(space, entry_ids):
+    if space.pool.copies is None:
+        return True
+    ids, counts = np.unique(entry_ids, return_counts=True)
+    return bool((counts <= space.pool.copies[ids]).all())
+
+
+def decode_nearest(space, distance, red, blue, nearest):
+    """Per candidate: every combination of each slot's k nearest entries and the two most likely supports."""
+    near = distance.topk(min(nearest, distance.shape[-1]), largest=False).indices.cpu().numpy()  # [N, 4, k]
+    reds = red.topk(min(2, red.shape[-1])).indices.cpu().numpy()
+    blues = blue.topk(min(2, blue.shape[-1])).indices.cpu().numpy()
+    out = []
+    for i in range(len(near)):
+        teams = [_team(space, combo, r, b) for combo in itertools.product(*near[i])
+                 if _allowed(space, combo) for r in reds[i] for b in blues[i]]
+        out.append(teams)
+    return out
+
+
+def decode_sample(space, distance, red, blue, temperature, generator):
+    """One team per candidate, sampled from p(entry) and the supports at a high temperature (broad enemies)."""
+    out = []
+    for i in range(distance.shape[0]):
+        for _ in range(100):
+            probs = (-distance[i] / temperature).softmax(-1).cpu()
+            combo = torch.multinomial(probs, 1, generator=generator)[:, 0].numpy()
+            if _allowed(space, combo):
+                break
+        r = int(torch.multinomial(red[i].cpu() ** (1 / temperature), 1, generator=generator))
+        b = int(torch.multinomial(blue[i].cpu() ** (1 / temperature), 1, generator=generator))
+        out.append(_team(space, combo, r, b))
+    return out
+
+
+def random_team(pool, rng):
+    entry_ids = rng.choice(len(pool.entries), 4, replace=pool.copies is None or len(pool.entries) < 4)
+    return side([tuple(int(v) for v in pool.entries[e]) for e in entry_ids],
+                pool.reds[rng.integers(len(pool.reds))], pool.blues[rng.integers(len(pool.blues))])
+
+
+def _key(team):
+    return tuple(tuple(v) if isinstance(v, list) else v for v in team.values())
+
+
+def counters(space, enemy, *, count=32, restarts=64, settings=Settings(), seed=1):
+    """The `count` best distinct ally teams against `enemy` by the classifier: [(team, (first, second), blur)]."""
+    generator = torch.Generator().manual_seed(seed)
+    distance, red, blue, blur = ascend(space, [enemy] * restarts, settings, generator)
+    best = {}
+    for teams, slot_blur in zip(decode_nearest(space, distance, red, blue, settings.nearest), blur.cpu().numpy()):
+        if not teams:
+            continue
+        wins = space.classifier.ally_win([(team, enemy) for team in teams])
+        score = wins.mean(1) if settings.both_orders else wins[:, 0]
+        top = int(score.argmax())
+        key = _key(teams[top])
+        if key not in best or score[top] > best[key][2]:
+            best[key] = (teams[top], tuple(float(w) for w in wins[top]), float(score[top]), float(slot_blur.max()))
+    ranked = sorted(best.values(), key=lambda r: -r[2])[:count]
+    return [(team, wins, blur) for team, wins, _, blur in ranked]
+
+
+def broad_enemies(space, n, *, settings=Settings(), temperature=1.0, seed=1):
+    """`n` diverse strong teams: each ascended against a random pool opponent, decoded by sampling."""
+    rng = np.random.default_rng(seed)
+    opponents = [random_team(space.pool, rng) for _ in range(n)]
+    generator = torch.Generator().manual_seed(seed)
+    distance, red, blue, _ = ascend(space, opponents, settings, generator)
+    return decode_sample(space, distance, red, blue, temperature, generator)
+
+
+def verify(teams, enemy, workers, seed=1):
+    """The engine's ally win chance attacking first and defending, per team."""
+    from .counter import _evaluate, _init
+    jobs = [(team, enemy, seed + 2 * i, None, 1, None) for i, team in enumerate(teams)]
+    with mp.get_context("spawn").Pool(workers, initializer=_init) as pool:
+        return pool.map(_evaluate, jobs)
+
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+    parser.add_argument("--enemy", nargs=4, metavar="CARD", help="the enemy's four cards, Name[@Border][/Mutation]")
+    parser.add_argument("--enemy-red")
+    parser.add_argument("--enemy-blue")
+    parser.add_argument("--enemies", type=int, help="generate this many broad enemies instead of --enemy")
+    parser.add_argument("--enemy-pool", choices=("own", "restricted", "all"), help="pool for --enemies (default: --pool)")
+    parser.add_argument("--pool", choices=("own", "restricted", "all"), default="restricted")
+    parser.add_argument("--borders", nargs="+", help=f"allowed borders, from {' '.join(BORDERS)}")
+    parser.add_argument("--no-limited", action="store_true", help="restricted pool without its Limited exceptions")
+    parser.add_argument("--counters", type=int, default=32)
+    parser.add_argument("--restarts", type=int, default=64, help="candidates ascended per enemy")
+    parser.add_argument("--steps", type=int, default=Settings.steps)
+    parser.add_argument("--temperature", type=float, default=Settings.temperature)
+    parser.add_argument("--nearest", type=int, default=Settings.nearest)
+    parser.add_argument("--first-only", action="store_true", help="optimise only the ally attacking first")
+    parser.add_argument("--no-verify", action="store_true", help="skip the engine check")
+    parser.add_argument("--workers", type=int, default=max(1, (os.cpu_count() or 2) - 1))
+    parser.add_argument("--checkpoint", default=str(RUN_DIR / "model.checkpoint"))
+    parser.add_argument("--device")
+    parser.add_argument("--seed", type=int, default=1)
+    parser.add_argument("--output", help="also write the report here (JSON)")
+    args = parser.parse_args()
+    if (args.enemy is None) == (args.enemies is None):
+        parser.error("give either --enemy or --enemies")
+    catalog = load_catalog()
+    borders = [BORDERS.index(b) + 1 if b in BORDERS else int(b) for b in args.borders] if args.borders else None
+    classifier = Classifier(args.checkpoint, args.device)
+    settings = Settings(steps=args.steps, temperature=args.temperature, nearest=args.nearest, both_orders=not args.first_only)
+    space = SlotSpace(classifier, make_pool(catalog, args.pool, borders, limited=not args.no_limited))
+    if args.enemy:
+        enemies = [parse_side(catalog, args.enemy, args.enemy_red, args.enemy_blue)]
+    else:
+        enemy_pool = args.enemy_pool or args.pool
+        enemy_space = space if enemy_pool == args.pool else SlotSpace(
+            classifier, make_pool(catalog, enemy_pool, borders, limited=not args.no_limited))
+        enemies = broad_enemies(enemy_space, args.enemies, settings=settings, seed=args.seed)
+    report = {"checkpoint_step": classifier.metadata.get("step"), "pool": args.pool, "matchups": []}
+    for index, enemy in enumerate(enemies):
+        found = counters(space, enemy, count=args.counters, restarts=args.restarts, settings=settings, seed=args.seed + index)
+        checked = verify([team for team, _, _ in found], enemy, args.workers, args.seed) if not args.no_verify else None
+        rows = []
+        for i, (team, wins, blur) in enumerate(found):
+            row = {**describe(catalog, team), "model": [round(w, 3) for w in wins], "slot_blur": round(blur, 2)}
+            if checked:
+                row["simulator"] = [round(w, 3) for w in checked[i]]
+            rows.append(row)
+        if checked:
+            rows.sort(key=lambda r: -sum(r["simulator"]))
+        report["matchups"].append({"enemy": describe(catalog, enemy), "counters": rows})
+        print(json.dumps(report["matchups"][-1], ensure_ascii=False), flush=True)
+    if args.output:
+        Path(args.output).write_text(json.dumps(report, indent=1, ensure_ascii=False) + "\n")
+
+
+if __name__ == "__main__":
+    main()

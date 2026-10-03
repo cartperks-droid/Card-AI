@@ -56,4 +56,4 @@ Weather cards retain their separate intrinsic multiplier and are ineligible for 
 
 The description model is 128-wide with two layers/four heads. The strategic model is 768-wide with four layers/eight heads and 192-wide attention. It has exactly 16 border embeddings, separate support embeddings, fixed ordered team slots, and whole-slot hidden-information masking. Checkpointing and detached embedding precomputation are available in `card_engine.model`.
 
-`card_engine.selfplay` holds the prototype of gradient-based candidate generation against an explicit legal inventory. Its scores are model estimates; the training pipeline is described in `docs/training.md`.
+`python -m card_engine.training.predict` gives the classifier's win rate for named teams. `python -m card_engine.training.generate` builds counter teams by gradient ascent on the frozen classifier and verifies them with the engine. Both are described in `docs/training.md`.

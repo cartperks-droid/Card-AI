@@ -49,11 +49,28 @@
 - Each test comes with the simulator's prediction and a training status section.
 - Fixing a rule changes the fingerprint, so labels regenerate and training continues on them.
 
-## Comparing one matchup
+## Win rate of a matchup (`card_engine/training/predict.py`)
 ```sh
-../.venv/bin/python -m card_engine.training.predict --a 21,104,18,10 --b 205,44,3,1 --borders-a 5,5,5,5 --red-a 12:3 --blue-b 15:2
+../.venv/bin/python -m card_engine.training.predict \
+    --ally "Vampire Lord@GaPl" Set "Good Boy@Pl/Storm" Archer --ally-red Stormcaller@Galaxy --ally-blue "Guardian Angel@Ruby" \
+    --enemy "Immortal Witch" Archer "Good Boy" Set --enemy-blue Fate@Crystal --simulate
 ```
-This prints the model's A / B probabilities next to the simulator's: exact from the tablebase when possible, otherwise estimated.
+- **Teams:** cards are `Name[@Border][/Mutation]` and supports `Name[@Tier]` (`card_engine/teams.py`). A name can be an ID, the exact name, or a unique part of it.
+- **Output:** the classifier's ally win chance when the ally attacks first and when the enemy does. `--simulate` adds the engine's answers and whether each is exact. `--checkpoint` picks the model (default `data/training/model.checkpoint`).
+
+## Generator (`card_engine/training/generate.py`)
+```sh
+../.venv/bin/python -m card_engine.training.generate --enemy "Immortal Witch" Archer "Good Boy" Set --pool restricted --borders none
+../.venv/bin/python -m card_engine.training.generate --enemies 4 --pool restricted --borders none --output counters.json
+```
+- **Slot space:** each of the 4 slots is three vectors, one per factor of a card token. The card factor is description + pack + classes + identity; the others are the border and mutation embeddings. Each side also has a distribution over the pool's supports. Everything starts from noise.
+- **Ascent:** Adam maximises the classifier's log win probability, averaged over attacking first and defending (`--first-only` for one order). Weights never change.
+  - **Stats:** a slot's stats are the expected log stats under p(entry) = softmax(-distance / temperature). The distance factorises over the three factors, each in units of its table's typical neighbour gap.
+- **Commitment and entropy check:** the distance to each slot's nearest entry is penalised, more and more during the ascent. While a slot still spreads over more than 1.5 effective entries, the ascent continues with a doubled penalty, up to 3 times. `slot_blur` in the output is the worst slot's effective entry count.
+- **Decoding:** an exact factorised nearest-k match over the pool. Each slot keeps its 3 nearest entries and each colour its 2 most likely supports. The classifier scores every combination exactly, and each candidate keeps its best.
+- **Counters:** 64 candidates per enemy (`--restarts`). The best 32 distinct teams by the model (`--counters`) are verified by the engine in both turn orders and sorted by the engine's result.
+- **Enemies:** `--enemy` names one. `--enemies N` generates N broad ones: each is ascended against a random pool opponent, then decoded by sampling at temperature 1.
+- **Pools:** `own` uses your deck with copy counts. `restricted` uses the player base's cards and borders, without mutations. `all` uses everything. `--borders none` keeps tests borderless (user).
 
 ## Validation metrics
 - `accuracy`: how often the model picks the most frequent outcome.

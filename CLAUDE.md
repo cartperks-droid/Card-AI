@@ -15,7 +15,9 @@ This project simulates a Roblox "Snap!"-style card game and trains an AI to pred
   - `train.py`: the classifier trainer.
   - `counter.py`: counter-team search.
   - `tablebase.py`: stores exact outcomes.
-  - `predict.py`: compares the model with the simulator on one matchup.
+  - `predict.py`: the classifier's win rate for named teams, both turn orders (`--simulate` adds the engine).
+  - `generate.py`: the generator (design below): counters to a named enemy or to broadly generated enemies, verified by the engine.
+- `card_engine/teams.py`: teams by name: `"Name[@Border][/Mutation]"` cards, `"Name[@Tier]"` supports.
 - `card_engine/model/` has two transformers: a description (language) encoder and a strategic encoder. The head gives **two outcomes, A win and B win. There are no ties**: a draw (both sides wiped out, or his 2,000-turn cap) counts as the attacker A's loss.
 - Player tools:
   - `card_engine/deck.py`: the user's own collection (`data/my_deck.json`).
@@ -48,7 +50,7 @@ python -m card_engine.training.train --batch-size 512 --weight-decay 0.05 --drop
   - accuracy on "upsets", where abilities overturn the stat favourite.
 - **Regularisation:** dropout only at the GELU upscale. The language transformer freezes at a set step.
 - **Grokking:** probes (fixed training and validation subsets, plus the weight norm) are logged. The dataset keeps growing.
-- **Next phase, only once the classifier is excellent:** a generator.
+- **Generator** (`training/generate.py`; built 2026-10-03, its results are only as good as the classifier):
   - It starts from noise in the slot space and runs gradient ascent on the frozen classifier toward a "win = 1" target. Weights never change.
   - Card, border and mutation are decoded by an exact factorised nearest-k match, filtered to a pool: own deck, restricted deck, or everything.
   - A commitment penalty and an entropy check stop slots blurring between several cards.
