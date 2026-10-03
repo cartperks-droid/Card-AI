@@ -1,8 +1,8 @@
-"""Battle labels for the general win predictor: random matchups scored by DaddyDrago's battle engine.
+"""Battle labels for the general win predictor: random matchups scored by DaddyDrago's battle rules.
 
 Every battle is searched best-first over the engine's chance points (largest probabilities first, under a node
 budget); small or leftover branches are resolved by pooled playouts, as many as reducing the variance needs
-(sim_js/search.ts). Battles with no estimated probability are exact and kept in the tablebase; estimated ones are
+(sim_c: the C port of his engine and of sim_js/search.ts, with identical answers; his TypeScript builds the start). Battles with no estimated probability are exact and kept in the tablebase; estimated ones are
 recomputed whenever they are labelled again. Side A always initiates; a draw counts as A's loss (user).
 Each shard records the rules snapshot (training.flags), so rows go stale when the rules behind them change.
 """
@@ -18,7 +18,7 @@ import numpy as np
 
 from ..catalog import load_catalog
 from ..mutations import MUTATION_NAMES
-from ..simulator import drago
+from ..simulator import drago, kernel
 from ..teams import ASTRAEUS, ASTRAEUS_ARTS
 from .tablebase import Tablebase
 
@@ -71,11 +71,12 @@ ENGINE_ERRORS = SHARD_DIR / "engine_errors.jsonl"  # battles the engine could no
 def evaluate(catalog, spec, seed, **overrides):
     """((A, B, tie, unfinished), exact) for one label spec; ties never happen (a draw is A's loss).
 
-    A battle the engine fails on (e.g. "Maximum call stack size exceeded") is left unfinished, so training skips
+    A battle the engine fails on (his "Maximum call stack size exceeded", or the C engine running out of card slots
+    or recursion depth) is left unfinished, so training skips
     the row, and is appended to ENGINE_ERRORS instead of stopping the whole label run. If the engine process itself
     died (a broken pipe or an empty reply), the next battle starts a fresh one."""
     try:
-        return drago.evaluate(catalog, spec, seed, **overrides)
+        return kernel.evaluate(catalog, spec, seed, **overrides)
     except (RuntimeError, OSError, ValueError) as error:  # engine error; dead process (pipe); empty reply (JSON)
         if not isinstance(error, RuntimeError):
             drago._WORKER = None

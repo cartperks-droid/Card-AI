@@ -112,6 +112,8 @@ exact('  while (state.teams.Allies.length && state.teams.Enemies.length && state
       '  while (state.teams.Allies.length && state.teams.Enemies.length && state.turn < maxTurns) {\n'
       + '    inject?.onTurn?.({ turnsWithoutDeaths, lastDeathEpoch, deathEpoch: runtime.deathEpoch })\n    state.turn += 1\n')
 src += '\nexport interface TurnCounters { turnsWithoutDeaths: number; lastDeathEpoch: number; deathEpoch: number }\n'
+// The C engine (sim_c/gen_tables.ts) builds its tables from the same pools and sets this file uses.
+src += '\nexport { FULLY_SUPPORTED, PANDORA_ABILITY_POOL, RANDOM_CARD_POOL, NUWA_CREATABLE_POOL, CONSTELLAR_ABILITIES, DODGE_ABILITIES }\n'
 
 // Two-sided battles: both teams are player teams with their own red (stat) and blue (skill) auras; side A moves first.
 src += `

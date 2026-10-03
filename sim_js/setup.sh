@@ -13,4 +13,11 @@ git -C "$repo" fetch -q origin "$commit" 2>/dev/null || git -C "$repo" fetch -q 
 git -C "$repo" checkout -q "$commit"
 node codemod.mjs "$repo/src/engine/battle-v2.ts" "$repo/src/engine/battle-v2.label.ts"
 [ -d node_modules/tsx ] || npm install --no-audit --no-fund --silent
+
+# The C engine (sim_c/): tables from his data at this commit, then the library card_engine/simulator/kernel.py loads.
+npx --no-install tsx gen_tables.ts ../sim_c/build/tables.h
+lib=../sim_c/build/libcardsim.so
+[ "$(uname)" = Darwin ] && lib=../sim_c/build/libcardsim.dylib
+${CC:-cc} -O2 -fPIC -shared -I../sim_c ../sim_c/engine.c ../sim_c/search.c -lm -o "$lib"
+echo "C engine built: $lib"
 echo "engine ready at $commit"

@@ -9,7 +9,7 @@ import torch
 
 from card_engine.catalog import load_catalog
 from card_engine.model import BattleModel, load_model_data
-from card_engine.simulator import drago
+from card_engine.simulator import drago, kernel
 from card_engine.training import labels
 from card_engine.training.flags import snapshot
 from card_engine.training.train import Inputs, card_table, evaluate, load_split, train
@@ -56,11 +56,11 @@ class TrainingTests(unittest.TestCase):
         from unittest import mock
         spec = labels.random_spec(random.Random(1), self.catalog)
         log = Path(self.temp.name) / "errors.jsonl"
-        with mock.patch.object(drago, "evaluate", side_effect=RuntimeError("Maximum call stack size exceeded")), \
+        with mock.patch.object(kernel, "evaluate", side_effect=RuntimeError("Maximum call stack size exceeded")), \
                 mock.patch.object(labels, "ENGINE_ERRORS", log):
             self.assertEqual(labels.evaluate(self.catalog, spec, 5), ((0.0, 0.0, 0.0, 1.0), False))
         self.assertIn("Maximum call stack", log.read_text())
-        with mock.patch.object(drago, "evaluate", side_effect=BrokenPipeError(32, "Broken pipe")), \
+        with mock.patch.object(kernel, "evaluate", side_effect=BrokenPipeError(32, "Broken pipe")), \
                 mock.patch.object(labels, "ENGINE_ERRORS", log), mock.patch.object(drago, "_WORKER", object()):
             self.assertEqual(labels.evaluate(self.catalog, spec, 5), ((0.0, 0.0, 0.0, 1.0), False))
             self.assertIsNone(drago._WORKER)  # the next battle starts a fresh engine process

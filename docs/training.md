@@ -1,16 +1,20 @@
 # Training the general win predictor
 
 ## Labels (`card_engine/training/labels.py`)
-- **Engine:** DaddyDrago's battle engine (`sim_js/`, set up with `bash sim_js/setup.sh`; see CLAUDE.md). Our old Python/C simulator was deleted on 2026-10-03.
+- **Engine:** DaddyDrago's battle rules (set up with `bash sim_js/setup.sh`; see CLAUDE.md). Our old Python/C simulator was deleted on 2026-10-03.
+  - **C engine (`sim_c/`, user 2026-10-03: "build it in C ... don't leave out any abilities"):** labels run on a C port of his battle code and of `sim_js/search.ts`. His TypeScript still builds each battle's start (supports, deck passives, Draconian, Astraeus arts, tweaks); `card_engine/simulator/kernel.py` loads it into C, which runs the search. A branch is one `memcpy` of the battle.
+  - **Same answers:** the C search gives bit-identical results to the TypeScript search. Checked on 150 sample battles, every supported card (3 battles each) and support (2 each), and every one of his 324 abilities forced onto cards (1,002 battles); together these run 99.8% of the engine's lines (the rest: an unused helper, a branch his own code never calls). `tests/test_kernel.py` keeps checking.
+  - **Speed:** about 217 labels/s per core at the design budget (his TypeScript: 20).
+  - **Limits:** 128 cards per battle, 64 per team list, nesting depth 2,000 (where his engine would throw "Maximum call stack size exceeded"). Past them a battle is abandoned and logged like any engine error, never answered wrongly.
 - **Battles:** random 4v4 matchups over all 289 cards. Each Astraeus gets a random art, and the art is its own card (user). Each card also gets:
   - a border;
   - a mutation, for eligible (Base-weather) cards only, 50% of the time;
   - red and blue supports, absent 10% of the time, each with a tier: Base, Platinum, Crystal, Ruby or Galaxy (1-5).
 - **Borders:** 70% of battles keep every border within two rarity ranks of a shared level. The rest draw borders uniformly.
 - **Who starts:** side A always initiates. A draw (double KO, or the 2,000-turn cap) counts as A's loss.
-- **Search (user's design, `sim_js/search.ts`):** every random draw in his engine is a chance point. A branch is the list of choices made at those points, replayed from the start of the battle.
+- **Search (user's design, `sim_js/search.ts`, ported in `sim_c/search.c`):** every random draw in his engine is a chance point. A branch is the list of choices made at those points, replayed from the start of the battle.
   - **Large branches first:** the most probable open branch is expanded next, up to 20,000 per label (`drago.SEARCH`).
-  - **Saved turns:** like the old C kernel continuing from stored states, a branch is the battle saved at the start of the turn in which it split, plus the choices since then. Expanding it restores that turn and plays on; it never replays from turn 1. Results are identical to replaying (checked in `tests/test_training.py`). Ability lookups read a per-card entry (ability, names, their set) rebuilt only when the card's overrides, bonus abilities or definition change (`codemod.mjs`); results are identical to his unpatched code. Cards whose abilities never changed in battle read a shared entry at their card index. About 14 labels/s per core (4.7 before; the old C kernel: 30).
+  - **Saved turns:** like the old C kernel continuing from stored states, a branch is the battle saved at the start of the turn in which it split, plus the choices since then. Expanding it restores that turn and plays on; it never replays from turn 1. Results are identical to replaying (checked in `tests/test_training.py`). Ability lookups read a per-card entry (ability, names, their set) rebuilt only when the card's overrides, bonus abilities or definition change (`codemod.mjs`); results are identical to his unpatched code. Cards whose abilities never changed in battle read a shared entry at their card index.
   - **Small branches:** a branch below 0.1% probability is not expanded. It joins the playout pool.
   - **Leftover branches:** small branches, plus whatever is open when the budget runs out, are resolved by pooled playouts. Each playout picks a branch in proportion to its probability, then plays on at random.
   - **Variance-based count:** playouts continue, up to 1,024, until the standard error of the A-win estimate is at most 3%.

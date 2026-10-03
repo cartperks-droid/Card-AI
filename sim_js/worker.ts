@@ -8,6 +8,9 @@
 //            -> {"base": [card][border][mutation] = [hp, attack], "red": [card][mutation][red][tier] = [hp x, attack x],
 //                "prehistoric": [per card], "jurassic": [Jurassic World % per Prehistoric card, per tier]}
 //   check:   {"op": "check", "a": ..., "b": ...} -> {"unsupported": [...]} without running the battle
+//   state:   {"op": "state", "a": ..., "b": ..., "options": tweaks} -> the battle as it starts, for the C engine
+//            (card_engine/simulator/kernel.py): {"cards": [...], "lists": [Allies, Enemies, fallen Allies, fallen
+//            Enemies as card positions], "boosts": [Allies, Enemies], "turn", "moving", "unsupported"}
 import { createInterface } from 'node:readline'
 import { solve, startState } from './search'
 import { createTwoSidedState } from './vendor/CardRngExpansionDepths/src/engine/battle-v2.label'
@@ -16,6 +19,34 @@ import { getAura, getSkillAuraValue, statAuraPercentForCard } from './vendor/Car
 import cards from './vendor/CardRngExpansionDepths/src/data/cards'
 
 const byName = new Map(cards.map((card: any) => [card.name, card]))
+const TEAMS = ['Allies', 'Enemies']
+const BORDER_ORDER = ['Galaxy', 'Ruby', 'Crystal', 'Platinum']
+const CARD_KEYS = new Set(['id', 'definition', 'team', 'index', 'borders', 'mutationWeather', 'power', 'hp', 'maxHp', 'damage',
+  'entered', 'dead', 'boss', 'identityOverride', 'abilityOverride', 'bonusAbilities', 'status', 'flags', 'counters'])
+
+// Every card once (shared references stay shared), with names for the definition, identity and abilities; kernel.py
+// maps names to the C engine's ids and refuses any field it does not know.
+function exportState(state: any) {
+  const position = new Map<any, number>()
+  const out: any[] = []
+  const add = (card: any) => {
+    if (position.has(card)) return position.get(card)!
+    for (const key in card) if (!CARD_KEYS.has(key)) throw new Error(`card field ${key} has no C counterpart`)
+    const entry: any = {
+      id: card.id, def: card.definition.name, team: TEAMS.indexOf(card.team), index: card.index,
+      borders: BORDER_ORDER.filter((b) => card.borders.includes(b)), power: card.power, hp: card.hp, maxHp: card.maxHp,
+      damage: card.damage, entered: card.entered, dead: card.dead, boss: card.boss, identity: card.identityOverride ?? null,
+      bonus: card.bonusAbilities || [], status: card.status, flags: card.flags, counters: card.counters,
+    }
+    if (card.abilityOverride !== undefined) entry.abilityOverride = card.abilityOverride  // absent: never set
+    position.set(card, out.length)
+    out.push(entry)
+    return out.length - 1
+  }
+  const lists = [...TEAMS.map((t) => state.teams[t]), ...TEAMS.map((t) => state.fallen[t])].map((cards: any[]) => cards.map(add))
+  return { cards: out, lists, boosts: TEAMS.map((t) => state.boosts[t]), turn: state.turn, moving: TEAMS.indexOf(state.moving),
+    unsupported: [...state.unsupportedAbilities] }
+}
 
 function tables(req: any) {
   const defs = req.cards.map((name: string) => byName.get(name))
@@ -43,6 +74,8 @@ lines.on('line', (line) => {
       const state = startState(req.a, req.b, req.options || {})
       const cards = (team: any[]) => team.map((c: any) => [c.hp, c.damage, c.abilityOverride === undefined ? c.definition.ability : c.abilityOverride])
       reply = { a: cards(state.teams.Allies), b: cards(state.teams.Enemies) }
+    } else if (req.op === 'state') {
+      reply = exportState(startState(req.a, req.b, req.options || {}))
     } else if (req.op === 'check') {
       reply = { unsupported: [...createTwoSidedState(req.a, req.b).unsupportedAbilities] }
     } else {

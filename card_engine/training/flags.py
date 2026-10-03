@@ -9,7 +9,8 @@ Entities (all from DaddyDrago's engine, the label simulator; sim_js/setup.sh):
   support:<color><id>:<tier>, border:<id>, mutation:<index>
   support_logic    his aura code with our Ruby patch (auras.label.ts; involved by every row with a support)
   pool             every card definition (involved by rows with cards that draw random cards or abilities)
-  core             his battle engine code, the chance-point patch, the search, the worker and our spec translation
+  core             his battle engine code, the chance-point patch, the search, the worker, the C engine (sim_c, its
+                   table generator and binding) and our spec translation
 
 A row stays valid if every entity it involves is unchanged. A core change cannot be attributed automatically:
 labels made before it are held back until it is declared, with the cards/supports it affects (or --all):
@@ -74,8 +75,9 @@ def entity_hashes(catalog=None):
     out["support_logic"] = _digest((ENGINE_SOURCES / "auras.label.ts").read_bytes())
     core = [path.read_bytes() for path in sorted(ENGINE_SOURCES.glob("*.ts"))
             if path.name not in ("auras.ts", "auras.label.ts", "battle-v2.ts")]
-    core += [(ROOT / p).read_bytes() for p in ("sim_js/search.ts", "sim_js/worker.ts", "card_engine/simulator/drago.py",
-                                             "card_engine/mutations.py")]
+    core += [(ROOT / p).read_bytes() for p in ("sim_js/search.ts", "sim_js/worker.ts", "sim_js/gen_tables.ts", "sim_c/engine.h",
+                                             "sim_c/engine.c", "sim_c/search.c", "card_engine/simulator/drago.py",
+                                             "card_engine/simulator/kernel.py", "card_engine/mutations.py")]
     out["core"] = _digest(*core)  # *.label.ts are his files after codemod.mjs
     return out
 
