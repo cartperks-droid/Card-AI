@@ -11,7 +11,8 @@ from card_engine.catalog import load_catalog
 from card_engine.model import BattleModel, load_model_data
 from card_engine.simulator import native
 from card_engine.training import labels
-from card_engine.training.train import Inputs, card_table, load_split, train
+from card_engine.training.flags import snapshot
+from card_engine.training.train import Inputs, card_table, evaluate, load_split, train
 
 
 class TrainingTests(unittest.TestCase):
@@ -81,13 +82,18 @@ class TrainingTests(unittest.TestCase):
 
     def test_training_runs_and_resumes(self):
         root = Path(self.temp.name) / "labels"
-        directory = root / "fingerprint"
+        directory = root / "store"
         directory.mkdir(parents=True)
         for seed in (1, 25):  # 25 is a validation shard
-            labels._worker((seed, 6, str(directory), "test", Path(self.temp.name) / "tb2"))
+            labels._worker((seed, 6, str(directory), snapshot(), Path(self.temp.name) / "tb2"))
         train_rows, val_rows = load_split(directory, "cpu")
         import json as _json
         self.assertEqual((train_rows["target"].shape[1], val_rows["cards"].shape[1:]), (2, (2, 4)))  # A win, B win (no ties)
+        model, inputs = BattleModel().eval(), Inputs("cpu")
+        with torch.no_grad():
+            table = card_table(model, inputs.data.description_tokens)
+        metrics = evaluate(model, inputs, table, val_rows)  # one shared card table, as in training
+        self.assertTrue(0 <= metrics["accuracy"] <= 1 and metrics["kl"] >= 0)
         run = Path(self.temp.name) / "run"
         train(steps=2, batch_size=4, warmup=1, eval_every=100, checkpoint_every=2, device="cpu", run_dir=run, label_root=root)
         state = torch.load(run / "trainer.pt", weights_only=True)

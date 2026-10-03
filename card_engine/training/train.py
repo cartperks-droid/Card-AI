@@ -110,13 +110,13 @@ def card_table(model, tokens):
     return model.description(tokens)
 
 
-def evaluate(model, inputs, tokens, rows, batch_size=4096):
+def evaluate(model, inputs, table, rows, batch_size=4096):
+    """Scores rows against a card table computed in eval mode (see `train`'s `eval_table`)."""
     model.eval()
     total = {"loss": 0.0, "accuracy": 0.0, "brier": 0.0, "baseline": 0.0, "upsets": 0.0, "upset_accuracy": 0.0,
              "kl": 0.0, "decisive": 0.0, "decisive_accuracy": 0.0, "probabilistic_error": 0.0}
     count = rows["target"].shape[0]
     with torch.no_grad():
-        table = card_table(model, tokens)
         for start in range(0, count, batch_size):
             part = {k: v[start:start + batch_size] for k, v in rows.items()}
             logits = model(**inputs(part, table))
@@ -218,6 +218,16 @@ def train(*, steps=None, batch_size=512, lr=3e-4, warmup=1000, weight_decay=0.05
                 print(json.dumps({"step": step, "language_frozen": True}), flush=True)
             return frozen_table
         return card_table(model, tokens)
+
+    def eval_table():
+        """Card vectors for evaluation: the frozen table, or one eval-mode pass shared by all three evaluations."""
+        if frozen_table is not None:
+            return frozen_table
+        model.eval()
+        with torch.no_grad():
+            table = card_table(model, tokens)
+        model.train()
+        return table
     generator = torch.Generator(device="cpu").manual_seed(step)
     started, last = time.time(), time.time()
     try:
@@ -245,13 +255,14 @@ def train(*, steps=None, batch_size=512, lr=3e-4, warmup=1000, weight_decay=0.05
                           "train_rows": count, "labels": rules_id}
                 last = now
                 if step % eval_every == 0 and val_rows is not None:
-                    record["val"] = {k: round(v, 4) for k, v in evaluate(model, inputs, tokens, val_rows).items()}
+                    table = eval_table()
+                    record["val"] = {k: round(v, 4) for k, v in evaluate(model, inputs, table, val_rows).items()}
                     record["val_rows"] = int(val_rows["target"].shape[0])
                     if rules_id != probe_labels:  # new rules: new probes
                         train_probe, val_probe, probe_labels = probe(train_rows, 8192), probe(val_rows, 8192), rules_id
-                    record["grok"] = {"train_probe": {k: round(v, 4) for k, v in evaluate(model, inputs, tokens, train_probe).items()
+                    record["grok"] = {"train_probe": {k: round(v, 4) for k, v in evaluate(model, inputs, table, train_probe).items()
                                                       if k in ("kl", "accuracy", "decisive_accuracy")},
-                                      "val_probe": {k: round(v, 4) for k, v in evaluate(model, inputs, tokens, val_probe).items()
+                                      "val_probe": {k: round(v, 4) for k, v in evaluate(model, inputs, table, val_probe).items()
                                                     if k in ("kl", "accuracy", "upset_accuracy", "decisive_accuracy", "probabilistic_error")},
                                       "weight_norm": round(weight_norm(model), 2)}
                     kl = record["val"]["kl"]
