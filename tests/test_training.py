@@ -65,6 +65,14 @@ class TrainingTests(unittest.TestCase):
             self.assertEqual(labels.evaluate(self.catalog, spec, 5), ((0.0, 0.0, 0.0, 1.0), False))
             self.assertIsNone(drago._WORKER)  # the next battle starts a fresh engine process
 
+    def test_saved_turns_give_the_same_answers_as_replaying(self):
+        rng = random.Random(21)
+        for index in range(12):
+            spec = labels.random_spec(rng, self.catalog)
+            resumed = drago.evaluate(self.catalog, spec, index, nodeBudget=300)
+            replayed = drago.evaluate(self.catalog, spec, index, nodeBudget=300, snapshots=False)
+            self.assertEqual(resumed, replayed)
+
     def test_astraeus_plays_the_art_it_is_given(self):
         spec = {"cards": [[56, 56, 1, 2], [3, 4, 5, 6]], "borders": [[1] * 4] * 2, "mutations": [[0] * 4] * 2,
                 "arts": [[3, 4, 0, 0], [0] * 4], "red": [0, 0], "red_tier": [0, 0], "blue": [0, 0], "blue_tier": [0, 0]}

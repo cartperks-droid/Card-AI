@@ -85,12 +85,6 @@ def evaluate(catalog, spec, seed, **overrides):
         return (0.0, 0.0, 0.0, 1.0), False
 
 
-# Label budget (user, 2026-10-03: as fast as the old C kernel). His engine cannot pause mid-battle, so every branch
-# the search expands is replayed from the start; 100 nodes and a 7% playout error label at ~26/s per core (the old
-# kernel: ~30) and move labels by 0.5 points on average from the 2,000-node / 3% budget; exact battles are unchanged.
-LABEL_SEARCH = {"nodeBudget": 100, "rolloutError": 0.07}
-
-
 def label_specs(catalog, specs, *, seed, tablebase=None, **overrides):
     """Per spec: outcome probabilities (A, B, tie, unfinished) and whether they are exact.
 
@@ -104,7 +98,7 @@ def label_specs(catalog, specs, *, seed, tablebase=None, **overrides):
         if known is not None:
             probs[index], exact[index] = known, True
             continue
-        outcome, is_exact = evaluate(catalog, spec, seed * 1_000_003 + index, **{**LABEL_SEARCH, **overrides})
+        outcome, is_exact = evaluate(catalog, spec, seed * 1_000_003 + index, **overrides)
         probs[index], exact[index] = outcome, is_exact
         if is_exact:
             found.append((spec, outcome))

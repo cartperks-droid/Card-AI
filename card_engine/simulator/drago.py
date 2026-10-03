@@ -21,8 +21,9 @@ AURA_BORDERS = {1: None, 2: "Platinum", 3: "Crystal", 4: "Ruby", 5: "Galaxy"}  #
 CARD_ALIASES = {"judgementday": "judgmentday", "achyls": "achlys", "sorceror": "sorcerer",
                 "demoncultivator": "demoniccultivator", "thejadeemporer": "thejadeemperor", "tricerotops": "triceratops",
                 "chupcabra": "chupacabra", "thejackinthebox": "toyjackinthebox", "tyrannodon": "tyranodon"}
-# search settings: best-first over chance points, playouts for the rest (as the C kernel's label search)
-SEARCH = {"nodeBudget": 2000, "sampleBelow": 1e-3, "rollouts": 1024, "rolloutError": 0.03, "maxTurns": 2000}
+# search settings (the agreed design, as the C kernel's label search): best-first over chance points, playouts only for
+# branches below 0.1% and whatever is open when the node budget runs out
+SEARCH = {"nodeBudget": 20000, "sampleBelow": 1e-3, "rollouts": 1024, "rolloutError": 0.03, "maxTurns": 2000}
 
 
 class EngineUnavailable(RuntimeError):

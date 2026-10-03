@@ -52,10 +52,32 @@ src = src.replace('/*RAND*/', randBody)
 
 // The runtime carries the chance source; a battle may arrive with a prebuilt (two-sided) state.
 exact('  rng: SeededRng\n', '  rng: SeededRng\n  chance: any\n')
+// Ability lookups (user: hash the index): a card's ability list depends only on its ability override, identity
+// override and bonus abilities (bonus lists are only ever replaced, never edited in place), so it is cached per card
+// and rebuilt only when one of those changes. The list itself is computed exactly as before.
+exact('function abilityNames(card: CombatCard | undefined): string[] {\n  if (!card) return []\n  return [',
+      'const ABILITY_CACHE = new WeakMap<CombatCard, { override: any; identity: any; bonus: any; names: string[] }>()\n\n'
+      + 'function abilityNames(card: CombatCard | undefined): string[] {\n  if (!card) return []\n'
+      + '  const hit = ABILITY_CACHE.get(card)\n'
+      + '  if (hit && hit.override === card.abilityOverride && hit.identity === card.identityOverride && hit.bonus === card.bonusAbilities) return hit.names\n'
+      + '  const names = Object.freeze(uncachedAbilityNames(card)) as string[]\n'
+      + '  ABILITY_CACHE.set(card, { override: card.abilityOverride, identity: card.identityOverride, bonus: card.bonusAbilities, names })\n'
+      + '  return names\n}\n\nfunction uncachedAbilityNames(card: CombatCard): string[] {\n  return [')
+
+// The search saves a battle at the start of each turn (onTurn: the state plus the loop's own counters) and later
+// resumes it from there (resume), so expanding a branch continues the battle instead of replaying it from turn 1.
 exact('  onProgress?: (turn: number) => void,\n): BattleResult {\n  const state = createBattleStateV2(loadout, enemies)',
-      '  onProgress?: (turn: number) => void,\n  inject?: { state?: BattleState; chance?: any },\n): BattleResult {\n  const state = inject?.state ?? createBattleStateV2(loadout, enemies)')
-exact('  const runtime: Runtime = { state, rng: new SeededRng(seed), debug, captureDebug, deathEpoch: 0 }',
-      '  const rng = new SeededRng(seed)\n  const runtime: Runtime = { state, rng, chance: inject?.chance ?? sampledChance(rng), debug, captureDebug, deathEpoch: 0 }')
+      '  onProgress?: (turn: number) => void,\n  inject?: { state?: BattleState; chance?: any; resume?: TurnCounters; onTurn?: (counters: TurnCounters) => void },\n'
+      + '): BattleResult {\n  const state = inject?.state ?? createBattleStateV2(loadout, enemies)')
+exact('  const runtime: Runtime = { state, rng: new SeededRng(seed), debug, captureDebug, deathEpoch: 0 }\n  resolveConstellarArts(runtime)',
+      '  const rng = new SeededRng(seed)\n  const runtime: Runtime = { state, rng, chance: inject?.chance ?? sampledChance(rng), debug, captureDebug, '
+      + 'deathEpoch: inject?.resume?.deathEpoch ?? 0 }\n  if (!inject?.resume) resolveConstellarArts(runtime)')
+exact('  let turnsWithoutDeaths = 0\n  let lastDeathEpoch = runtime.deathEpoch\n',
+      '  let turnsWithoutDeaths = inject?.resume?.turnsWithoutDeaths ?? 0\n  let lastDeathEpoch = inject?.resume?.lastDeathEpoch ?? runtime.deathEpoch\n')
+exact('  while (state.teams.Allies.length && state.teams.Enemies.length && state.turn < maxTurns) {\n    state.turn += 1\n',
+      '  while (state.teams.Allies.length && state.teams.Enemies.length && state.turn < maxTurns) {\n'
+      + '    inject?.onTurn?.({ turnsWithoutDeaths, lastDeathEpoch, deathEpoch: runtime.deathEpoch })\n    state.turn += 1\n')
+src += '\nexport interface TurnCounters { turnsWithoutDeaths: number; lastDeathEpoch: number; deathEpoch: number }\n'
 
 // Two-sided battles: both teams are player teams with their own red (stat) and blue (skill) auras; side A moves first.
 src += `

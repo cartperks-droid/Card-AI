@@ -1,20 +1,75 @@
 // Chance-tree label search around DaddyDrago's battle engine (patched by codemod.mjs into battle-v2.label.ts).
-// Best-first: the most probable open branch is expanded next; a branch is a list of choices at the engine's chance
-// points, replayed from the start of the battle. Branches below sampleBelow, and whatever is open when the node
-// budget runs out, are resolved together by playouts until the A-win estimate's standard error is under rolloutError.
+// Best-first: the most probable open branch is expanded next. A branch is the battle saved at the start of the turn
+// in which it split, plus the choices made at the engine's chance points since then; expanding it restores that
+// turn and plays on, as the old C kernel continued from stored states (user: same search, different mechanics).
+// Branches below sampleBelow, and whatever is open when the node budget runs out, are resolved together by playouts
+// (also started from their saved turns) until the A-win estimate's standard error is under rolloutError.
 // Side A moves first. Outcomes: A wins, B wins, draw (both wiped out, or the turn cap).
 import { createTwoSidedState, rollContext, simulateBattleV2 } from './vendor/CardRngExpansionDepths/src/engine/battle-v2.label'
+import type { TurnCounters } from './vendor/CardRngExpansionDepths/src/engine/battle-v2.label'
 
 // Per-battle tweaks, each on side 'a' or 'b': fixed (HP, ATK) per card (event or Tower teams), stats scaled by a factor
 // (counter-search stress test), or one card's ability removed with its stats kept.
 export interface Tweaks { fixed?: [Side, number[][]]; scale?: [Side, number]; strip?: [Side, number] }
 type Side = 'a' | 'b'
 export interface Options extends Tweaks { nodeBudget: number; sampleBelow: number; rollouts: number; rolloutError: number
-  maxTurns: number; seed: number }
-export const DEFAULTS: Options = { nodeBudget: 20000, sampleBelow: 1e-3, rollouts: 1024, rolloutError: 0.03, maxTurns: 2000, seed: 1 }
+  maxTurns: number; seed: number; snapshots: boolean }  // snapshots false: replay every branch from turn 1 (tests)
+export const DEFAULTS: Options = { nodeBudget: 20000, sampleBelow: 1e-3, rollouts: 1024, rolloutError: 0.03, maxTurns: 2000, seed: 1,
+  snapshots: true }
 export interface Result { a: number; b: number; draw: number; exact: boolean; nodes: number; playouts: number }
 
-class Branch { constructor(public probs: number[]) {} }
+// A battle saved at the start of a turn (never mutated: resuming works on a copy) with the battle loop's counters.
+interface Saved { state: any; counters: TurnCounters }
+interface Node { p: number; saved: Saved | null; choices: number[] }  // choices made since `saved` (or turn 1)
+
+class Branch { saved: Saved | null = null; choices: number[] = []; constructor(public probs: number[]) {} }
+
+
+// Copy of a battle state, shaped like his BattleState: cards (team members and fallen; each copied once, so shared
+// references stay shared), boosts (plain values) and the unsupported-ability set. Card definitions are static game
+// data and stay shared, as in his engine. Anything else falls back to a generic deep copy.
+function copyValue(value: any, seen: Map<any, any>): any {
+  if (value === null || typeof value !== 'object') return value
+  if (seen.has(value)) return seen.get(value)
+  if (value instanceof Set) { const out = new Set(); seen.set(value, out); value.forEach((v) => out.add(copyValue(v, seen))); return out }
+  if (value instanceof Map) { const out = new Map(); seen.set(value, out); value.forEach((v, k) => out.set(k, copyValue(v, seen))); return out }
+  if (Array.isArray(value)) { const out: any[] = []; seen.set(value, out); for (const v of value) out.push(copyValue(v, seen)); return out }
+  const out: any = {}
+  seen.set(value, out)
+  for (const key in value) out[key] = key === 'definition' ? value[key] : copyValue(value[key], seen)
+  return out
+}
+
+// A card: status, flags and counters hold plain values; the definition is static and bonus-ability lists are only ever
+// replaced (never edited in place), so both stay shared. Any other object field gets the generic copy.
+const PLAIN = new Set(['status', 'flags', 'counters'])
+const SHARED = new Set(['definition', 'bonusAbilities', 'borders'])
+
+function copyCard(card: any, seen: Map<any, any>): any {
+  let out = seen.get(card)
+  if (out) return out
+  out = { ...card }
+  seen.set(card, out)
+  for (const key in out) {
+    const value = out[key]
+    if (value === null || typeof value !== 'object' || SHARED.has(key)) continue
+    out[key] = PLAIN.has(key) ? { ...value } : copyValue(value, seen)
+  }
+  return out
+}
+
+function copyState(state: any): any {
+  const seen = new Map<any, any>()
+  const team = (cards: any[]) => cards.map((card) => copyCard(card, seen))
+  const out: any = {}
+  for (const key in state) {
+    const value = state[key]
+    out[key] = key === 'teams' || key === 'fallen' ? { Allies: team(value.Allies), Enemies: team(value.Enemies) }
+      : key === 'boosts' ? { Allies: { ...value.Allies }, Enemies: { ...value.Enemies } }
+      : copyValue(value, seen)
+  }
+  return out
+}
 
 function mulberry(seed: number) {
   let s = seed >>> 0
@@ -87,27 +142,41 @@ export function startState(a: any, b: any, tweaks: Tweaks = {}) {
   return state
 }
 
-function play(a: any, b: any, tape: Tape, maxTurns: number, tweaks: Tweaks): 'a' | 'b' | 'draw' {
-  const state = startState(a, b, tweaks)
-  const r = simulateBattleV2(a, [], 1, maxTurns, false, false, undefined, { state, chance: chanceFor(tape) })
-  return r.winner === 'Allies' ? 'a' : r.winner === 'Enemies' ? 'b' : 'draw'
+function play(a: any, b: any, node: Node, random: (() => number) | null, o: Options): 'a' | 'b' | 'draw' {
+  const tape = new Tape(node.choices, random)
+  const resume = o.snapshots ? node.saved : null
+  const state = resume ? copyState(resume.state) : startState(a, b, o)
+  let saved = resume, from = 0  // the latest saved turn and the tape position when it was saved
+  const onTurn = o.snapshots && !random
+    ? (counters: TurnCounters) => { saved = { state: copyState(state), counters: { ...counters } }; from = tape.i }
+    : undefined
+  try {
+    const r = simulateBattleV2(a, [], 1, o.maxTurns, false, false, undefined,
+      { state, chance: chanceFor(tape), resume: resume?.counters, onTurn })
+    return r.winner === 'Allies' ? 'a' : r.winner === 'Enemies' ? 'b' : 'draw'
+  } catch (e) {
+    if (e instanceof Branch) { e.saved = saved; e.choices = node.choices.slice(from) }
+    throw e
+  }
 }
 
 export function solve(a: any, b: any, options: Partial<Options> = {}): Result {
   const o = { ...DEFAULTS, ...options }
   const out = { a: 0, b: 0, draw: 0 }
-  const open: Array<{ p: number; choices: number[] }> = [{ p: 1, choices: [] }]
-  const rare: Array<{ p: number; choices: number[] }> = []
+  const open: Node[] = [{ p: 1, saved: null, choices: [] }]
+  const rare: Node[] = []
   let nodes = 0
   while (open.length && nodes < o.nodeBudget) {
     let best = 0
     for (let i = 1; i < open.length; i++) if (open[i].p > open[best].p) best = i
     const node = open[best]; open[best] = open[open.length - 1]; open.pop()
     nodes++
-    try { out[play(a, b, new Tape(node.choices, null), o.maxTurns, o)] += node.p }
+    try { out[play(a, b, node, null, o)] += node.p }
     catch (e) {
       if (!(e instanceof Branch)) throw e
-      e.probs.forEach((q, k) => { if (q > 0) (node.p * q < o.sampleBelow ? rare : open).push({ p: node.p * q, choices: [...node.choices, k] }) })
+      e.probs.forEach((q, k) => {
+        if (q > 0) (node.p * q < o.sampleBelow ? rare : open).push({ p: node.p * q, saved: e.saved, choices: [...e.choices, k] })
+      })
     }
   }
   const left = [...open, ...rare]
@@ -123,7 +192,7 @@ export function solve(a: any, b: any, options: Partial<Options> = {}): Result {
       const u = random() * mass
       let lo = 0, hi = cum.length - 1
       while (lo < hi) { const mid = (lo + hi) >> 1; if (cum[mid] < u) lo = mid + 1; else hi = mid }
-      tally[play(a, b, new Tape(left[lo].choices, random), o.maxTurns, o)]++
+      tally[play(a, b, left[lo], random, o)]++
     }
     const pa = tally.a / n
     if (mass * Math.sqrt(Math.max(pa * (1 - pa), 1 / n) / n) <= o.rolloutError) break
