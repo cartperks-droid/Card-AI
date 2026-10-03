@@ -33,35 +33,47 @@ def latest_label_dir(root=SHARD_DIR):
     return store
 
 
+_SHARD_CACHE = {}  # path -> (mtime, rules, validation, rows): each shard is read and checked once per rules version
+
+
 def load_split(directory, device):
     """(train, validation) tensors of the rows still valid under the current rules (training.flags);
-    validation = shards whose seed is divisible by VALIDATION_EVERY."""
-    from .flags import entity_hashes, valid_rows
-    current = entity_hashes()
-    split = {"train": [], "val": []}
+    validation = shards whose seed is divisible by VALIDATION_EVERY.
+
+    Shards are read and checked once, then cached: a reload reads only new shards, and rechecks the others only
+    when the rules change. Card fields stay int16 as stored (a quarter of int64's memory); Inputs widens each batch.
+    """
+    from ..catalog import load_catalog
+    from .flags import _pool_cards, entity_hashes, load_changes, valid_rows
+    catalog = load_catalog()
+    current, changes = entity_hashes(catalog), load_changes()
+    rules = json.dumps([sorted(current.items()), changes])
+    pool_cards = None
+    split, seen = {"train": [], "val": []}, {}
     for path in sorted(Path(directory).glob("shard_*.npz")):
-        seed = int(path.stem.split("_")[1])
-        validation = seed % VALIDATION_EVERY == 0
-        with np.load(path) as shard:
-            arrays = {key: shard[key] for key in (*FIELDS, "probs")}
-            mask = valid_rows(arrays, str(shard["snapshot"]), current)
-        if not mask.any():
-            continue
-        split["val" if validation else "train"].append({k: v[mask] for k, v in arrays.items()})
-    out = {}
-    for name, parts in split.items():
-        if not parts:
-            out[name] = None
-            continue
-        arrays = {key: np.concatenate([p[key] for p in parts]) for key in (*FIELDS, "probs")}
-        finished = arrays["probs"][:, :2].sum(1)  # A win, B win (ties cannot happen; unfinished mass is dropped)
-        keep = finished > 0
-        tensors = {key: torch.as_tensor(arrays[key][keep].astype(np.int64), device=device) for key in FIELDS}
-        tensors["target"] = torch.as_tensor(arrays["probs"][keep, :2] / finished[keep, None], dtype=torch.float32, device=device)
-        if name == "val":
-            rows = {key: torch.as_tensor(arrays[key][keep].astype(np.int64)) for key in FIELDS}
-            tensors["favourite"] = stat_favourite(rows).to(device)
-        out[name] = tensors
+        mtime = path.stat().st_mtime
+        cached = _SHARD_CACHE.get(path)
+        if cached is None or cached[:2] != (mtime, rules):
+            validation = int(path.stem.split("_")[1]) % VALIDATION_EVERY == 0
+            with np.load(path) as shard:
+                arrays = {key: shard[key] for key in (*FIELDS, "probs")}
+                snapshot_id = str(shard["snapshot"])
+            pool_cards = _pool_cards(catalog) if pool_cards is None else pool_cards
+            mask = valid_rows(arrays, snapshot_id, current, catalog=catalog, changes=changes, pool_cards=pool_cards)
+            finished = arrays["probs"][:, :2].sum(1)  # A win, B win (ties cannot happen; unfinished mass is dropped)
+            keep = mask & (finished > 0)
+            rows = {key: arrays[key][keep].astype(np.int16) for key in FIELDS}
+            rows["target"] = (arrays["probs"][keep, :2] / finished[keep, None]).astype(np.float32)
+            if validation:
+                rows["favourite"] = stat_favourite({key: torch.as_tensor(rows[key].astype(np.int64)) for key in FIELDS}).numpy()
+            cached = (mtime, rules, validation, rows)
+        seen[path] = cached
+        if len(cached[3]["target"]):
+            split["val" if cached[2] else "train"].append(cached[3])
+    _SHARD_CACHE.clear()
+    _SHARD_CACHE.update(seen)  # shards that disappeared, or old rules' entries, are dropped
+    out = {name: {key: torch.as_tensor(np.concatenate([part[key] for part in parts]), device=device) for key in parts[0]}
+           if parts else None for name, parts in split.items()}
     return out["train"], out["val"]
 
 
@@ -131,6 +143,7 @@ class Inputs:
         self.stat_tables = tuple(table.to(device=device, dtype=torch.float32) for table in card_stat_tables())
 
     def __call__(self, rows, card_table):
+        rows = {key: rows[key].long() for key in FIELDS}  # stored as int16
         cards = rows["cards"]
         index = cards - 1
         identity = self.data.identity_keys[index]
