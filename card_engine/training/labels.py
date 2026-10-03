@@ -1,15 +1,12 @@
-"""Battle labels for the general win predictor: random matchups scored by the C kernel.
+"""Battle labels for the general win predictor: random matchups scored by DaddyDrago's battle engine.
 
-Every battle is searched best-first in branch mode (largest probabilities first, under a node
-budget); small or leftover branches are resolved by playouts, as many as reducing the variance
-needs. Battles with no estimated probability are exact and kept in the tablebase; estimated ones
-are recomputed whenever they are labelled again. Side A always initiates. Unfinished probability
-is recorded per row (column 3) and left out of training targets.
-Labels depend on the simulator rules: each shard records the kernel version and a hash of
-the cleaned data and rule tables, so stale shards are detected after rule fixes.
+Every battle is searched best-first over the engine's chance points (largest probabilities first, under a node
+budget); small or leftover branches are resolved by pooled playouts, as many as reducing the variance needs
+(sim_js/search.ts). Battles with no estimated probability are exact and kept in the tablebase; estimated ones are
+recomputed whenever they are labelled again. Side A always initiates; a draw counts as A's loss (user).
+Each shard records the rules snapshot (training.flags), so rows go stale when the rules behind them change.
 """
 
-import hashlib
 import json
 import multiprocessing as mp
 import os
@@ -21,10 +18,9 @@ import numpy as np
 
 from ..catalog import load_catalog
 from ..mutations import MUTATION_NAMES
-from ..simulator import native
-from ..simulator.catalog_rules import ASTRAEUS, ASTRAEUS_ARTS, BLUE_SUPPORTS, RED_SUPPORTS, SUPPORTED, compile_battle
-from ..simulator.reference import Options
-from .tablebase import EXACT_TOLERANCE, Tablebase
+from ..simulator import drago
+from ..simulator.catalog_rules import ASTRAEUS_ARTS, BLUE_SUPPORTS, RED_SUPPORTS, SUPPORTED
+from .tablebase import Tablebase
 
 ROOT = Path(__file__).resolve().parents[2]
 SHARD_DIR = ROOT / "data" / "labels"
@@ -32,23 +28,12 @@ ART_NAMES = tuple(ASTRAEUS_ARTS)  # art id = index + 1; 0 = not Astraeus
 FIELDS = ("cards", "borders", "mutations", "arts", "red", "red_tier", "blue", "blue_tier")
 
 
-def rules_fingerprint():
-    """Kernel version plus a hash of everything that shapes battle outcomes."""
-    digest = hashlib.sha256()
-    for path in (ROOT / "data/clean/dataset.json", ROOT / "card_engine/simulator/catalog_rules.py",
-                 ROOT / "card_engine/simulator/reference.py", ROOT / "card_engine/stats.py",
-                 ROOT / "card_engine/data_corrections.py", ROOT / "sim/card_sim.c"):
-        digest.update(path.read_bytes())
-    return f"{native.load_library().ce_version().decode()}:{digest.hexdigest()[:16]}"
-
-
-def _tiers(table, support_id):
-    values = table[support_id][2] if isinstance(table[support_id], tuple) else table[support_id]
-    return [tier for tier, value in enumerate(values, 1) if value is not None]
+AURA_TIERS = tuple(drago.AURA_BORDERS)  # support cards come in Base, Platinum, Crystal and Galaxy (no Ruby)
 
 
 def random_spec(rng, catalog, cards=tuple(sorted(SUPPORTED)), none_support=0.1, mutation_rate=0.5, matched=0.7):
-    """One random 4v4 matchup: any card, border, eligible mutation, and support tier.
+    """One random 4v4 matchup: any card, border, eligible mutation, and support tier. Astraeus draws its art in
+    battle (his engine), so arts stay 0.
 
     With probability `matched`, every border sits within two rarity ranks of a shared level, so the
     outcome depends on the cards rather than on a border gap; the rest draw borders uniformly.
@@ -67,7 +52,7 @@ def random_spec(rng, catalog, cards=tuple(sorted(SUPPORTED)), none_support=0.1, 
             row["cards"].append(card)
             row["borders"].append(border())
             row["mutations"].append(mutation)
-            row["arts"].append(rng.randint(1, len(ART_NAMES)) if card == ASTRAEUS else 0)
+            row["arts"].append(0)
         for name, values in row.items():
             spec[name].append(values)
         for color, table in (("red", RED_SUPPORTS), ("blue", BLUE_SUPPORTS)):
@@ -77,33 +62,13 @@ def random_spec(rng, catalog, cards=tuple(sorted(SUPPORTED)), none_support=0.1, 
             else:
                 support = rng.choice(sorted(table))
                 spec[color].append(support)
-                spec[color + "_tier"].append(rng.choice(_tiers(table, support)))
+                spec[color + "_tier"].append(rng.choice(AURA_TIERS))
     return spec
 
 
-def compile_spec(catalog, spec):
-    support = lambda color, side: (spec[color][side], spec[color + "_tier"][side]) if spec[color][side] else 0
-    arts = {(side, slot): ART_NAMES[art - 1] for side in (0, 1) for slot, art in enumerate(spec["arts"][side]) if art}
-    return compile_battle(catalog, tuple(tuple(team) for team in spec["cards"]), borders=spec["borders"],
-                          mutations=[[MUTATION_NAMES[m] for m in team] for team in spec["mutations"]],
-                          red_supports=(support("red", 0), support("red", 1)),
-                          blue_supports=(support("blue", 0), support("blue", 1)), arts=arts)
-
-
-# User: branch the largest probabilities first; simulate the small branches once a depth is exhausted or the
-# search budget is spent, with as many playouts as reducing the variance needs (not a fixed number).
-SEARCH = dict(mode="branch", max_frontier=512, prune_probability=0.0, node_budget=20000, rollouts=1024,
-              rollout_error=0.03, sample_below=1e-3, max_steps=200000)
-
-
-def evaluate(battle, seed, **overrides):
-    """(A, B, tie, unfinished) probabilities and whether they are exact (no estimated probability)."""
-    try:
-        row = native.simulate(battle, Options(seed=seed % 2**63, **{**SEARCH, **overrides}))
-    except native.NativeSimulationError:
-        return (0.0, 0.0, 0.0, 1.0), False  # the kernel cannot finish this battle: no training target
-    outcome = (row["p_a"], row["p_b"], row["tie"], row["unresolved"])
-    return outcome, row["estimated"] == 0 and row["unresolved"] <= EXACT_TOLERANCE
+def evaluate(catalog, spec, seed, **overrides):
+    """((A, B, tie, unfinished), exact) for one label spec; ties never happen (a draw is A's loss)."""
+    return drago.evaluate(catalog, spec, seed, **overrides)
 
 
 def label_specs(catalog, specs, *, seed, tablebase=None, **overrides):
@@ -119,7 +84,7 @@ def label_specs(catalog, specs, *, seed, tablebase=None, **overrides):
         if known is not None:
             probs[index], exact[index] = known, True
             continue
-        outcome, is_exact = evaluate(compile_spec(catalog, spec), seed * 1_000_003 + index, **overrides)
+        outcome, is_exact = evaluate(catalog, spec, seed * 1_000_003 + index, **overrides)
         probs[index], exact[index] = outcome, is_exact
         if is_exact:
             found.append((spec, outcome))

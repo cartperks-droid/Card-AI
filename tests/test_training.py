@@ -9,10 +9,13 @@ import torch
 
 from card_engine.catalog import load_catalog
 from card_engine.model import BattleModel, load_model_data
-from card_engine.simulator import native
+from card_engine.simulator import drago
 from card_engine.training import labels
 from card_engine.training.flags import snapshot
 from card_engine.training.train import Inputs, card_table, evaluate, load_split, train
+
+
+DECK_PASSIVES = ("General Moon Zoo", "Julius Leader")
 
 
 class TrainingTests(unittest.TestCase):
@@ -30,7 +33,6 @@ class TrainingTests(unittest.TestCase):
     def setUpClass(cls):
         cls.catalog = load_catalog()
         cls.temp = tempfile.TemporaryDirectory()
-        native.build_library()
 
     @classmethod
     def tearDownClass(cls):
@@ -44,23 +46,28 @@ class TrainingTests(unittest.TestCase):
             for side in (0, 1):
                 for card, mutation, art in zip(spec["cards"][side], spec["mutations"][side], spec["arts"][side]):
                     self.assertTrue(mutation == 0 or self.catalog.card(card).weather_id == 1)  # weather cards never mutate
-                    self.assertEqual(art > 0, card == 56)
-            labels.compile_spec(self.catalog, spec)
-        probs, exact = labels.label_specs(self.catalog, specs[:6], seed=1, rollout_error=0.2, node_budget=500)
+                    self.assertEqual(art, 0)  # Astraeus draws its art in battle
+                self.assertNotIn(spec["red_tier"][side], (4,))  # support cards have no Ruby border
+        probs, exact = labels.label_specs(self.catalog, specs[:6], seed=1, rolloutError=0.2, nodeBudget=500)
         self.assertTrue(((probs.sum(1) - 1) ** 2 < 1e-9).all())
-        self.assertTrue(exact.any())  # most battles are deterministic
+        self.assertTrue(exact.any())  # many battles are deterministic
+
+    def test_engine_supports_every_card_and_aura(self):
+        cards, blue = drago.supported(self.catalog)
+        self.assertEqual(len(cards), len(self.catalog.cards))
+        self.assertEqual(len(blue), len(self.catalog.blue_supports))
 
     def test_tablebase_stores_exact_outcomes(self):
         from card_engine.training.tablebase import Tablebase
         rng = random.Random(8)
         specs = [labels.random_spec(rng, self.catalog) for _ in range(6)]
         base = Tablebase("test", root=Path(self.temp.name) / "tb")
-        probs, exact = labels.label_specs(self.catalog, specs, seed=1, tablebase=base, rollout_error=0.2, node_budget=500)
+        probs, exact = labels.label_specs(self.catalog, specs, seed=1, tablebase=base, rolloutError=0.2, nodeBudget=500)
         self.assertEqual(len(base), int(exact.sum()))
         for spec, p, e in zip(specs, probs, exact):
             if e:
                 self.assertEqual(tuple(round(x, 6) for x in base.get(spec)), tuple(round(float(x), 6) for x in p))
-        again, again_exact = labels.label_specs(self.catalog, specs, seed=2, tablebase=base, rollout_error=0.2, node_budget=500)
+        again, again_exact = labels.label_specs(self.catalog, specs, seed=2, tablebase=base, rolloutError=0.2, nodeBudget=500)
         self.assertTrue((again[exact] == probs[exact]).all() and (again_exact == exact).all())  # exact rows come from the base
 
     def test_support_tiers_and_astraeus_arts_reach_the_model(self):
@@ -80,13 +87,14 @@ class TrainingTests(unittest.TestCase):
             self.assertFalse(torch.allclose(base, model(**inputs(rows, table))))
         self.assertEqual(int(inputs(rows, table)["identity_keys"][0, 0, 0]), int(data.art_identity_keys[1]))
 
-    def test_card_stats_match_the_compiled_battle(self):
+    def test_card_stats_match_the_engine_at_battle_start(self):
         catalog, inputs, rng = load_catalog(), Inputs("cpu"), random.Random(7)
-        specs = [labels.random_spec(rng, catalog) for _ in range(400)]
+        passives = {card.id for card in catalog.cards if card.name in DECK_PASSIVES}  # left to the model as abilities
+        specs = [spec for spec in (labels.random_spec(rng, catalog) for _ in range(400))
+                 if passives.isdisjoint(spec["cards"][0] + spec["cards"][1])]
         rows = {name: torch.tensor([spec[name] for spec in specs]) for name in labels.FIELDS}
         stats = inputs(rows, torch.zeros(289, 768))["card_stats"].double()
-        expected = torch.tensor([[[(f.hp, f.attack) for f in labels.compile_spec(catalog, spec).teams[side][:4]]
-                                  for side in (0, 1)] for spec in specs], dtype=torch.float64)
+        expected = torch.tensor([drago.initial_stats(catalog, spec) for spec in specs], dtype=torch.float64)
         torch.testing.assert_close(stats, expected, rtol=1e-6, atol=0)
 
     def test_stat_mlp_sees_only_ratios_and_starts_silent(self):

@@ -4,12 +4,14 @@
 //   initial: {"op": "initial", "a": ..., "b": ...} -> {"a": [[hp, attack] per card], "b": [...]} at the start of battle
 //   tables:  {"op": "tables", "cards": [names], "borders": [[border names] per border id], "mutations": [names],
 //             "reds": [aura names], "tiers": [aura border or null per tier]}
-//            -> {"base": [card][border][mutation] = [hp, attack], "red": [card][mutation][red][tier] = [hp x, attack x]}
+//            -> {"base": [card][border][mutation] = [hp, attack], "red": [card][mutation][red][tier] = [hp x, attack x],
+//                "prehistoric": [per card], "jurassic": [Jurassic World % per Prehistoric card, per tier]}
+//   check:   {"op": "check", "a": ..., "b": ...} -> {"unsupported": [...]} without running the battle
 import { createInterface } from 'node:readline'
 import { solve } from './search'
 import { createTwoSidedState } from './vendor/CardRngExpansionDepths/src/engine/battle-v2.label'
 import { getAttack, getHealth } from './vendor/CardRngExpansionDepths/src/engine/stats'
-import { getAura, statAuraPercentForCard } from './vendor/CardRngExpansionDepths/src/engine/auras'
+import { getAura, getSkillAuraValue, statAuraPercentForCard } from './vendor/CardRngExpansionDepths/src/engine/auras'
 import cards from './vendor/CardRngExpansionDepths/src/data/cards'
 
 const byName = new Map(cards.map((card: any) => [card.name, card]))
@@ -25,7 +27,9 @@ function tables(req: any) {
       return [1 + value / 100, name === 'General Sun Tzu' ? 1 : 1 + value / 100]
     })
   })))
-  return { base, red }
+  const prehistoric = defs.map((d: any) => d.pack === 'Prehistoric')
+  const jurassic = req.tiers.map((border: any) => getSkillAuraValue(getAura('Jurassic World') as any, border))
+  return { base, red, prehistoric, jurassic }
 }
 
 const lines = createInterface({ input: process.stdin })
@@ -37,6 +41,8 @@ lines.on('line', (line) => {
     else if (req.op === 'initial') {
       const state = createTwoSidedState(req.a, req.b)
       reply = { a: state.teams.Allies.map((c: any) => [c.hp, c.damage]), b: state.teams.Enemies.map((c: any) => [c.hp, c.damage]) }
+    } else if (req.op === 'check') {
+      reply = { unsupported: [...createTwoSidedState(req.a, req.b).unsupportedAbilities] }
     } else {
       const unsupported = [...createTwoSidedState(req.a, req.b).unsupportedAbilities]
       reply = { ...solve(req.a, req.b, req.options || {}), unsupported }

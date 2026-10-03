@@ -120,6 +120,22 @@ def worker():
     return _WORKER
 
 
+_SUPPORTED = {}
+
+
+def supported(catalog):
+    """(card ids, blue support ids) his engine fully implements; battles with anything else get no label."""
+    if id(catalog) in _SUPPORTED:
+        return _SUPPORTED[id(catalog)]
+    cards, _, blue = names(catalog)
+    team = lambda name, aura=None: {"cards": [{"cardName": name, "borders": []}], "statAura": None, "abilityAura": aura}
+    check = lambda a: not worker().request({"op": "check", "a": a, "b": team(cards[1])})["unsupported"]
+    ok_cards = frozenset(card for card, name in cards.items() if check(team(name)))
+    ok_blue = frozenset(s for s, name in blue.items() if check(team(cards[1], {"auraName": name, "border": None})))
+    _SUPPORTED[id(catalog)] = ok_cards, ok_blue
+    return ok_cards, ok_blue
+
+
 def initial_stats(catalog, spec):
     """[side][card] = (HP, ATK) as his engine starts the battle (supports and deck passives applied)."""
     a, b = loadouts(catalog, spec)
@@ -128,8 +144,10 @@ def initial_stats(catalog, spec):
 
 
 def stat_tables(catalog):
-    """(base, red) from his engine: base[card id, border id, mutation] = (HP, ATK); red[card id, mutation, red support,
-    tier] = (HP, ATK) multiplier of the side's red (stat) support. Tier 4 (Ruby) doesn't exist and stays 1."""
+    """(base, red, prehistoric, jurassic) from his engine: base[card id, border id, mutation] = (HP, ATK); red[card id,
+    mutation, red support, tier] = (HP, ATK) multiplier of the side's red (stat) support; prehistoric[card id] = Prehistoric
+    pack membership; jurassic[tier] = the blue Jurassic World support's fraction per Prehistoric card on the team.
+    Tier 4 (Ruby) doesn't exist: its red multiplier stays 1 and its Jurassic fraction 0."""
     import numpy as np
     from ..mutations import MUTATION_NAMES
     cards, red, _ = names(catalog)
@@ -145,7 +163,11 @@ def stat_tables(catalog):
     values = np.array(reply["red"])  # [card, mutation, red, tier 1/2/3/5, 2]
     for slot, tier in enumerate((1, 2, 3, 5)):
         table[np.array(ids)[:, None, None], np.arange(len(MUTATION_NAMES))[None, :, None], np.array(reds)[None, None, :], tier] = values[:, :, :, slot]
-    return base, table
+    prehistoric = np.zeros(max(ids) + 1)
+    prehistoric[ids] = reply["prehistoric"]
+    jurassic = np.zeros(6)
+    jurassic[[1, 2, 3, 5]] = np.array(reply["jurassic"]) / 100
+    return base, table, prehistoric, jurassic
 
 
 def evaluate(catalog, spec, seed, b_stats=None, **overrides):

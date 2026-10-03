@@ -84,54 +84,32 @@ def stat_favourite(rows):
     return (strength[:, 1] > strength[:, 0]).long()
 
 
-PREHISTORIC_SUPPORT = 13  # blue: Prehistoric cards gain value% stats per Prehistoric card on the team
+JURASSIC_WORLD = 13  # blue: Prehistoric cards gain value% stats per Prehistoric card on the team
 
 
 @functools.cache
 def card_stat_tables():
-    """(base, red, prehistoric, prehistoric_bonus) for the model's card stats, matching compile_battle.
+    """(base, red, prehistoric, jurassic) for the model's card stats, from DaddyDrago's engine (drago.stat_tables).
 
-    base [card, border, mutation, 2]: the (HP, ATK) a card compiles to; red [card, support, tier, 2]: the
-    red support's multiplier on that card (support 0 = none); prehistoric [card]: Prehistoric pack membership;
-    prehistoric_bonus [tier]: the blue Prehistoric support's fraction per Prehistoric card. Stat effects of
-    abilities (entry multipliers, friendship, awakened Toys) are left to the model, like every other ability.
+    base [card, border, mutation, 2]: the card's (HP, ATK); red [card, mutation, support, tier, 2]: the red support's
+    multiplier on that card (support 0 = none); prehistoric [card]: Prehistoric pack membership; jurassic [tier]:
+    Jurassic World's fraction per Prehistoric card. Stat effects of abilities (entry multipliers, deck passives such
+    as General Moon Zoo, awakened Toys) are left to the model, like every other ability.
     """
     from ..catalog import load_catalog
-    from ..mutations import MUTATION_NAMES
-    from ..simulator.catalog_rules import BLUE_SUPPORTS, RED_SUPPORTS, SUPPORTED, _red_bonus, compile_fighter
-    catalog = load_catalog()
-    cards = max(SUPPORTED) + 1
-    base = torch.ones(cards, 17, len(MUTATION_NAMES), 2, dtype=torch.float64)
-    for card_id in SUPPORTED:
-        eligible = catalog.card(card_id).weather_id == 1  # weather cards cannot mutate
-        for border in range(1, 17):
-            for index, name in enumerate(MUTATION_NAMES):
-                fighter = compile_fighter(catalog, card_id, border, mutation=name if eligible else "None")
-                base[card_id, border, index] = torch.tensor([fighter.hp, fighter.attack], dtype=torch.float64)
-    weather_names = {w.id: w.name for w in catalog.weathers}
-    red = torch.ones(cards, max(RED_SUPPORTS) + 1, 6, 2, dtype=torch.float64)
-    for card_id in SUPPORTED:
-        card = catalog.card(card_id)
-        for support_id, (kind, _target, values) in RED_SUPPORTS.items():
-            for tier in range(1, len(values) + 1):
-                bonus = 1 + _red_bonus(catalog, card, support_id, tier, weather_names) / 100
-                red[card_id, support_id, tier] = torch.tensor([bonus, 1.0 if kind == "hp" else bonus], dtype=torch.float64)
-    prehistoric = torch.zeros(cards, dtype=torch.float64)
-    for card_id in SUPPORTED:
-        prehistoric[card_id] = float("Prehistoric" in catalog.card(card_id).packs)
-    prehistoric_bonus = torch.tensor([0.0, *(v / 100 for v in BLUE_SUPPORTS[PREHISTORIC_SUPPORT])], dtype=torch.float64)
-    return base, red, prehistoric, prehistoric_bonus
+    from ..simulator.drago import stat_tables
+    return tuple(torch.as_tensor(table, dtype=torch.float64) for table in stat_tables(load_catalog()))
 
 
 def card_stats(rows, tables):
     """[N, 2, 4, 2]: each card's (HP, ATK) as it enters the battle, from label rows and card_stat_tables()."""
-    base, red, prehistoric, prehistoric_bonus = tables
-    cards = rows["cards"]
-    red = red[cards, rows["red"][..., None], rows["red_tier"][..., None]]
+    base, red, prehistoric, jurassic = tables
+    cards, mutations = rows["cards"], rows["mutations"]
+    red = red[cards, mutations, rows["red"][..., None], rows["red_tier"][..., None]]
     member = prehistoric[cards]
-    bonus = torch.where(rows["blue"] == PREHISTORIC_SUPPORT, prehistoric_bonus[rows["blue_tier"]], 0.0)
+    bonus = torch.where(rows["blue"] == JURASSIC_WORLD, jurassic[rows["blue_tier"]], 0.0)
     blue = 1 + member * (bonus * member.sum(-1))[..., None]
-    return base[cards, rows["borders"], rows["mutations"]] * red * blue[..., None]
+    return base[cards, rows["borders"], mutations] * red * blue[..., None]
 
 
 class Inputs:
