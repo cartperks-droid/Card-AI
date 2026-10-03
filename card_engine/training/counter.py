@@ -14,6 +14,12 @@ Objectives win - lambda * availability for several lambdas; --max-rolls caps how
 Every candidate is evaluated with the label search (labels.evaluate: exact when deterministic, else adaptive
 playouts) twice: the player attacking first and the enemy attacking first.
 
+Ranking: once a team wins outright, win chance can no longer separate it from others, and the availability
+tie-break alone fills the free slots with the cheapest card that soaks a hit. So the best winners are
+stress-tested: the enemy's HP and ATK are multiplied by each STRESS factor, and teams are ranked by the mean win
+chance under stress (headroom) before availability. Each suggested team also lists the cards whose ability never
+matters (the same team with that card's ability removed, stats kept, does as well under stress).
+
     python -m card_engine.training.counter data/scenarios/<name>.json
 """
 
@@ -30,7 +36,7 @@ from ..catalog import load_catalog
 from ..deck import DECK_FILE, load as load_deck, owned_entries, owned_supports
 from ..restricted import entries as restricted_entries, load as load_restricted
 from ..mutations import MUTATION_NAMES
-from ..simulator.catalog_rules import BLUE_SUPPORTS, RED_SUPPORTS
+from ..simulator.catalog_rules import BLUE_SUPPORTS, RED_SUPPORTS, _blank
 from ..stats import base_stats
 from .labels import compile_spec, evaluate
 
@@ -64,11 +70,29 @@ def _with_stats(battle, side, stats):
     return replace(battle, teams=tuple(teams))
 
 
+STRESS = (1.5, 2.0, 3.0)  # enemy HP and ATK multipliers for the headroom test
+
+
+def _stressed(battle, side, factor, vanilla_slot):
+    """The battle with `side` (the enemy) at `factor` times its HP and ATK, and the player's card at `vanilla_slot`
+    stripped of its ability (stats kept); factor 1 and slot None leave it unchanged."""
+    teams = list(battle.teams)
+    if factor != 1:
+        teams[side] = tuple(replace(f, hp=f.hp * factor, attack=f.attack * factor) for f in teams[side])
+    if vanilla_slot is not None:
+        own = list(teams[1 - side])
+        own[vanilla_slot] = replace(_blank(own[vanilla_slot]), spare=0)
+        teams[1 - side] = tuple(own)
+    return replace(battle, teams=tuple(teams))
+
+
 def _evaluate(job):
     """(player win probability attacking first, ... defending first)."""
-    player, enemy, seed, enemy_stats = job
-    first, _ = evaluate(_with_stats(compile_spec(_CATALOG, _spec(player, enemy)), 1, enemy_stats), seed)
-    second, _ = evaluate(_with_stats(compile_spec(_CATALOG, _spec(enemy, player)), 0, enemy_stats), seed + 1)
+    player, enemy, seed, enemy_stats, factor, vanilla_slot = job
+    first, _ = evaluate(_stressed(_with_stats(compile_spec(_CATALOG, _spec(player, enemy)), 1, enemy_stats), 1, factor,
+                                  vanilla_slot), seed)
+    second, _ = evaluate(_stressed(_with_stats(compile_spec(_CATALOG, _spec(enemy, player)), 0, enemy_stats), 0, factor,
+                                   vanilla_slot), seed + 1)
     return first[0], second[1]
 
 
@@ -140,17 +164,44 @@ class Search:
     def key(self, team):
         return (tuple(team[0]), team[1], team[2])
 
+    def _player(self, team):
+        lineup, red, blue = team
+        chosen = [self.entries[i] for i in lineup]
+        return _side([e[0] for e in chosen], [e[1] for e in chosen], [e[2] for e in chosen], red, blue)
+
+    def _run(self, teams, factor=1, vanilla_slot=None):
+        jobs = []
+        for team in teams:
+            self.counter += 2
+            jobs.append((self._player(team), self.enemy, self.counter, self.enemy_stats, factor, vanilla_slot))
+        return self.executor.map(_evaluate, jobs, chunksize=4)
+
     def score(self, teams):
         fresh = [t for t in {self.key(t): t for t in teams}.values() if self.key(t) not in self.seen]
-        jobs = []
-        for lineup, red, blue in fresh:
-            chosen = [self.entries[i] for i in lineup]
-            player = _side([e[0] for e in chosen], [e[1] for e in chosen], [e[2] for e in chosen], red, blue)
-            self.counter += 2
-            jobs.append((player, self.enemy, self.counter, self.enemy_stats))
-        for team, probs in zip(fresh, self.executor.map(_evaluate, jobs, chunksize=4)):
+        for team, probs in zip(fresh, self._run(fresh)):
             self.seen[self.key(team)] = probs
         return [(self.seen[self.key(t)], t) for t in teams]
+
+    def headroom(self, teams):
+        """Mean win chance over the STRESS factors (enemy HP and ATK multiplied), per team key; cached."""
+        self.stress = getattr(self, "stress", {})
+        fresh = [t for t in {self.key(t): t for t in teams}.values() if self.key(t) not in self.stress]
+        if fresh:
+            results = [self._run(fresh, factor) for factor in STRESS]
+            for index, team in enumerate(fresh):
+                self.stress[self.key(team)] = sum(self.win(r[index]) for r in results) / len(STRESS)
+        return [self.stress[self.key(t)] for t in teams]
+
+    def idle_abilities(self, team):
+        """Slots whose ability never matters: removing it (stats kept) loses nothing, at base or under stress."""
+        base, stressed = self.win(self.seen[self.key(team)]), self.headroom([team])[0]
+        idle = []
+        for slot in range(len(team[0])):
+            without = self.win(self._run([team], 1, slot)[0])
+            under = sum(self.win(self._run([team], factor, slot)[0]) for factor in STRESS) / len(STRESS)
+            if without >= base - 0.005 and under >= stressed - 0.005:
+                idle.append(slot)
+        return idle
 
     @staticmethod
     def win(probs):
@@ -283,15 +334,30 @@ class Search:
                 11: "GaCr", 12: "GaCrPl", 13: "GaRu", 14: "GaRuPl", 15: "GaRuCr", 16: "GaRuCrPl"}[border]
 
 
-def candidates(rows, search, limit=8, max_shared=2):
-    """The `limit` best teams by mean win chance (ties: more available first), each sharing at most `max_shared`
-    cards with any team already chosen, so the list offers real alternatives rather than one core."""
+def candidates(rows, search, limit=8, max_shared=1, stress_pool=300):
+    """The `limit` best teams, each sharing at most `max_shared` cards with any team already chosen, so the list
+    offers real alternatives rather than one core with interchangeable filler.
+
+    Order: mean win chance, then headroom (win chance with the enemy's stats multiplied, see STRESS), then
+    availability. Headroom is measured for the `stress_pool` best teams by win chance and availability. When any
+    team wins at least half the time, teams below that are left out."""
+    ranked = sorted(rows, key=lambda r: (-round(search.win(r[0]), 3), search.availability(r[1])))
+    pool = ranked[:stress_pool]
+    search.headroom([team for _, team in pool])
+    ranked = sorted(pool, key=lambda r: (-round(search.win(r[0]), 3), -round(search.stress[search.key(r[1])], 3),
+                                         search.availability(r[1]))) + ranked[stress_pool:]
+    if ranked and search.win(ranked[0][0]) >= 0.5:  # once anything wins, losing teams are noise, not alternatives
+        ranked = [r for r in ranked if search.win(r[0]) >= 0.5]
     out, chosen = [], []
-    for probs, team in sorted(rows, key=lambda r: (-search.win(r[0]), search.availability(r[1]))):
+    for probs, team in ranked:
         cards = frozenset(search.entries[i][0] for i in team[0])
         if all(len(cards & other) <= max_shared for other in chosen):
             chosen.append(cards)
-            out.append(search.describe(probs, team))
+            described = search.describe(probs, team)
+            if search.key(team) in search.stress:
+                described["headroom"] = round(search.stress[search.key(team)], 3)
+                described["ability_never_matters"] = [described["lineup"][slot] for slot in search.idle_abilities(team)]
+            out.append(described)
             if len(out) == limit:
                 break
     return out
@@ -336,13 +402,14 @@ def main():
             rows += search.run(lambdas=(0.0,), samples=args.samples, owned_only=True)
         if scenario["candidates"]:
             rows += search.run(lambdas=(0.0, 0.01, 0.03), samples=args.samples)
+        best = candidates(rows, search, args.teams)  # stress-tests the best teams, so it needs the worker pool
     finally:
         search.close()
     if args.dump:
         with open(args.dump, "w") as handle:
             for probs, team in rows:
                 handle.write(json.dumps(search.describe(probs, team)) + "\n")
-    print(json.dumps({"candidates": candidates(rows, search, args.teams), "evaluated_teams": len(search.seen)}, indent=2))
+    print(json.dumps({"candidates": best, "evaluated_teams": len(search.seen)}, indent=2))
 
 
 if __name__ == "__main__":
