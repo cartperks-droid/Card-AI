@@ -26,6 +26,8 @@
 - **Supports:** tiers get their own embedding (`support_tiers [B,2,2]`, 1 base .. 5 Galaxy).
 - **Astraeus:** each art has its own permanent identity key (`data/annotations/card_keys.json`, keys 290-296).
 - **Classes:** the user-verified memberships are used.
+- **Card stats (user):** each card's (HP, ATK) as it enters the battle: border, mutation, the red support and the blue Prehistoric support, exactly as `compile_battle` computes them. Stat changes from abilities are left to the model. The stats are log-scaled, then centred on one shared mean over all visible cards of both teams. No interaction depends on absolute stat sizes, so only ratios remain, and HP and ATK share the scale, which keeps their ratio (hits to kill). A linear projection to the token width skips around a GELU MLP (3,072 wide), and the sum is added to every card token. Before this, base stats had to be encoded in the card's language vector and identity embedding.
+- **Adding the stat input to a run that predates it:** `python -m card_engine.training.add_stat_mlp` adds the projection and MLP at zero, so predictions are unchanged at first, and keeps Adam's state. The originals are kept as `*.pre-stat-mlp`. The script is one-off: delete it once the run is migrated.
 
 ## Training (`card_engine/training/train.py`)
 - **Loss:** soft cross-entropy on the outcome frequencies, plus the identity L2 penalty.

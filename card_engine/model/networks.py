@@ -148,6 +148,8 @@ class StrategicModel(nn.Module):
     Border IDs are 1..16. Support IDs are 1..28/15; 0 means absent.
     Pack IDs are 1..14; 0 means unknown. Visibility has True for observed slots.
     Hidden identities, including their metadata, are ignored before lookup.
+    card_stats [B, 2, 4, 2] are each card's (HP, ATK) as it enters the battle; only their
+    ratios across all visible cards of both teams reach the model (see `normalized_stats`).
     """
 
     def __init__(self, config: StrategicConfig | None = None):
@@ -181,6 +183,33 @@ class StrategicModel(nn.Module):
             for _ in range(c.layers)
         ])
         self.outcome_head = nn.Sequential(nn.LayerNorm(c.width), nn.Linear(c.width, len(OUTCOME_NAMES)))
+        # Residual stat MLP over every card token (user): the normalized (HP, ATK) are projected to the token
+        # width, and that projection skips around the MLP to its output; the sum is added to the card token.
+        # The projection and the MLP's output layer start at zero, so adding them to a trained model leaves
+        # its predictions unchanged until training puts the stats to use (the skip still passes gradient).
+        # Registered last: these parameters come after all others (training.add_stat_mlp relies on this).
+        self.stat_projection = nn.Linear(2, c.width)
+        self.stat_mlp = nn.Sequential(nn.Linear(c.width, c.stat_hidden_width), nn.GELU(),
+                                      nn.Linear(c.stat_hidden_width, c.width))
+        for layer in (self.stat_projection, self.stat_mlp[-1]):
+            nn.init.zeros_(layer.weight)
+            nn.init.zeros_(layer.bias)
+
+    def stat_vectors(self, normalized: Tensor) -> Tensor:
+        projected = self.stat_projection(normalized)
+        return projected + self.stat_mlp(projected)
+
+    @staticmethod
+    def normalized_stats(card_stats: Tensor, visible: Tensor) -> Tensor:
+        """log(HP), log(ATK) minus their shared mean over the visible cards of both teams.
+
+        No interaction depends on absolute stat sizes (user), so only ratios remain. HP and ATK share one
+        scale, which keeps HP-to-ATK ratios (hits to kill) while scaling every stat together changes nothing.
+        """
+        logs = card_stats.log()
+        weight = visible[..., None].to(logs.dtype).expand_as(logs)
+        mean = (logs * weight).sum((1, 2, 3)) / weight.sum((1, 2, 3)).clamp_min(1)
+        return torch.where(visible[..., None], logs - mean[:, None, None, None], 0.0)
 
     def _metadata_ids(self, ids, shape, name, visible, low, high, hidden_default):
         _long_ids(ids, name, shape)
@@ -201,7 +230,8 @@ class StrategicModel(nn.Module):
                        pack_ids: Tensor | None = None, class_weights: Tensor | None = None,
                        mutation_ids: Tensor | None = None, identity_keys: Tensor | None = None,
                        card_visible: Tensor | None = None, support_visible: Tensor | None = None,
-                       mode_ids: Tensor | None = None, support_tiers: Tensor | None = None) -> Tensor:
+                       mode_ids: Tensor | None = None, support_tiers: Tensor | None = None,
+                       card_stats: Tensor | None = None) -> Tensor:
         c = self.config
         if not isinstance(card_embeddings, Tensor) or not card_embeddings.is_floating_point():
             raise ValueError("card_embeddings must be floating-point")
@@ -246,6 +276,14 @@ class StrategicModel(nn.Module):
                 keep = torch.rand(identity_keys.shape, device=device) >= c.identity_dropout
                 identities = identities * keep[..., None].to(identities.dtype)
             cards = cards + identities
+        if card_stats is not None:
+            if (not isinstance(card_stats, Tensor) or tuple(card_stats.shape) != (batch, 2, 4, 2)
+                    or card_stats.device != device or card_stats.dtype != cards.dtype):
+                raise ValueError("card_stats must be [batch, 2, 4, 2] (HP, ATK) on the model device/dtype")
+            if not bool((torch.where(cv[..., None], card_stats, 1.0) > 0).all()):
+                raise ValueError("Visible card stats must be positive")
+            normalized = self.normalized_stats(torch.where(cv[..., None], card_stats, 1.0), cv)
+            cards = cards + self.stat_vectors(normalized)
         # Replace the entire identity+border+pack+class representation, not only identity.
         cards = torch.where(cv[..., None], cards, self.hidden_card)
         supports = []

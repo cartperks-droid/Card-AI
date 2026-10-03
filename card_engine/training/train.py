@@ -86,12 +86,52 @@ def load_split(directory, device):
     return out["train"], out["val"]
 
 
+PREHISTORIC_SUPPORT = 13  # blue: Prehistoric cards gain value% stats per Prehistoric card on the team
+
+
+def card_stat_tables(catalog=None):
+    """(base, red, prehistoric, prehistoric_bonus) for the model's card stats, matching compile_battle.
+
+    base [card, border, mutation, 2]: the (HP, ATK) a card compiles to; red [card, support, tier, 2]: the
+    red support's multiplier on that card (support 0 = none); prehistoric [card]: Prehistoric pack membership;
+    prehistoric_bonus [tier]: the blue Prehistoric support's fraction per Prehistoric card. Stat effects of
+    abilities (entry multipliers, friendship, awakened Toys) are left to the model, like every other ability.
+    """
+    from ..catalog import load_catalog
+    from ..mutations import MUTATION_NAMES
+    from ..simulator.catalog_rules import BLUE_SUPPORTS, RED_SUPPORTS, SUPPORTED, _red_bonus, compile_fighter
+    catalog = catalog or load_catalog()
+    cards = max(SUPPORTED) + 1
+    base = torch.ones(cards, 17, len(MUTATION_NAMES), 2, dtype=torch.float64)
+    for card_id in SUPPORTED:
+        eligible = catalog.card(card_id).weather_id == 1  # weather cards cannot mutate
+        for border in range(1, 17):
+            for index, name in enumerate(MUTATION_NAMES):
+                fighter = compile_fighter(catalog, card_id, border, mutation=name if eligible else "None")
+                base[card_id, border, index] = torch.tensor([fighter.hp, fighter.attack], dtype=torch.float64)
+    weather_names = {w.id: w.name for w in catalog.weathers}
+    red = torch.ones(cards, max(RED_SUPPORTS) + 1, 6, 2, dtype=torch.float64)
+    for card_id in SUPPORTED:
+        card = catalog.card(card_id)
+        for support_id, (kind, _target, values) in RED_SUPPORTS.items():
+            for tier in range(1, len(values) + 1):
+                bonus = 1 + _red_bonus(catalog, card, support_id, tier, weather_names) / 100
+                red[card_id, support_id, tier] = torch.tensor([bonus, 1.0 if kind == "hp" else bonus], dtype=torch.float64)
+    prehistoric = torch.zeros(cards, dtype=torch.float64)
+    for card_id in SUPPORTED:
+        prehistoric[card_id] = float("Prehistoric" in catalog.card(card_id).packs)
+    prehistoric_bonus = torch.tensor([0.0, *(v / 100 for v in BLUE_SUPPORTS[PREHISTORIC_SUPPORT])], dtype=torch.float64)
+    return base, red, prehistoric, prehistoric_bonus
+
+
 class Inputs:
     """Turns label rows into model keyword inputs."""
 
     def __init__(self, device):
         self.data = load_model_data(device=device)
         self.device = device
+        self.base_stats, self.red_multipliers, self.prehistoric, self.prehistoric_bonus = (
+            table.to(device=device, dtype=torch.float32) for table in card_stat_tables())
 
     def __call__(self, rows, card_table):
         cards = rows["cards"]
@@ -103,6 +143,11 @@ class Inputs:
                         support_tiers=torch.stack([rows["red_tier"], rows["blue_tier"]], -1))
         if self.data.class_weights is not None:
             metadata["class_weights"] = self.data.class_weights[index]
+        red = self.red_multipliers[cards, rows["red"][..., None], rows["red_tier"][..., None]]
+        prehistoric = self.prehistoric[cards]
+        bonus = torch.where(rows["blue"] == PREHISTORIC_SUPPORT, self.prehistoric_bonus[rows["blue_tier"]], 0.0)
+        blue = 1 + prehistoric * (bonus * prehistoric.sum(-1))[..., None]
+        metadata["card_stats"] = self.base_stats[cards, rows["borders"], rows["mutations"]] * red * blue[..., None]
         return dict(card_embeddings=card_table[index], **metadata)
 
 

@@ -80,6 +80,33 @@ class TrainingTests(unittest.TestCase):
             self.assertFalse(torch.allclose(base, model(**inputs(rows, table))))
         self.assertEqual(int(inputs(rows, table)["identity_keys"][0, 0, 0]), int(data.art_identity_keys[1]))
 
+    def test_card_stats_match_the_compiled_battle(self):
+        catalog, inputs, rng = load_catalog(), Inputs("cpu"), random.Random(7)
+        specs = [labels.random_spec(rng, catalog) for _ in range(400)]
+        rows = {name: torch.tensor([spec[name] for spec in specs]) for name in labels.FIELDS}
+        stats = inputs(rows, torch.zeros(289, 768))["card_stats"].double()
+        expected = torch.tensor([[[(f.hp, f.attack) for f in labels.compile_spec(catalog, spec).teams[side][:4]]
+                                  for side in (0, 1)] for spec in specs], dtype=torch.float64)
+        torch.testing.assert_close(stats, expected, rtol=1e-6, atol=0)
+
+    def test_stat_mlp_sees_only_ratios_and_starts_silent(self):
+        model = BattleModel().eval()
+        torch.manual_seed(0)
+        stats = torch.rand(3, 2, 4, 2) * 1e4 + 1
+        visible = torch.ones(3, 2, 4, dtype=torch.bool)
+        normalized = model.strategy.normalized_stats(stats, visible)
+        torch.testing.assert_close(normalized, model.strategy.normalized_stats(stats * 1e6, visible))
+        for layer in (model.strategy.stat_projection, model.strategy.stat_mlp[-1]):  # trained: scale still cannot matter
+            torch.nn.init.normal_(layer.weight, std=0.02)
+        common = dict(card_embeddings=torch.zeros(3, 2, 4, 768), border_ids=torch.ones(3, 2, 4, dtype=torch.long),
+                      red_support_ids=torch.zeros(3, 2, dtype=torch.long), blue_support_ids=torch.zeros(3, 2, dtype=torch.long))
+        with torch.no_grad():
+            torch.testing.assert_close(model.strategy(**common, card_stats=stats), model.strategy(**common, card_stats=stats * 1e6))
+            self.assertFalse(torch.allclose(model.strategy(**common, card_stats=stats), model.strategy(**common)))
+            for layer in (model.strategy.stat_projection, model.strategy.stat_mlp[-1]):
+                torch.nn.init.zeros_(layer.weight)
+            torch.testing.assert_close(model.strategy(**common, card_stats=stats), model.strategy(**common))
+
     def test_training_runs_and_resumes(self):
         root = Path(self.temp.name) / "labels"
         directory = root / "store"

@@ -53,10 +53,12 @@ class StrategicConfig:
     # L2 weight on identity vectors, added to the training loss via StrategicModel.identity_penalty():
     # memorisation stays possible but must pay for itself, so most understanding comes from language.
     identity_l2: float = 1e-3
+    # GELU upscale width of the residual MLP that adds each card's normalized (HP, ATK) to its token.
+    stat_hidden_width: int = 3072
 
     def __post_init__(self):
         _positive(self.width, self.layers, self.heads, self.attention_width,
-                  self.feedforward_width)
+                  self.feedforward_width, self.stat_hidden_width)
         if self.attention_width % self.heads:
             raise ValueError("Internal attention width must be divisible by heads")
         if not 0 <= self.dropout < 1:
