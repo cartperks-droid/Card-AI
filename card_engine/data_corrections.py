@@ -22,6 +22,53 @@ OBSERVED_MODIFIERS = {
     157: ("Tyrannosaurus Rex", 1.2),     # IMG_0314: 2,873 ATK (formula 2,394).
     159: ("Tyrannodon", 1.5),            # IMG_0314: 8,678 ATK before its fossil boost (formula 5,785).
 }
+# DaddyDrago's engine data (github.com/daddydrag0/CardRngExpansionDepths, src/data/cards-*.json, read 2026-10-03).
+# User (2026-10-03): his stats and abilities are more accurate than ours. Every card whose borderless HP or ATK differed
+# by more than 1%, or whose rarity differed, takes his rarity and his stat multiplier (his power = 10 x 2^log10(rarity) x
+# multiplier, ATK = power / 2, HP = power x HP multiplier). card_modifier becomes his multiplier over our intrinsic weather
+# multiplier, which his data folds into the one figure; his HP multipliers are in stats.STAT_RATIO_PROFILES.
+# card id: (name, his rarity, his stat multiplier, our weather multiplier for the card)
+DRAGO_STATS = {
+    29: ('Sciron', 500000, 3.6, 4),
+    48: ('The Curse', 6660666, 10, 10),
+    63: ('Yeti', 500000000, 1.5, 1.5),
+    88: ('Academy Student', 300000, 1.5, 1),
+    91: ('Vampire Lord', 500000, 8, 8),
+    95: ('Tornado', 2500000, 2, 1),
+    118: ('Amaterasu', 300000000, 1.2, 1),
+    130: ('Nüwa', 120000000, 2, 1.75),
+    132: ('Xīfāng Báihü', 450000000, 1, 1),
+    139: ('Buddha', 10800000000, 1, 1),
+    192: ('Ice King', 55000000, 1.6, 1.5),
+    194: ('Durante', 777777777, 1, 1.5),
+    195: ('Fresno Nightcrawler', 100000, 1, 2),
+    196: ('Loch Ness', 2500000, 1.3, 2),
+    197: ('Loveland Frog', 5000000, 2, 1),
+    202: ('Wendigo', 25000000, 1.7, 1.5),
+    203: ('The Rake', 2500000000, 1.3, 1),
+    204: ('Kraken', 7000000000, 1.3, 1),
+    217: ('Gorilla', 10000000, 1.1, 1),
+    224: ('Kid Gohan', 75000000, 1.5, 1),
+    227: ('Frank', 120000000, 1.5, 1),
+    228: ('Eclipseborn Luminant', 299792458, 1.2, 1),
+    230: ('The Broken One', 400000000, 1.2, 1),
+    232: ('Cave Goblin God', 666000000, 1.2, 1),
+    234: ('Longmu', 715000000, 2, 1),
+    235: ('Star Eater', 800000000, 1.2, 1),
+    236: ('Eonus', 888888888, 1.2, 1),
+    239: ('Cthulu', 1100000000, 2, 1),
+    240: ('Fate Seamstress', 2000000000, 1.2, 1),
+    243: ('Community', 3000000000, 1.2, 1),
+    244: ('Azure Witch', 3118418147, 1, 1),
+    246: ('Memories', 6000000000, 1.2, 1),
+    248: ('Sarimanok', 20000000000, 1.5, 1),
+    249: ('Bakunawa', 20000000000, 1.5, 1),
+    252: ('Old Man Winter', 10000, 1, 1.5),
+    255: ('Dionysus', 1000000, 2, 3),
+    258: ('Wandering Snowman', 5000000, 1, 1.5),
+    265: ('Santa Claws', 500000000, 1, 1.5),
+    285: ('Abomination', 50000000, 9, 1),
+}
 HALLOWEEN_MODIFIERS = {284: 5, 289: 3}  # User: Hecate 5x, Glamour 3x; other Halloween 2025 cards 2x.
 BOSS_NAMES = (
     "Chronus The Hoarder", "Malik The Sovereign", "Gideon The Insatiable",
@@ -158,3 +205,13 @@ def apply_user_corrections(cards, corrections):
     require(jason["name"] == "Jason", "Card 288 identity changed; review stat correction")
     change(jason, "card_modifier", 1, 2,
            "Fitted 2x shared modifier before rounding matches user baseline 4788 ATK / 9575 HP; cause not specified")
+    drago = {"file": "../../card_engine/data_corrections.py",
+             "evidence": "DaddyDrago's engine card data, user: more accurate than ours, 2026-10-03"}
+    for card_id, (name, rarity, multiplier, weather_multiplier) in DRAGO_STATS.items():
+        card = cards[card_id - 1]
+        require(card["name"] == name, f"Card {card_id} identity changed; review DaddyDrago stat correction")
+        for field, value in (("rarity", rarity), ("card_modifier", multiplier / weather_multiplier)):
+            if card[field] != value:
+                change(card, field, card[field], value,
+                       f"DaddyDrago's data: rarity {rarity}, stat multiplier x{multiplier} (user: his stats are more accurate)")
+                card["source"][field] = dict(drago)

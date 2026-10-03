@@ -2375,5 +2375,733 @@
       "evidence": "user stat/weather corrections and all-Bosses clarification, 2026-09-28"
     },
     "reason": "Fitted 2x shared modifier before rounding matches user baseline 4788 ATK / 9575 HP; cause not specified"
+  },
+  {
+    "kind": "user_authorized_stat_metadata_correction",
+    "card_id": 29,
+    "name": "Sciron",
+    "field": "card_modifier",
+    "original_value": 1,
+    "original_value_lexical": "1",
+    "clean_value": 0.9,
+    "superseded_source": {
+      "file": "data-9.csv",
+      "record_1": 1,
+      "column_1": 29
+    },
+    "source": {
+      "file": "../../card_engine/data_corrections.py",
+      "evidence": "user stat/weather corrections and all-Bosses clarification, 2026-09-28"
+    },
+    "reason": "DaddyDrago's data: rarity 500000, stat multiplier x3.6 (user: his stats are more accurate)"
+  },
+  {
+    "kind": "user_authorized_stat_metadata_correction",
+    "card_id": 48,
+    "name": "The Curse",
+    "field": "rarity",
+    "original_value": 6660000,
+    "original_value_lexical": "6660000",
+    "clean_value": 6660666,
+    "superseded_source": {
+      "file": "Cards-2.xml",
+      "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[19]",
+      "snap_value_id": "34147",
+      "variable": "Card Rarities",
+      "item_1": 48
+    },
+    "source": {
+      "file": "../../card_engine/data_corrections.py",
+      "evidence": "user stat/weather corrections and all-Bosses clarification, 2026-09-28"
+    },
+    "reason": "DaddyDrago's data: rarity 6660666, stat multiplier x10 (user: his stats are more accurate)"
+  },
+  {
+    "kind": "user_authorized_stat_metadata_correction",
+    "card_id": 88,
+    "name": "Academy Student",
+    "field": "card_modifier",
+    "original_value": 1,
+    "original_value_lexical": "1",
+    "clean_value": 1.5,
+    "superseded_source": {
+      "file": "data-9.csv",
+      "record_1": 1,
+      "column_1": 88
+    },
+    "source": {
+      "file": "../../card_engine/data_corrections.py",
+      "evidence": "user stat/weather corrections and all-Bosses clarification, 2026-09-28"
+    },
+    "reason": "DaddyDrago's data: rarity 300000, stat multiplier x1.5 (user: his stats are more accurate)"
+  },
+  {
+    "kind": "user_authorized_stat_metadata_correction",
+    "card_id": 95,
+    "name": "Tornado",
+    "field": "card_modifier",
+    "original_value": 1,
+    "original_value_lexical": "1",
+    "clean_value": 2.0,
+    "superseded_source": {
+      "file": "data-9.csv",
+      "record_1": 1,
+      "column_1": 95
+    },
+    "source": {
+      "file": "../../card_engine/data_corrections.py",
+      "evidence": "user stat/weather corrections and all-Bosses clarification, 2026-09-28"
+    },
+    "reason": "DaddyDrago's data: rarity 2500000, stat multiplier x2 (user: his stats are more accurate)"
+  },
+  {
+    "kind": "user_authorized_stat_metadata_correction",
+    "card_id": 118,
+    "name": "Amaterasu",
+    "field": "card_modifier",
+    "original_value": 1,
+    "original_value_lexical": "1",
+    "clean_value": 1.2,
+    "superseded_source": {
+      "file": "data-9.csv",
+      "record_1": 1,
+      "column_1": 118
+    },
+    "source": {
+      "file": "../../card_engine/data_corrections.py",
+      "evidence": "user stat/weather corrections and all-Bosses clarification, 2026-09-28"
+    },
+    "reason": "DaddyDrago's data: rarity 300000000, stat multiplier x1.2 (user: his stats are more accurate)"
+  },
+  {
+    "kind": "user_authorized_stat_metadata_correction",
+    "card_id": 130,
+    "name": "Nüwa",
+    "field": "card_modifier",
+    "original_value": 1,
+    "original_value_lexical": "1",
+    "clean_value": 1.1428571428571428,
+    "superseded_source": {
+      "file": "data-9.csv",
+      "record_1": 1,
+      "column_1": 130
+    },
+    "source": {
+      "file": "../../card_engine/data_corrections.py",
+      "evidence": "user stat/weather corrections and all-Bosses clarification, 2026-09-28"
+    },
+    "reason": "DaddyDrago's data: rarity 120000000, stat multiplier x2 (user: his stats are more accurate)"
+  },
+  {
+    "kind": "user_authorized_stat_metadata_correction",
+    "card_id": 132,
+    "name": "Xīfāng Báihü",
+    "field": "rarity",
+    "original_value": 400000000,
+    "original_value_lexical": "400000000",
+    "clean_value": 450000000,
+    "superseded_source": {
+      "file": "Cards-2.xml",
+      "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[19]",
+      "snap_value_id": "34147",
+      "variable": "Card Rarities",
+      "item_1": 132
+    },
+    "source": {
+      "file": "../../card_engine/data_corrections.py",
+      "evidence": "user stat/weather corrections and all-Bosses clarification, 2026-09-28"
+    },
+    "reason": "DaddyDrago's data: rarity 450000000, stat multiplier x1 (user: his stats are more accurate)"
+  },
+  {
+    "kind": "user_authorized_stat_metadata_correction",
+    "card_id": 139,
+    "name": "Buddha",
+    "field": "rarity",
+    "original_value": 10000000000,
+    "original_value_lexical": "10000000000",
+    "clean_value": 10800000000,
+    "superseded_source": {
+      "file": "Cards-2.xml",
+      "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[19]",
+      "snap_value_id": "34147",
+      "variable": "Card Rarities",
+      "item_1": 139
+    },
+    "source": {
+      "file": "../../card_engine/data_corrections.py",
+      "evidence": "user stat/weather corrections and all-Bosses clarification, 2026-09-28"
+    },
+    "reason": "DaddyDrago's data: rarity 10800000000, stat multiplier x1 (user: his stats are more accurate)"
+  },
+  {
+    "kind": "user_authorized_stat_metadata_correction",
+    "card_id": 139,
+    "name": "Buddha",
+    "field": "card_modifier",
+    "original_value": 1.02344,
+    "original_value_lexical": "1.02344",
+    "clean_value": 1.0,
+    "superseded_source": {
+      "file": "../../card_engine/data_corrections.py",
+      "evidence": "user stat/weather corrections and all-Bosses clarification, 2026-09-28"
+    },
+    "source": {
+      "file": "../../card_engine/data_corrections.py",
+      "evidence": "user stat/weather corrections and all-Bosses clarification, 2026-09-28"
+    },
+    "reason": "DaddyDrago's data: rarity 10800000000, stat multiplier x1 (user: his stats are more accurate)"
+  },
+  {
+    "kind": "user_authorized_stat_metadata_correction",
+    "card_id": 192,
+    "name": "Ice King",
+    "field": "card_modifier",
+    "original_value": 1,
+    "original_value_lexical": "1",
+    "clean_value": 1.0666666666666667,
+    "superseded_source": {
+      "file": "data-9.csv",
+      "record_1": 1,
+      "column_1": 192
+    },
+    "source": {
+      "file": "../../card_engine/data_corrections.py",
+      "evidence": "user stat/weather corrections and all-Bosses clarification, 2026-09-28"
+    },
+    "reason": "DaddyDrago's data: rarity 55000000, stat multiplier x1.6 (user: his stats are more accurate)"
+  },
+  {
+    "kind": "user_authorized_stat_metadata_correction",
+    "card_id": 194,
+    "name": "Durante",
+    "field": "card_modifier",
+    "original_value": 1,
+    "original_value_lexical": "1",
+    "clean_value": 0.6666666666666666,
+    "superseded_source": {
+      "file": "data-9.csv",
+      "record_1": 1,
+      "column_1": 194
+    },
+    "source": {
+      "file": "../../card_engine/data_corrections.py",
+      "evidence": "user stat/weather corrections and all-Bosses clarification, 2026-09-28"
+    },
+    "reason": "DaddyDrago's data: rarity 777777777, stat multiplier x1 (user: his stats are more accurate)"
+  },
+  {
+    "kind": "user_authorized_stat_metadata_correction",
+    "card_id": 195,
+    "name": "Fresno Nightcrawler",
+    "field": "card_modifier",
+    "original_value": 1,
+    "original_value_lexical": "1",
+    "clean_value": 0.5,
+    "superseded_source": {
+      "file": "data-9.csv",
+      "record_1": 1,
+      "column_1": 195
+    },
+    "source": {
+      "file": "../../card_engine/data_corrections.py",
+      "evidence": "user stat/weather corrections and all-Bosses clarification, 2026-09-28"
+    },
+    "reason": "DaddyDrago's data: rarity 100000, stat multiplier x1 (user: his stats are more accurate)"
+  },
+  {
+    "kind": "user_authorized_stat_metadata_correction",
+    "card_id": 196,
+    "name": "Loch Ness",
+    "field": "card_modifier",
+    "original_value": 1,
+    "original_value_lexical": "1",
+    "clean_value": 0.65,
+    "superseded_source": {
+      "file": "data-9.csv",
+      "record_1": 1,
+      "column_1": 196
+    },
+    "source": {
+      "file": "../../card_engine/data_corrections.py",
+      "evidence": "user stat/weather corrections and all-Bosses clarification, 2026-09-28"
+    },
+    "reason": "DaddyDrago's data: rarity 2500000, stat multiplier x1.3 (user: his stats are more accurate)"
+  },
+  {
+    "kind": "user_authorized_stat_metadata_correction",
+    "card_id": 197,
+    "name": "Loveland Frog",
+    "field": "card_modifier",
+    "original_value": 1,
+    "original_value_lexical": "1",
+    "clean_value": 2.0,
+    "superseded_source": {
+      "file": "data-9.csv",
+      "record_1": 1,
+      "column_1": 197
+    },
+    "source": {
+      "file": "../../card_engine/data_corrections.py",
+      "evidence": "user stat/weather corrections and all-Bosses clarification, 2026-09-28"
+    },
+    "reason": "DaddyDrago's data: rarity 5000000, stat multiplier x2 (user: his stats are more accurate)"
+  },
+  {
+    "kind": "user_authorized_stat_metadata_correction",
+    "card_id": 202,
+    "name": "Wendigo",
+    "field": "card_modifier",
+    "original_value": 1,
+    "original_value_lexical": "1",
+    "clean_value": 1.1333333333333333,
+    "superseded_source": {
+      "file": "data-9.csv",
+      "record_1": 1,
+      "column_1": 202
+    },
+    "source": {
+      "file": "../../card_engine/data_corrections.py",
+      "evidence": "user stat/weather corrections and all-Bosses clarification, 2026-09-28"
+    },
+    "reason": "DaddyDrago's data: rarity 25000000, stat multiplier x1.7 (user: his stats are more accurate)"
+  },
+  {
+    "kind": "user_authorized_stat_metadata_correction",
+    "card_id": 203,
+    "name": "The Rake",
+    "field": "card_modifier",
+    "original_value": 1,
+    "original_value_lexical": "1",
+    "clean_value": 1.3,
+    "superseded_source": {
+      "file": "data-9.csv",
+      "record_1": 1,
+      "column_1": 203
+    },
+    "source": {
+      "file": "../../card_engine/data_corrections.py",
+      "evidence": "user stat/weather corrections and all-Bosses clarification, 2026-09-28"
+    },
+    "reason": "DaddyDrago's data: rarity 2500000000, stat multiplier x1.3 (user: his stats are more accurate)"
+  },
+  {
+    "kind": "user_authorized_stat_metadata_correction",
+    "card_id": 204,
+    "name": "Kraken",
+    "field": "card_modifier",
+    "original_value": 1,
+    "original_value_lexical": "1",
+    "clean_value": 1.3,
+    "superseded_source": {
+      "file": "data-9.csv",
+      "record_1": 1,
+      "column_1": 204
+    },
+    "source": {
+      "file": "../../card_engine/data_corrections.py",
+      "evidence": "user stat/weather corrections and all-Bosses clarification, 2026-09-28"
+    },
+    "reason": "DaddyDrago's data: rarity 7000000000, stat multiplier x1.3 (user: his stats are more accurate)"
+  },
+  {
+    "kind": "user_authorized_stat_metadata_correction",
+    "card_id": 217,
+    "name": "Gorilla",
+    "field": "card_modifier",
+    "original_value": 1,
+    "original_value_lexical": "1",
+    "clean_value": 1.1,
+    "superseded_source": {
+      "file": "data-9.csv",
+      "record_1": 1,
+      "column_1": 217
+    },
+    "source": {
+      "file": "../../card_engine/data_corrections.py",
+      "evidence": "user stat/weather corrections and all-Bosses clarification, 2026-09-28"
+    },
+    "reason": "DaddyDrago's data: rarity 10000000, stat multiplier x1.1 (user: his stats are more accurate)"
+  },
+  {
+    "kind": "user_authorized_stat_metadata_correction",
+    "card_id": 224,
+    "name": "Kid Gohan",
+    "field": "card_modifier",
+    "original_value": 1,
+    "original_value_lexical": "1",
+    "clean_value": 1.5,
+    "superseded_source": {
+      "file": "data-9.csv",
+      "record_1": 1,
+      "column_1": 224
+    },
+    "source": {
+      "file": "../../card_engine/data_corrections.py",
+      "evidence": "user stat/weather corrections and all-Bosses clarification, 2026-09-28"
+    },
+    "reason": "DaddyDrago's data: rarity 75000000, stat multiplier x1.5 (user: his stats are more accurate)"
+  },
+  {
+    "kind": "user_authorized_stat_metadata_correction",
+    "card_id": 227,
+    "name": "Frank",
+    "field": "card_modifier",
+    "original_value": 1,
+    "original_value_lexical": "1",
+    "clean_value": 1.5,
+    "superseded_source": {
+      "file": "data-9.csv",
+      "record_1": 1,
+      "column_1": 227
+    },
+    "source": {
+      "file": "../../card_engine/data_corrections.py",
+      "evidence": "user stat/weather corrections and all-Bosses clarification, 2026-09-28"
+    },
+    "reason": "DaddyDrago's data: rarity 120000000, stat multiplier x1.5 (user: his stats are more accurate)"
+  },
+  {
+    "kind": "user_authorized_stat_metadata_correction",
+    "card_id": 228,
+    "name": "Eclipseborn Luminant",
+    "field": "card_modifier",
+    "original_value": 1,
+    "original_value_lexical": "1",
+    "clean_value": 1.2,
+    "superseded_source": {
+      "file": "data-9.csv",
+      "record_1": 1,
+      "column_1": 228
+    },
+    "source": {
+      "file": "../../card_engine/data_corrections.py",
+      "evidence": "user stat/weather corrections and all-Bosses clarification, 2026-09-28"
+    },
+    "reason": "DaddyDrago's data: rarity 299792458, stat multiplier x1.2 (user: his stats are more accurate)"
+  },
+  {
+    "kind": "user_authorized_stat_metadata_correction",
+    "card_id": 230,
+    "name": "The Broken One",
+    "field": "card_modifier",
+    "original_value": 1,
+    "original_value_lexical": "1",
+    "clean_value": 1.2,
+    "superseded_source": {
+      "file": "data-9.csv",
+      "record_1": 1,
+      "column_1": 230
+    },
+    "source": {
+      "file": "../../card_engine/data_corrections.py",
+      "evidence": "user stat/weather corrections and all-Bosses clarification, 2026-09-28"
+    },
+    "reason": "DaddyDrago's data: rarity 400000000, stat multiplier x1.2 (user: his stats are more accurate)"
+  },
+  {
+    "kind": "user_authorized_stat_metadata_correction",
+    "card_id": 232,
+    "name": "Cave Goblin God",
+    "field": "card_modifier",
+    "original_value": 1,
+    "original_value_lexical": "1",
+    "clean_value": 1.2,
+    "superseded_source": {
+      "file": "data-9.csv",
+      "record_1": 1,
+      "column_1": 232
+    },
+    "source": {
+      "file": "../../card_engine/data_corrections.py",
+      "evidence": "user stat/weather corrections and all-Bosses clarification, 2026-09-28"
+    },
+    "reason": "DaddyDrago's data: rarity 666000000, stat multiplier x1.2 (user: his stats are more accurate)"
+  },
+  {
+    "kind": "user_authorized_stat_metadata_correction",
+    "card_id": 234,
+    "name": "Longmu",
+    "field": "card_modifier",
+    "original_value": 1,
+    "original_value_lexical": "1",
+    "clean_value": 2.0,
+    "superseded_source": {
+      "file": "data-9.csv",
+      "record_1": 1,
+      "column_1": 234
+    },
+    "source": {
+      "file": "../../card_engine/data_corrections.py",
+      "evidence": "user stat/weather corrections and all-Bosses clarification, 2026-09-28"
+    },
+    "reason": "DaddyDrago's data: rarity 715000000, stat multiplier x2 (user: his stats are more accurate)"
+  },
+  {
+    "kind": "user_authorized_stat_metadata_correction",
+    "card_id": 235,
+    "name": "Star Eater",
+    "field": "card_modifier",
+    "original_value": 1,
+    "original_value_lexical": "1",
+    "clean_value": 1.2,
+    "superseded_source": {
+      "file": "data-9.csv",
+      "record_1": 1,
+      "column_1": 235
+    },
+    "source": {
+      "file": "../../card_engine/data_corrections.py",
+      "evidence": "user stat/weather corrections and all-Bosses clarification, 2026-09-28"
+    },
+    "reason": "DaddyDrago's data: rarity 800000000, stat multiplier x1.2 (user: his stats are more accurate)"
+  },
+  {
+    "kind": "user_authorized_stat_metadata_correction",
+    "card_id": 236,
+    "name": "Eonus",
+    "field": "card_modifier",
+    "original_value": 1,
+    "original_value_lexical": "1",
+    "clean_value": 1.2,
+    "superseded_source": {
+      "file": "data-9.csv",
+      "record_1": 1,
+      "column_1": 236
+    },
+    "source": {
+      "file": "../../card_engine/data_corrections.py",
+      "evidence": "user stat/weather corrections and all-Bosses clarification, 2026-09-28"
+    },
+    "reason": "DaddyDrago's data: rarity 888888888, stat multiplier x1.2 (user: his stats are more accurate)"
+  },
+  {
+    "kind": "user_authorized_stat_metadata_correction",
+    "card_id": 239,
+    "name": "Cthulu",
+    "field": "card_modifier",
+    "original_value": 1,
+    "original_value_lexical": "1",
+    "clean_value": 2.0,
+    "superseded_source": {
+      "file": "data-9.csv",
+      "record_1": 1,
+      "column_1": 239
+    },
+    "source": {
+      "file": "../../card_engine/data_corrections.py",
+      "evidence": "user stat/weather corrections and all-Bosses clarification, 2026-09-28"
+    },
+    "reason": "DaddyDrago's data: rarity 1100000000, stat multiplier x2 (user: his stats are more accurate)"
+  },
+  {
+    "kind": "user_authorized_stat_metadata_correction",
+    "card_id": 240,
+    "name": "Fate Seamstress",
+    "field": "card_modifier",
+    "original_value": 1,
+    "original_value_lexical": "1",
+    "clean_value": 1.2,
+    "superseded_source": {
+      "file": "data-9.csv",
+      "record_1": 1,
+      "column_1": 240
+    },
+    "source": {
+      "file": "../../card_engine/data_corrections.py",
+      "evidence": "user stat/weather corrections and all-Bosses clarification, 2026-09-28"
+    },
+    "reason": "DaddyDrago's data: rarity 2000000000, stat multiplier x1.2 (user: his stats are more accurate)"
+  },
+  {
+    "kind": "user_authorized_stat_metadata_correction",
+    "card_id": 243,
+    "name": "Community",
+    "field": "card_modifier",
+    "original_value": 1,
+    "original_value_lexical": "1",
+    "clean_value": 1.2,
+    "superseded_source": {
+      "file": "data-9.csv",
+      "record_1": 1,
+      "column_1": 243
+    },
+    "source": {
+      "file": "../../card_engine/data_corrections.py",
+      "evidence": "user stat/weather corrections and all-Bosses clarification, 2026-09-28"
+    },
+    "reason": "DaddyDrago's data: rarity 3000000000, stat multiplier x1.2 (user: his stats are more accurate)"
+  },
+  {
+    "kind": "user_authorized_stat_metadata_correction",
+    "card_id": 244,
+    "name": "Azure Witch",
+    "field": "rarity",
+    "original_value": 3100000000,
+    "original_value_lexical": "3100000000",
+    "clean_value": 3118418147,
+    "superseded_source": {
+      "file": "Cards-2.xml",
+      "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[19]",
+      "snap_value_id": "34147",
+      "variable": "Card Rarities",
+      "item_1": 244
+    },
+    "source": {
+      "file": "../../card_engine/data_corrections.py",
+      "evidence": "user stat/weather corrections and all-Bosses clarification, 2026-09-28"
+    },
+    "reason": "DaddyDrago's data: rarity 3118418147, stat multiplier x1 (user: his stats are more accurate)"
+  },
+  {
+    "kind": "user_authorized_stat_metadata_correction",
+    "card_id": 246,
+    "name": "Memories",
+    "field": "card_modifier",
+    "original_value": 1,
+    "original_value_lexical": "1",
+    "clean_value": 1.2,
+    "superseded_source": {
+      "file": "data-9.csv",
+      "record_1": 1,
+      "column_1": 246
+    },
+    "source": {
+      "file": "../../card_engine/data_corrections.py",
+      "evidence": "user stat/weather corrections and all-Bosses clarification, 2026-09-28"
+    },
+    "reason": "DaddyDrago's data: rarity 6000000000, stat multiplier x1.2 (user: his stats are more accurate)"
+  },
+  {
+    "kind": "user_authorized_stat_metadata_correction",
+    "card_id": 248,
+    "name": "Sarimanok",
+    "field": "card_modifier",
+    "original_value": 1,
+    "original_value_lexical": "1",
+    "clean_value": 1.5,
+    "superseded_source": {
+      "file": "data-9.csv",
+      "record_1": 1,
+      "column_1": 248
+    },
+    "source": {
+      "file": "../../card_engine/data_corrections.py",
+      "evidence": "user stat/weather corrections and all-Bosses clarification, 2026-09-28"
+    },
+    "reason": "DaddyDrago's data: rarity 20000000000, stat multiplier x1.5 (user: his stats are more accurate)"
+  },
+  {
+    "kind": "user_authorized_stat_metadata_correction",
+    "card_id": 249,
+    "name": "Bakunawa",
+    "field": "card_modifier",
+    "original_value": 1,
+    "original_value_lexical": "1",
+    "clean_value": 1.5,
+    "superseded_source": {
+      "file": "data-9.csv",
+      "record_1": 1,
+      "column_1": 249
+    },
+    "source": {
+      "file": "../../card_engine/data_corrections.py",
+      "evidence": "user stat/weather corrections and all-Bosses clarification, 2026-09-28"
+    },
+    "reason": "DaddyDrago's data: rarity 20000000000, stat multiplier x1.5 (user: his stats are more accurate)"
+  },
+  {
+    "kind": "user_authorized_stat_metadata_correction",
+    "card_id": 252,
+    "name": "Old Man Winter",
+    "field": "card_modifier",
+    "original_value": 1,
+    "original_value_lexical": "1",
+    "clean_value": 0.6666666666666666,
+    "superseded_source": {
+      "file": "data-9.csv",
+      "record_1": 1,
+      "column_1": 252
+    },
+    "source": {
+      "file": "../../card_engine/data_corrections.py",
+      "evidence": "user stat/weather corrections and all-Bosses clarification, 2026-09-28"
+    },
+    "reason": "DaddyDrago's data: rarity 10000, stat multiplier x1 (user: his stats are more accurate)"
+  },
+  {
+    "kind": "user_authorized_stat_metadata_correction",
+    "card_id": 255,
+    "name": "Dionysus",
+    "field": "card_modifier",
+    "original_value": 1,
+    "original_value_lexical": "1",
+    "clean_value": 0.6666666666666666,
+    "superseded_source": {
+      "file": "data-9.csv",
+      "record_1": 1,
+      "column_1": 255
+    },
+    "source": {
+      "file": "../../card_engine/data_corrections.py",
+      "evidence": "user stat/weather corrections and all-Bosses clarification, 2026-09-28"
+    },
+    "reason": "DaddyDrago's data: rarity 1000000, stat multiplier x2 (user: his stats are more accurate)"
+  },
+  {
+    "kind": "user_authorized_stat_metadata_correction",
+    "card_id": 258,
+    "name": "Wandering Snowman",
+    "field": "card_modifier",
+    "original_value": 1,
+    "original_value_lexical": "1",
+    "clean_value": 0.6666666666666666,
+    "superseded_source": {
+      "file": "data-9.csv",
+      "record_1": 1,
+      "column_1": 258
+    },
+    "source": {
+      "file": "../../card_engine/data_corrections.py",
+      "evidence": "user stat/weather corrections and all-Bosses clarification, 2026-09-28"
+    },
+    "reason": "DaddyDrago's data: rarity 5000000, stat multiplier x1 (user: his stats are more accurate)"
+  },
+  {
+    "kind": "user_authorized_stat_metadata_correction",
+    "card_id": 265,
+    "name": "Santa Claws",
+    "field": "card_modifier",
+    "original_value": 1,
+    "original_value_lexical": "1",
+    "clean_value": 0.6666666666666666,
+    "superseded_source": {
+      "file": "data-9.csv",
+      "record_1": 1,
+      "column_1": 265
+    },
+    "source": {
+      "file": "../../card_engine/data_corrections.py",
+      "evidence": "user stat/weather corrections and all-Bosses clarification, 2026-09-28"
+    },
+    "reason": "DaddyDrago's data: rarity 500000000, stat multiplier x1 (user: his stats are more accurate)"
+  },
+  {
+    "kind": "user_authorized_stat_metadata_correction",
+    "card_id": 285,
+    "name": "Abomination",
+    "field": "card_modifier",
+    "original_value": 2,
+    "original_value_lexical": "2",
+    "clean_value": 9.0,
+    "superseded_source": {
+      "file": "../../card_engine/data_corrections.py",
+      "evidence": "user stat/weather corrections and all-Bosses clarification, 2026-09-28"
+    },
+    "source": {
+      "file": "../../card_engine/data_corrections.py",
+      "evidence": "user stat/weather corrections and all-Bosses clarification, 2026-09-28"
+    },
+    "reason": "DaddyDrago's data: rarity 50000000, stat multiplier x9 (user: his stats are more accurate)"
   }
 ]

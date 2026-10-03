@@ -16,6 +16,11 @@ from .catalog import Catalog
 # Fitted as HP weather 1.7 instead of 1.75 and no weather on ATK; any HP ratio
 # rounding to 1230 fits equally, so the exact factor is unverified.
 STAT_RATIO_PROFILES = {
+    # DaddyDrago's engine data, 2026-10-03 (user: his stats are more accurate): HP multiplier, ATK unchanged.
+    29: ("Sciron", 1.1, 1, "DaddyDrago engine data", "HP x1.1 per his card data"),
+    63: ("Yeti", 1.5, 1, "DaddyDrago engine data", "HP x1.5 per his card data"),
+    91: ("Vampire Lord", 1.5, 1, "DaddyDrago engine data", "HP x1.5 per his card data; ATK matches user videos IMG_0336/0338"),
+    217: ("Gorilla", 1.1, 1, "DaddyDrago engine data", "HP x1.1 per his card data"),
     94: ("Immortal Witch", 1.2, .8, "https://card-rng.fandom.com/wiki/Immortal_Witch",
          "experimental stat ratio: borderless 868 HP user-confirmed; 290 ATK matches user video; ratios sourced from wiki"),
     74: ("Shu", 1.7 / 1.75, 1 / 1.75, "user report 2026-09-28",

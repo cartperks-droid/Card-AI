@@ -1,6 +1,6 @@
 # Cross-check with DaddyDrago's engine
 
-DaddyDrago's Card RNG Expansion Depths calculator (github.com/daddydrag0/CardRngExpansionDepths, read 2026-10-03) simulates the same game and is used by hundreds of players (user). Where his data or rules differ from ours, one side is wrong. Nothing here is imported: each line is a check to settle in game (`docs/daily_checks/queue.md`, item 7).
+DaddyDrago's Card RNG Expansion Depths calculator (github.com/daddydrag0/CardRngExpansionDepths, read 2026-10-03) simulates the same game and is used by hundreds of players (user). The user rates his stats and abilities as more accurate than ours (2026-10-03). His rarities, card stats and Final Testament values are adopted (`card_engine/data_corrections.py` `DRAGO_STATS`, `stats.STAT_RATIO_PROFILES`, `catalog_rules.BLUE_SUPPORTS`); the rule differences below stay open as checks (`docs/daily_checks/queue.md`, item 7).
 
 ## Where we agree
 
@@ -16,22 +16,21 @@ DaddyDrago's Card RNG Expansion Depths calculator (github.com/daddydrag0/CardRng
 |---|---|---|
 | Both sides wiped out | attacker (A) loses | draw |
 | Endless battle | 100-turn stalemate per pairing (user-confirmed 2026-10-02) | draw after 2,000 turns |
-| Final Testament (blue) | Platinum 7, Galaxy 12 | Platinum 7.5, Galaxy 12.5 |
 
-## Rarities that differ
+## Rarities adopted from his data (2026-10-03)
 
-| Card | Ours | His |
+| Card | Was | Now (his) |
 |---|---|---|
 | Azure Witch | 3,100,000,000 | 3,118,418,147 |
 | Buddha | 10,000,000,000 | 10,800,000,000 |
 | Xīfāng Báihü | 400,000,000 | 450,000,000 |
 | The Curse | 6,660,000 | 6,660,666 |
 
-## Borderless stats that differ by more than 1% (36 cards)
+## Borderless stats adopted from his data (36 cards)
 
-Ratios of ×2, ×1.5 or ×1.2 suggest a weather or card multiplier applied on one side only. One borderless stat readout in game settles each card.
+Adopted 2026-10-03. His data folds weather into each card's one stat multiplier: several weather cards (Santa Claws, Durante, Dionysus, Loch Ness, Old Man Winter, Wandering Snowman, Fresno Nightcrawler) don't get the weather multiplier ours applied, and four cards gain an HP multiplier (Sciron and Gorilla x1.1, Yeti and Vampire Lord x1.5). Final Testament's Platinum and Galaxy values also follow his: 7.5 and 12.5.
 
-| Card | HP ours | HP his | ATK ours | ATK his | HP ratio | ATK ratio |
+| Card | HP was | HP now | ATK was | ATK now | HP ratio | ATK ratio |
 |---|---|---|---|---|---|---|
 | Abomination | 4,156 | 18,701 | 2,078 | 9,351 | 0.22 | 0.22 |
 | Academy Student | 446 | 669 | 223 | 335 | 0.67 | 0.67 |

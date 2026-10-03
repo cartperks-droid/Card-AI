@@ -10,14 +10,12 @@ These are open rule and class questions, most important first. The daily task pi
 4. **Kira vs Noveau Riche.** Does Kira's doom kill Noveau Riche through its 3 lives?
 5. **Parallax and status damage.** Does burn or poison kill Parallax without triggering "the enemy dies instead"?
 6. **Border rarities.** RuPl was corrected to 1e7 and GaCrPl to 1e12, from the deck screenshots. Confirm with a stat readout of one RuPl or GaCrPl card.
-7. **Cross-check with DaddyDrago's engine** (`docs/drago_crosscheck.md`). His widely used simulator differs from ours on:
+7. **Cross-check with DaddyDrago's engine** (`docs/drago_crosscheck.md`). His stats, rarities and Final Testament values are adopted (user, 2026-10-03). Still open:
    - **Double KO:** is it a draw (his) or a loss for the attacker (ours)?
-   - **Rarities:** Buddha, Azure Witch, Xīfāng Báihǔ and The Curse.
-   - **Borderless stats:** 36 cards, many by a clean ×1.5 or ×2. One stat readout per card settles it.
-   - **Final Testament:** 7/12 or 7.5/12.5 at Platinum/Galaxy.
-   - **New cards:** about 16 cards in his data but not ours.
+   - **New cards:** about 16 cards in his data but not ours. Do they exist in game?
 
 ## Answered
+- 2026-10-03 **Card stats:** DaddyDrago's engine data is more accurate (user). His rarities (4 cards), stat multipliers (36 cards, incl. HP multipliers for Sciron, Gorilla, Yeti, Vampire Lord) and Final Testament's 7.5/12.5 are adopted; see `docs/drago_crosscheck.md`.
 - 2026-10-02 **Buddha:**
   - If the enemy can't kill it, Buddha does nothing but revive the dead, one per turn in setup order, while staying in front.
   - With none dead, it heals; a heal that fully heals a card sends Buddha to the end of the deck.

@@ -807,7 +807,7 @@ BLUE_SUPPORTS = {
     7: [15, 25, 35, 15, 50],  # % more damage to enemies below 30% HP
     8: [25, 50, 75, 25, 100],  # % chance to retry a failed ability
     9: [10, 15, 20, 10, 30],  # reflect % of damage taken
-    10: [5, 7, 10, 5, 12],  # the next ally inherits % of a dying ally's stats
+    10: [5, 7.5, 10, 5, 12.5],  # the next ally inherits % of a dying ally's stats (DaddyDrago: 7.5 and 12.5, user 2026-10-03)
     11: [10, 15, 20, 10, 30],  # % chance to attack again at 50% damage after attacking
     12: [4, 3, 2, 4, 1],  # Magical Elf: awaken the Toys if the deck holds this many unique ones (one fewer per tier; Ruby 4)
     13: [10, 15, 20, 10, 25],  # prehistoric cards +% stats per prehistoric card in the deck

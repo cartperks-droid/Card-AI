@@ -2083,8 +2083,8 @@
       "rarity_lexical": "500000",
       "weather_id": 8,
       "weather_id_lexical": "8",
-      "card_modifier": 1,
-      "card_modifier_lexical": "1",
+      "card_modifier": 0.9,
+      "card_modifier_lexical": "0.9",
       "packs": [
         "Era 1"
       ],
@@ -2113,9 +2113,8 @@
           "column_1": 29
         },
         "card_modifier": {
-          "file": "data-9.csv",
-          "record_1": 1,
-          "column_1": 29
+          "file": "../../card_engine/data_corrections.py",
+          "evidence": "DaddyDrago's engine card data, user: more accurate than ours, 2026-10-03"
         }
       },
       "pack_id": 1,
@@ -3467,8 +3466,8 @@
     {
       "card_id": 48,
       "name": "The Curse",
-      "rarity": 6660000,
-      "rarity_lexical": "6660000",
+      "rarity": 6660666,
+      "rarity_lexical": "6660666",
       "weather_id": 13,
       "weather_id_lexical": "13",
       "card_modifier": 1,
@@ -3488,11 +3487,8 @@
           "item_1": 48
         },
         "rarity": {
-          "file": "Cards-2.xml",
-          "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[19]",
-          "snap_value_id": "34147",
-          "variable": "Card Rarities",
-          "item_1": 48
+          "file": "../../card_engine/data_corrections.py",
+          "evidence": "DaddyDrago's engine card data, user: more accurate than ours, 2026-10-03"
         },
         "weather": {
           "file": "data-10.csv",
@@ -6380,8 +6376,8 @@
       "rarity_lexical": "300000",
       "weather_id": 1,
       "weather_id_lexical": "1",
-      "card_modifier": 1,
-      "card_modifier_lexical": "1",
+      "card_modifier": 1.5,
+      "card_modifier_lexical": "1.5",
       "packs": [
         "Anime"
       ],
@@ -6407,9 +6403,8 @@
           "column_1": 88
         },
         "card_modifier": {
-          "file": "data-9.csv",
-          "record_1": 1,
-          "column_1": 88
+          "file": "../../card_engine/data_corrections.py",
+          "evidence": "DaddyDrago's engine card data, user: more accurate than ours, 2026-10-03"
         }
       },
       "pack_id": 3,
@@ -6873,8 +6868,8 @@
       "rarity_lexical": "2500000",
       "weather_id": 1,
       "weather_id_lexical": "1",
-      "card_modifier": 1,
-      "card_modifier_lexical": "1",
+      "card_modifier": 2.0,
+      "card_modifier_lexical": "2.0",
       "packs": [
         "Anime"
       ],
@@ -6900,9 +6895,8 @@
           "column_1": 95
         },
         "card_modifier": {
-          "file": "data-9.csv",
-          "record_1": 1,
-          "column_1": 95
+          "file": "../../card_engine/data_corrections.py",
+          "evidence": "DaddyDrago's engine card data, user: more accurate than ours, 2026-10-03"
         }
       },
       "pack_id": 3,
@@ -8534,8 +8528,8 @@
       "rarity_lexical": "300000000",
       "weather_id": 1,
       "weather_id_lexical": "1",
-      "card_modifier": 1,
-      "card_modifier_lexical": "1",
+      "card_modifier": 1.2,
+      "card_modifier_lexical": "1.2",
       "packs": [
         "Rising Sun"
       ],
@@ -8561,9 +8555,8 @@
           "column_1": 118
         },
         "card_modifier": {
-          "file": "data-9.csv",
-          "record_1": 1,
-          "column_1": 118
+          "file": "../../card_engine/data_corrections.py",
+          "evidence": "DaddyDrago's engine card data, user: more accurate than ours, 2026-10-03"
         }
       },
       "pack_id": 4,
@@ -9400,8 +9393,8 @@
       "rarity_lexical": "120000000",
       "weather_id": 5,
       "weather_id_lexical": "5",
-      "card_modifier": 1,
-      "card_modifier_lexical": "1",
+      "card_modifier": 1.1428571428571428,
+      "card_modifier_lexical": "1.1428571428571428",
       "packs": [
         "Immortal"
       ],
@@ -9429,9 +9422,8 @@
           "column_1": 130
         },
         "card_modifier": {
-          "file": "data-9.csv",
-          "record_1": 1,
-          "column_1": 130
+          "file": "../../card_engine/data_corrections.py",
+          "evidence": "DaddyDrago's engine card data, user: more accurate than ours, 2026-10-03"
         }
       },
       "pack_id": 5,
@@ -9543,8 +9535,8 @@
     {
       "card_id": 132,
       "name": "Xīfāng Báihü",
-      "rarity": 400000000,
-      "rarity_lexical": "400000000",
+      "rarity": 450000000,
+      "rarity_lexical": "450000000",
       "weather_id": 1,
       "weather_id_lexical": "1",
       "card_modifier": 1,
@@ -9562,11 +9554,8 @@
           "item_1": 132
         },
         "rarity": {
-          "file": "Cards-2.xml",
-          "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[19]",
-          "snap_value_id": "34147",
-          "variable": "Card Rarities",
-          "item_1": 132
+          "file": "../../card_engine/data_corrections.py",
+          "evidence": "DaddyDrago's engine card data, user: more accurate than ours, 2026-10-03"
         },
         "weather": {
           "file": "data-10.csv",
@@ -10065,12 +10054,12 @@
     {
       "card_id": 139,
       "name": "Buddha",
-      "rarity": 10000000000,
-      "rarity_lexical": "10000000000",
+      "rarity": 10800000000,
+      "rarity_lexical": "10800000000",
       "weather_id": 1,
       "weather_id_lexical": "1",
-      "card_modifier": 1.02344,
-      "card_modifier_lexical": "1.02344",
+      "card_modifier": 1.0,
+      "card_modifier_lexical": "1.0",
       "packs": [
         "Immortal"
       ],
@@ -10084,11 +10073,8 @@
           "item_1": 139
         },
         "rarity": {
-          "file": "Cards-2.xml",
-          "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[19]",
-          "snap_value_id": "34147",
-          "variable": "Card Rarities",
-          "item_1": 139
+          "file": "../../card_engine/data_corrections.py",
+          "evidence": "DaddyDrago's engine card data, user: more accurate than ours, 2026-10-03"
         },
         "weather": {
           "file": "data-10.csv",
@@ -10097,7 +10083,7 @@
         },
         "card_modifier": {
           "file": "../../card_engine/data_corrections.py",
-          "evidence": "user stat/weather corrections and all-Bosses clarification, 2026-09-28"
+          "evidence": "DaddyDrago's engine card data, user: more accurate than ours, 2026-10-03"
         }
       },
       "pack_id": 5,
@@ -13793,8 +13779,8 @@
       "rarity_lexical": "55000000",
       "weather_id": 3,
       "weather_id_lexical": "3",
-      "card_modifier": 1,
-      "card_modifier_lexical": "1",
+      "card_modifier": 1.0666666666666667,
+      "card_modifier_lexical": "1.0666666666666667",
       "packs": [
         "Video Game"
       ],
@@ -13820,9 +13806,8 @@
           "column_1": 192
         },
         "card_modifier": {
-          "file": "data-9.csv",
-          "record_1": 1,
-          "column_1": 192
+          "file": "../../card_engine/data_corrections.py",
+          "evidence": "DaddyDrago's engine card data, user: more accurate than ours, 2026-10-03"
         }
       },
       "pack_id": 8,
@@ -13934,8 +13919,8 @@
       "rarity_lexical": "777777777",
       "weather_id": 2,
       "weather_id_lexical": "2",
-      "card_modifier": 1,
-      "card_modifier_lexical": "1",
+      "card_modifier": 0.6666666666666666,
+      "card_modifier_lexical": "0.6666666666666666",
       "packs": [
         "Video Game"
       ],
@@ -13964,9 +13949,8 @@
           "column_1": 194
         },
         "card_modifier": {
-          "file": "data-9.csv",
-          "record_1": 1,
-          "column_1": 194
+          "file": "../../card_engine/data_corrections.py",
+          "evidence": "DaddyDrago's engine card data, user: more accurate than ours, 2026-10-03"
         }
       },
       "pack_id": 8,
@@ -14010,8 +13994,8 @@
       "rarity_lexical": "100000",
       "weather_id": 4,
       "weather_id_lexical": "4",
-      "card_modifier": 1,
-      "card_modifier_lexical": "1",
+      "card_modifier": 0.5,
+      "card_modifier_lexical": "0.5",
       "packs": [
         "Cryptid"
       ],
@@ -14037,9 +14021,8 @@
           "column_1": 195
         },
         "card_modifier": {
-          "file": "data-9.csv",
-          "record_1": 1,
-          "column_1": 195
+          "file": "../../card_engine/data_corrections.py",
+          "evidence": "DaddyDrago's engine card data, user: more accurate than ours, 2026-10-03"
         }
       },
       "pack_id": 9,
@@ -14080,8 +14063,8 @@
       "rarity_lexical": "2500000",
       "weather_id": 4,
       "weather_id_lexical": "4",
-      "card_modifier": 1,
-      "card_modifier_lexical": "1",
+      "card_modifier": 0.65,
+      "card_modifier_lexical": "0.65",
       "packs": [
         "Cryptid"
       ],
@@ -14107,9 +14090,8 @@
           "column_1": 196
         },
         "card_modifier": {
-          "file": "data-9.csv",
-          "record_1": 1,
-          "column_1": 196
+          "file": "../../card_engine/data_corrections.py",
+          "evidence": "DaddyDrago's engine card data, user: more accurate than ours, 2026-10-03"
         }
       },
       "pack_id": 9,
@@ -14151,8 +14133,8 @@
       "rarity_lexical": "5000000",
       "weather_id": 1,
       "weather_id_lexical": "1",
-      "card_modifier": 1,
-      "card_modifier_lexical": "1",
+      "card_modifier": 2.0,
+      "card_modifier_lexical": "2.0",
       "packs": [
         "Cryptid"
       ],
@@ -14178,9 +14160,8 @@
           "column_1": 197
         },
         "card_modifier": {
-          "file": "data-9.csv",
-          "record_1": 1,
-          "column_1": 197
+          "file": "../../card_engine/data_corrections.py",
+          "evidence": "DaddyDrago's engine card data, user: more accurate than ours, 2026-10-03"
         }
       },
       "pack_id": 9,
@@ -14506,8 +14487,8 @@
       "rarity_lexical": "25000000",
       "weather_id": 3,
       "weather_id_lexical": "3",
-      "card_modifier": 1,
-      "card_modifier_lexical": "1",
+      "card_modifier": 1.1333333333333333,
+      "card_modifier_lexical": "1.1333333333333333",
       "packs": [
         "Cryptid"
       ],
@@ -14533,9 +14514,8 @@
           "column_1": 202
         },
         "card_modifier": {
-          "file": "data-9.csv",
-          "record_1": 1,
-          "column_1": 202
+          "file": "../../card_engine/data_corrections.py",
+          "evidence": "DaddyDrago's engine card data, user: more accurate than ours, 2026-10-03"
         }
       },
       "pack_id": 9,
@@ -14576,8 +14556,8 @@
       "rarity_lexical": "2500000000",
       "weather_id": 1,
       "weather_id_lexical": "1",
-      "card_modifier": 1,
-      "card_modifier_lexical": "1",
+      "card_modifier": 1.3,
+      "card_modifier_lexical": "1.3",
       "packs": [
         "Cryptid"
       ],
@@ -14603,9 +14583,8 @@
           "column_1": 203
         },
         "card_modifier": {
-          "file": "data-9.csv",
-          "record_1": 1,
-          "column_1": 203
+          "file": "../../card_engine/data_corrections.py",
+          "evidence": "DaddyDrago's engine card data, user: more accurate than ours, 2026-10-03"
         }
       },
       "pack_id": 9,
@@ -14646,8 +14625,8 @@
       "rarity_lexical": "7000000000",
       "weather_id": 1,
       "weather_id_lexical": "1",
-      "card_modifier": 1,
-      "card_modifier_lexical": "1",
+      "card_modifier": 1.3,
+      "card_modifier_lexical": "1.3",
       "packs": [
         "Cryptid"
       ],
@@ -14673,9 +14652,8 @@
           "column_1": 204
         },
         "card_modifier": {
-          "file": "data-9.csv",
-          "record_1": 1,
-          "column_1": 204
+          "file": "../../card_engine/data_corrections.py",
+          "evidence": "DaddyDrago's engine card data, user: more accurate than ours, 2026-10-03"
         }
       },
       "pack_id": 9,
@@ -15596,8 +15574,8 @@
       "rarity_lexical": "10000000",
       "weather_id": 1,
       "weather_id_lexical": "1",
-      "card_modifier": 1,
-      "card_modifier_lexical": "1",
+      "card_modifier": 1.1,
+      "card_modifier_lexical": "1.1",
       "packs": [
         "Limited"
       ],
@@ -15623,9 +15601,8 @@
           "column_1": 217
         },
         "card_modifier": {
-          "file": "data-9.csv",
-          "record_1": 1,
-          "column_1": 217
+          "file": "../../card_engine/data_corrections.py",
+          "evidence": "DaddyDrago's engine card data, user: more accurate than ours, 2026-10-03"
         }
       },
       "pack_id": 11,
@@ -16092,8 +16069,8 @@
       "rarity_lexical": "75000000",
       "weather_id": 1,
       "weather_id_lexical": "1",
-      "card_modifier": 1,
-      "card_modifier_lexical": "1",
+      "card_modifier": 1.5,
+      "card_modifier_lexical": "1.5",
       "packs": [
         "Limited"
       ],
@@ -16119,9 +16096,8 @@
           "column_1": 224
         },
         "card_modifier": {
-          "file": "data-9.csv",
-          "record_1": 1,
-          "column_1": 224
+          "file": "../../card_engine/data_corrections.py",
+          "evidence": "DaddyDrago's engine card data, user: more accurate than ours, 2026-10-03"
         }
       },
       "pack_id": 11,
@@ -16300,8 +16276,8 @@
       "rarity_lexical": "120000000",
       "weather_id": 1,
       "weather_id_lexical": "1",
-      "card_modifier": 1,
-      "card_modifier_lexical": "1",
+      "card_modifier": 1.5,
+      "card_modifier_lexical": "1.5",
       "packs": [
         "Limited"
       ],
@@ -16327,9 +16303,8 @@
           "column_1": 227
         },
         "card_modifier": {
-          "file": "data-9.csv",
-          "record_1": 1,
-          "column_1": 227
+          "file": "../../card_engine/data_corrections.py",
+          "evidence": "DaddyDrago's engine card data, user: more accurate than ours, 2026-10-03"
         }
       },
       "pack_id": 11,
@@ -16370,8 +16345,8 @@
       "rarity_lexical": "299792458",
       "weather_id": 1,
       "weather_id_lexical": "1",
-      "card_modifier": 1,
-      "card_modifier_lexical": "1",
+      "card_modifier": 1.2,
+      "card_modifier_lexical": "1.2",
       "packs": [
         "Limited"
       ],
@@ -16399,9 +16374,8 @@
           "column_1": 228
         },
         "card_modifier": {
-          "file": "data-9.csv",
-          "record_1": 1,
-          "column_1": 228
+          "file": "../../card_engine/data_corrections.py",
+          "evidence": "DaddyDrago's engine card data, user: more accurate than ours, 2026-10-03"
         }
       },
       "pack_id": 11,
@@ -16517,8 +16491,8 @@
       "rarity_lexical": "400000000",
       "weather_id": 1,
       "weather_id_lexical": "1",
-      "card_modifier": 1,
-      "card_modifier_lexical": "1",
+      "card_modifier": 1.2,
+      "card_modifier_lexical": "1.2",
       "packs": [
         "Limited"
       ],
@@ -16546,9 +16520,8 @@
           "column_1": 230
         },
         "card_modifier": {
-          "file": "data-9.csv",
-          "record_1": 1,
-          "column_1": 230
+          "file": "../../card_engine/data_corrections.py",
+          "evidence": "DaddyDrago's engine card data, user: more accurate than ours, 2026-10-03"
         }
       },
       "pack_id": 11,
@@ -16661,8 +16634,8 @@
       "rarity_lexical": "666000000",
       "weather_id": 1,
       "weather_id_lexical": "1",
-      "card_modifier": 1,
-      "card_modifier_lexical": "1",
+      "card_modifier": 1.2,
+      "card_modifier_lexical": "1.2",
       "packs": [
         "Limited"
       ],
@@ -16690,9 +16663,8 @@
           "column_1": 232
         },
         "card_modifier": {
-          "file": "data-9.csv",
-          "record_1": 1,
-          "column_1": 232
+          "file": "../../card_engine/data_corrections.py",
+          "evidence": "DaddyDrago's engine card data, user: more accurate than ours, 2026-10-03"
         }
       },
       "pack_id": 11,
@@ -16810,8 +16782,8 @@
       "rarity_lexical": "715000000",
       "weather_id": 1,
       "weather_id_lexical": "1",
-      "card_modifier": 1,
-      "card_modifier_lexical": "1",
+      "card_modifier": 2.0,
+      "card_modifier_lexical": "2.0",
       "packs": [
         "Limited"
       ],
@@ -16839,9 +16811,8 @@
           "column_1": 234
         },
         "card_modifier": {
-          "file": "data-9.csv",
-          "record_1": 1,
-          "column_1": 234
+          "file": "../../card_engine/data_corrections.py",
+          "evidence": "DaddyDrago's engine card data, user: more accurate than ours, 2026-10-03"
         }
       },
       "pack_id": 11,
@@ -16883,8 +16854,8 @@
       "rarity_lexical": "800000000",
       "weather_id": 1,
       "weather_id_lexical": "1",
-      "card_modifier": 1,
-      "card_modifier_lexical": "1",
+      "card_modifier": 1.2,
+      "card_modifier_lexical": "1.2",
       "packs": [
         "Limited"
       ],
@@ -16910,9 +16881,8 @@
           "column_1": 235
         },
         "card_modifier": {
-          "file": "data-9.csv",
-          "record_1": 1,
-          "column_1": 235
+          "file": "../../card_engine/data_corrections.py",
+          "evidence": "DaddyDrago's engine card data, user: more accurate than ours, 2026-10-03"
         }
       },
       "pack_id": 11,
@@ -16952,8 +16922,8 @@
       "rarity_lexical": "888888888",
       "weather_id": 1,
       "weather_id_lexical": "1",
-      "card_modifier": 1,
-      "card_modifier_lexical": "1",
+      "card_modifier": 1.2,
+      "card_modifier_lexical": "1.2",
       "packs": [
         "Limited"
       ],
@@ -16979,9 +16949,8 @@
           "column_1": 236
         },
         "card_modifier": {
-          "file": "data-9.csv",
-          "record_1": 1,
-          "column_1": 236
+          "file": "../../card_engine/data_corrections.py",
+          "evidence": "DaddyDrago's engine card data, user: more accurate than ours, 2026-10-03"
         }
       },
       "pack_id": 11,
@@ -17177,8 +17146,8 @@
       "rarity_lexical": "1100000000",
       "weather_id": 1,
       "weather_id_lexical": "1",
-      "card_modifier": 1,
-      "card_modifier_lexical": "1",
+      "card_modifier": 2.0,
+      "card_modifier_lexical": "2.0",
       "packs": [
         "Limited"
       ],
@@ -17204,9 +17173,8 @@
           "column_1": 239
         },
         "card_modifier": {
-          "file": "data-9.csv",
-          "record_1": 1,
-          "column_1": 239
+          "file": "../../card_engine/data_corrections.py",
+          "evidence": "DaddyDrago's engine card data, user: more accurate than ours, 2026-10-03"
         }
       },
       "pack_id": 11,
@@ -17247,8 +17215,8 @@
       "rarity_lexical": "2000000000",
       "weather_id": 1,
       "weather_id_lexical": "1",
-      "card_modifier": 1,
-      "card_modifier_lexical": "1",
+      "card_modifier": 1.2,
+      "card_modifier_lexical": "1.2",
       "packs": [
         "Limited"
       ],
@@ -17274,9 +17242,8 @@
           "column_1": 240
         },
         "card_modifier": {
-          "file": "data-9.csv",
-          "record_1": 1,
-          "column_1": 240
+          "file": "../../card_engine/data_corrections.py",
+          "evidence": "DaddyDrago's engine card data, user: more accurate than ours, 2026-10-03"
         }
       },
       "pack_id": 11,
@@ -17464,8 +17431,8 @@
       "rarity_lexical": "3000000000",
       "weather_id": 1,
       "weather_id_lexical": "1",
-      "card_modifier": 1,
-      "card_modifier_lexical": "1",
+      "card_modifier": 1.2,
+      "card_modifier_lexical": "1.2",
       "packs": [
         "Limited"
       ],
@@ -17491,9 +17458,8 @@
           "column_1": 243
         },
         "card_modifier": {
-          "file": "data-9.csv",
-          "record_1": 1,
-          "column_1": 243
+          "file": "../../card_engine/data_corrections.py",
+          "evidence": "DaddyDrago's engine card data, user: more accurate than ours, 2026-10-03"
         }
       },
       "pack_id": 11,
@@ -17531,8 +17497,8 @@
     {
       "card_id": 244,
       "name": "Azure Witch",
-      "rarity": 3100000000,
-      "rarity_lexical": "3100000000",
+      "rarity": 3118418147,
+      "rarity_lexical": "3118418147",
       "weather_id": 1,
       "weather_id_lexical": "1",
       "card_modifier": 1,
@@ -17550,11 +17516,8 @@
           "item_1": 244
         },
         "rarity": {
-          "file": "Cards-2.xml",
-          "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[19]",
-          "snap_value_id": "34147",
-          "variable": "Card Rarities",
-          "item_1": 244
+          "file": "../../card_engine/data_corrections.py",
+          "evidence": "DaddyDrago's engine card data, user: more accurate than ours, 2026-10-03"
         },
         "weather": {
           "file": "data-10.csv",
@@ -17679,8 +17642,8 @@
       "rarity_lexical": "6000000000",
       "weather_id": 1,
       "weather_id_lexical": "1",
-      "card_modifier": 1,
-      "card_modifier_lexical": "1",
+      "card_modifier": 1.2,
+      "card_modifier_lexical": "1.2",
       "packs": [
         "Limited"
       ],
@@ -17706,9 +17669,8 @@
           "column_1": 246
         },
         "card_modifier": {
-          "file": "data-9.csv",
-          "record_1": 1,
-          "column_1": 246
+          "file": "../../card_engine/data_corrections.py",
+          "evidence": "DaddyDrago's engine card data, user: more accurate than ours, 2026-10-03"
         }
       },
       "pack_id": 11,
@@ -17818,8 +17780,8 @@
       "rarity_lexical": "20000000000",
       "weather_id": 1,
       "weather_id_lexical": "1",
-      "card_modifier": 1,
-      "card_modifier_lexical": "1",
+      "card_modifier": 1.5,
+      "card_modifier_lexical": "1.5",
       "packs": [
         "Limited"
       ],
@@ -17847,9 +17809,8 @@
           "column_1": 248
         },
         "card_modifier": {
-          "file": "data-9.csv",
-          "record_1": 1,
-          "column_1": 248
+          "file": "../../card_engine/data_corrections.py",
+          "evidence": "DaddyDrago's engine card data, user: more accurate than ours, 2026-10-03"
         }
       },
       "pack_id": 11,
@@ -17891,8 +17852,8 @@
       "rarity_lexical": "20000000000",
       "weather_id": 1,
       "weather_id_lexical": "1",
-      "card_modifier": 1,
-      "card_modifier_lexical": "1",
+      "card_modifier": 1.5,
+      "card_modifier_lexical": "1.5",
       "packs": [
         "Limited"
       ],
@@ -17920,9 +17881,8 @@
           "column_1": 249
         },
         "card_modifier": {
-          "file": "data-9.csv",
-          "record_1": 1,
-          "column_1": 249
+          "file": "../../card_engine/data_corrections.py",
+          "evidence": "DaddyDrago's engine card data, user: more accurate than ours, 2026-10-03"
         }
       },
       "pack_id": 11,
@@ -18104,8 +18064,8 @@
       "rarity_lexical": "10000",
       "weather_id": 3,
       "weather_id_lexical": "3",
-      "card_modifier": 1,
-      "card_modifier_lexical": "1",
+      "card_modifier": 0.6666666666666666,
+      "card_modifier_lexical": "0.6666666666666666",
       "packs": [
         "Christmas"
       ],
@@ -18133,9 +18093,8 @@
           "column_1": 252
         },
         "card_modifier": {
-          "file": "data-9.csv",
-          "record_1": 1,
-          "column_1": 252
+          "file": "../../card_engine/data_corrections.py",
+          "evidence": "DaddyDrago's engine card data, user: more accurate than ours, 2026-10-03"
         }
       },
       "pack_id": 12,
@@ -18323,8 +18282,8 @@
       "rarity_lexical": "1000000",
       "weather_id": 6,
       "weather_id_lexical": "6",
-      "card_modifier": 1,
-      "card_modifier_lexical": "1",
+      "card_modifier": 0.6666666666666666,
+      "card_modifier_lexical": "0.6666666666666666",
       "packs": [
         "Christmas"
       ],
@@ -18350,9 +18309,8 @@
           "column_1": 255
         },
         "card_modifier": {
-          "file": "data-9.csv",
-          "record_1": 1,
-          "column_1": 255
+          "file": "../../card_engine/data_corrections.py",
+          "evidence": "DaddyDrago's engine card data, user: more accurate than ours, 2026-10-03"
         }
       },
       "pack_id": 12,
@@ -18536,8 +18494,8 @@
       "rarity_lexical": "5000000",
       "weather_id": 3,
       "weather_id_lexical": "3",
-      "card_modifier": 1,
-      "card_modifier_lexical": "1",
+      "card_modifier": 0.6666666666666666,
+      "card_modifier_lexical": "0.6666666666666666",
       "packs": [
         "Christmas"
       ],
@@ -18563,9 +18521,8 @@
           "column_1": 258
         },
         "card_modifier": {
-          "file": "data-9.csv",
-          "record_1": 1,
-          "column_1": 258
+          "file": "../../card_engine/data_corrections.py",
+          "evidence": "DaddyDrago's engine card data, user: more accurate than ours, 2026-10-03"
         }
       },
       "pack_id": 12,
@@ -19046,8 +19003,8 @@
       "rarity_lexical": "500000000",
       "weather_id": 3,
       "weather_id_lexical": "3",
-      "card_modifier": 1,
-      "card_modifier_lexical": "1",
+      "card_modifier": 0.6666666666666666,
+      "card_modifier_lexical": "0.6666666666666666",
       "packs": [
         "Christmas"
       ],
@@ -19073,9 +19030,8 @@
           "column_1": 265
         },
         "card_modifier": {
-          "file": "data-9.csv",
-          "record_1": 1,
-          "column_1": 265
+          "file": "../../card_engine/data_corrections.py",
+          "evidence": "DaddyDrago's engine card data, user: more accurate than ours, 2026-10-03"
         }
       },
       "pack_id": 12,
@@ -20487,8 +20443,8 @@
       "rarity_lexical": "50000000",
       "weather_id": 1,
       "weather_id_lexical": "1",
-      "card_modifier": 2,
-      "card_modifier_lexical": "2",
+      "card_modifier": 9.0,
+      "card_modifier_lexical": "9.0",
       "packs": [
         "Halloween 2025"
       ],
@@ -20515,7 +20471,7 @@
         },
         "card_modifier": {
           "file": "../../card_engine/data_corrections.py",
-          "evidence": "user stat/weather corrections and all-Bosses clarification, 2026-09-28"
+          "evidence": "DaddyDrago's engine card data, user: more accurate than ours, 2026-10-03"
         }
       },
       "pack_id": 14,
