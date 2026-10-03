@@ -63,7 +63,12 @@ class MigrationTests(unittest.TestCase):
         d = self.dataset
         self.assertEqual([c["card_id"] for c in d["cards"]], list(range(1, 290)))
         self.assertEqual([c["name"] for c in d["cards"]], self.source["Cards"])
-        self.assertEqual([c["rarity_lexical"] for c in d["cards"]], self.source["Card Rarities"])
+        from card_engine.data_corrections import DRAGO_STATS
+        expected_rarities = list(self.source["Card Rarities"])
+        for card_id, (_, rarity, _, _) in DRAGO_STATS.items():  # DaddyDrago's data (user: more accurate), 2026-10-03.
+            if int(expected_rarities[card_id - 1]) != rarity:
+                expected_rarities[card_id - 1] = str(rarity)
+        self.assertEqual([c["rarity_lexical"] for c in d["cards"]], expected_rarities)
         expected_refined = list(self.source["data-5_refined"])
         expected_refined[119] = expected_refined[119].replace("on the 3rd turn", "after 2 turns")
         for index, (source_text, clean_text, _) in USER_DESCRIPTION_EDITS.items():  # User-authorized 2026-09-30.
@@ -95,14 +100,25 @@ class MigrationTests(unittest.TestCase):
         for card_id, (_, value) in OBSERVED_MODIFIERS.items():  # Observed in user videos.
             expected_modifiers[card_id - 1] = str(value)
         expected_modifiers[260] = str(2 / 3)  # Fit while preserving confirmed Snow.
+        from card_engine.data_corrections import DRAGO_STATS
+        for card_id, (_, _, multiplier, weather_multiplier) in DRAGO_STATS.items():  # DaddyDrago's data, 2026-10-03.
+            if float(expected_modifiers[card_id - 1]) != multiplier / weather_multiplier:
+                expected_modifiers[card_id - 1] = str(multiplier / weather_multiplier)
         self.assertEqual([c["card_modifier_lexical"] for c in self.dataset["cards"]], expected_modifiers)
         corrections = json.loads((self.output / "corrections.json").read_text())
         edits = [c for c in corrections if c["kind"] == "user_authorized_stat_metadata_correction"]
-        self.assertEqual(len(edits), 12 + len(OBSERVED_MODIFIERS) + len(halloween))  # Plus the Halloween multipliers (user, 2026-09-30).
+        drago = [e for e in edits if e["reason"].startswith("DaddyDrago")]  # 4 rarities + 34 multipliers, 2026-10-03.
+        self.assertEqual(len(drago), 38)
+        self.assertEqual(len(edits), 12 + len(OBSERVED_MODIFIERS) + len(halloween) + len(drago))  # Plus the Halloween multipliers (user, 2026-09-30).
         for edit in edits:
+            if edit in drago:
+                continue
             values = weather if edit["field"] == "weather_id" else damage
             self.assertEqual(edit["original_value_lexical"], values[edit["card_id"] - 1])
             self.assertEqual(edit["superseded_source"]["column_1"], edit["card_id"])
+        for edit in drago:  # rarities replace the XML values; multipliers replace the CSV or an earlier correction
+            if edit["field"] == "rarity":
+                self.assertEqual(edit["original_value_lexical"], self.source["Card Rarities"][edit["card_id"] - 1])
 
     def test_user_corrected_baselines_and_confirmed_weather_eligibility(self):
         catalog = load_catalog(self.output / "dataset.json")

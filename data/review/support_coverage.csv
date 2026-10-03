@@ -1,44 +1,44 @@
 color,support_id,name,status,reason,training_labels_allowed
 red,1,Adventurer,experimental_complete_passive_subset,Passive composition and shared battle rules remain provisional,false
-red,2,General Sun Tzu,unsupported,red support 2 General Sun Tzu: complete passive is not implemented or description changed,false
-red,3,Neko,unsupported,red support 3 Neko: complete passive is not implemented or description changed,false
-red,4,Stormcaller,unsupported,red support 4 Stormcaller: complete passive is not implemented or description changed,false
-red,5,Khione,unsupported,red support 5 Khione: complete passive is not implemented or description changed,false
-red,6,Shrinemaiden,unsupported,red support 6 Shrinemaiden: complete passive is not implemented or description changed,false
-red,7,Imp,unsupported,red support 7 Imp: complete passive is not implemented or description changed,false
-red,8,Iris,unsupported,red support 8 Iris: complete passive is not implemented or description changed,false
-red,9,Shatbi,unsupported,red support 9 Shatbi: complete passive is not implemented or description changed,false
-red,10,Astrologist,unsupported,red support 10 Astrologist: complete passive is not implemented or description changed,false
-red,11,Kala,unsupported,red support 11 Kala: complete passive is not implemented or description changed,false
-red,12,Satan,unsupported,red support 12 Satan: complete passive is not implemented or description changed,false
-red,13,Dragon King,unsupported,red support 13 Dragon King: complete passive is not implemented or description changed,false
-red,14,Army's Reinforcements,unsupported,red support 14 Army's Reinforcements: complete passive is not implemented or description changed,false
-red,15,Avian King,unsupported,red support 15 Avian King: complete passive is not implemented or description changed,false
-red,16,Taoist,unsupported,red support 16 Taoist: complete passive is not implemented or description changed,false
-red,17,Niflheim,unsupported,red support 17 Niflheim: complete passive is not implemented or description changed,false
-red,18,Eclipse Chaser,unsupported,red support 18 Eclipse Chaser: complete passive is not implemented or description changed,false
-red,19,The Sequel,unsupported,red support 19 The Sequel: complete passive is not implemented or description changed,false
-red,20,Myths,unsupported,red support 20 Myths: complete passive is not implemented or description changed,false
-red,21,Gamer,unsupported,red support 21 Gamer: complete passive is not implemented or description changed,false
-red,22,Elohim,unsupported,red support 22 Elohim: complete passive is not implemented or description changed,false
-red,23,Mangeka,unsupported,red support 23 Mangeka: complete passive is not implemented or description changed,false
-red,24,Disease,unsupported,red support 24 Disease: complete passive is not implemented or description changed,false
-red,25,Yggdrasil,unsupported,red support 25 Yggdrasil: complete passive is not implemented or description changed,false
-red,26,Dinosaur King,unsupported,red support 26 Dinosaur King: complete passive is not implemented or description changed,false
-red,27,Desmond Of Despair,unsupported,red support 27 Desmond Of Despair: complete passive is not implemented or description changed,false
-red,28,The One Ring,unsupported,red support 28 The One Ring: complete passive is not implemented or description changed,false
+red,2,General Sun Tzu,experimental_complete_passive_subset,Passive composition and shared battle rules remain provisional,false
+red,3,Neko,experimental_complete_passive_subset,Passive composition and shared battle rules remain provisional,false
+red,4,Stormcaller,experimental_complete_passive_subset,Passive composition and shared battle rules remain provisional,false
+red,5,Khione,experimental_complete_passive_subset,Passive composition and shared battle rules remain provisional,false
+red,6,Shrinemaiden,experimental_complete_passive_subset,Passive composition and shared battle rules remain provisional,false
+red,7,Imp,experimental_complete_passive_subset,Passive composition and shared battle rules remain provisional,false
+red,8,Iris,experimental_complete_passive_subset,Passive composition and shared battle rules remain provisional,false
+red,9,Shatbi,experimental_complete_passive_subset,Passive composition and shared battle rules remain provisional,false
+red,10,Astrologist,experimental_complete_passive_subset,Passive composition and shared battle rules remain provisional,false
+red,11,Kala,experimental_complete_passive_subset,Passive composition and shared battle rules remain provisional,false
+red,12,Satan,experimental_complete_passive_subset,Passive composition and shared battle rules remain provisional,false
+red,13,Dragon King,experimental_complete_passive_subset,Passive composition and shared battle rules remain provisional,false
+red,14,Army's Reinforcements,experimental_complete_passive_subset,Passive composition and shared battle rules remain provisional,false
+red,15,Avian King,experimental_complete_passive_subset,Passive composition and shared battle rules remain provisional,false
+red,16,Taoist,experimental_complete_passive_subset,Passive composition and shared battle rules remain provisional,false
+red,17,Niflheim,experimental_complete_passive_subset,Passive composition and shared battle rules remain provisional,false
+red,18,Eclipse Chaser,experimental_complete_passive_subset,Passive composition and shared battle rules remain provisional,false
+red,19,The Sequel,experimental_complete_passive_subset,Passive composition and shared battle rules remain provisional,false
+red,20,Myths,experimental_complete_passive_subset,Passive composition and shared battle rules remain provisional,false
+red,21,Gamer,experimental_complete_passive_subset,Passive composition and shared battle rules remain provisional,false
+red,22,Elohim,experimental_complete_passive_subset,Passive composition and shared battle rules remain provisional,false
+red,23,Mangeka,experimental_complete_passive_subset,Passive composition and shared battle rules remain provisional,false
+red,24,Disease,experimental_complete_passive_subset,Passive composition and shared battle rules remain provisional,false
+red,25,Yggdrasil,experimental_complete_passive_subset,Passive composition and shared battle rules remain provisional,false
+red,26,Dinosaur King,experimental_complete_passive_subset,Passive composition and shared battle rules remain provisional,false
+red,27,Desmond Of Despair,experimental_complete_passive_subset,Passive composition and shared battle rules remain provisional,false
+red,28,The One Ring,experimental_complete_passive_subset,Passive composition and shared battle rules remain provisional,false
 blue,1,Shielder,experimental_complete_passive_subset,Passive composition and shared battle rules remain provisional,false
-blue,2,Flame Wizard,unsupported,blue support 2 Flame Wizard: complete passive is not implemented or description changed,false
-blue,3,Berserker,unsupported,blue support 3 Berserker: complete passive is not implemented or description changed,false
-blue,4,Phantom,unsupported,blue support 4 Phantom: complete passive is not implemented or description changed,false
-blue,5,Vampire Matron,unsupported,blue support 5 Vampire Matron: complete passive is not implemented or description changed,false
-blue,6,Synth Human,unsupported,blue support 6 Synth Human: complete passive is not implemented or description changed,false
-blue,7,Executioner,unsupported,blue support 7 Executioner: complete passive is not implemented or description changed,false
-blue,8,Fate,unsupported,blue support 8 Fate: complete passive is not implemented or description changed,false
-blue,9,Mirror Knight,unsupported,blue support 9 Mirror Knight: complete passive is not implemented or description changed,false
-blue,10,Final Testament,unsupported,blue support 10 Final Testament: complete passive is not implemented or description changed,false
-blue,11,Storm Spirit,unsupported,blue support 11 Storm Spirit: complete passive is not implemented or description changed,false
-blue,12,Magical Elf,unsupported,blue support 12 Magical Elf: complete passive is not implemented or description changed,false
-blue,13,Jurassic World,unsupported,blue support 13 Jurassic World: complete passive is not implemented or description changed,false
-blue,14,End Times,unsupported,blue support 14 End Times: complete passive is not implemented or description changed,false
+blue,2,Flame Wizard,experimental_complete_passive_subset,Passive composition and shared battle rules remain provisional,false
+blue,3,Berserker,experimental_complete_passive_subset,Passive composition and shared battle rules remain provisional,false
+blue,4,Phantom,experimental_complete_passive_subset,Passive composition and shared battle rules remain provisional,false
+blue,5,Vampire Matron,experimental_complete_passive_subset,Passive composition and shared battle rules remain provisional,false
+blue,6,Synth Human,experimental_complete_passive_subset,Passive composition and shared battle rules remain provisional,false
+blue,7,Executioner,experimental_complete_passive_subset,Passive composition and shared battle rules remain provisional,false
+blue,8,Fate,experimental_complete_passive_subset,Passive composition and shared battle rules remain provisional,false
+blue,9,Mirror Knight,experimental_complete_passive_subset,Passive composition and shared battle rules remain provisional,false
+blue,10,Final Testament,experimental_complete_passive_subset,Passive composition and shared battle rules remain provisional,false
+blue,11,Storm Spirit,experimental_complete_passive_subset,Passive composition and shared battle rules remain provisional,false
+blue,12,Magical Elf,experimental_complete_passive_subset,Passive composition and shared battle rules remain provisional,false
+blue,13,Jurassic World,experimental_complete_passive_subset,Passive composition and shared battle rules remain provisional,false
+blue,14,End Times,experimental_complete_passive_subset,Passive composition and shared battle rules remain provisional,false
 blue,15,Guardian Angel,experimental_complete_passive_subset,Passive composition and shared battle rules remain provisional,false

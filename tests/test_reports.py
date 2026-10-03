@@ -49,9 +49,10 @@ class ReportTests(unittest.TestCase):
         self.assertFalse(document["raw_sources_changed"])
         rows = document["conflicts"]
         self.assertEqual([(r["card_id"], r["canonical_value"], r["screenshot_value"]) for r in rows],
-                         [(48, 6660000, 6660666), (132, 400000000, 450000000)])
-        self.assertTrue(all(r["status"] == "unresolved" for r in rows))
-        self.assertTrue(all(r["canonical_source"]["file"] == "Cards-2.xml" for r in rows))
+                         [(48, 6660666, 6660666), (132, 450000000, 450000000)])
+        # DaddyDrago's rarities (adopted 2026-10-03) match both screenshot readings.
+        self.assertTrue(all(r["status"] == "consistent" for r in rows))
+        self.assertTrue(all(r["canonical_source"]["file"] == "../../card_engine/data_corrections.py" for r in rows))
 
     def test_export_is_reproducible_and_does_not_modify_dataset(self):
         before = DEFAULT_DATASET.read_bytes()

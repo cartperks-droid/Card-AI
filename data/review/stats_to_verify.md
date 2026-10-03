@@ -33,7 +33,7 @@ Values are predictions unless separately confirmed. Toy Bear and Jason use fitte
 | 26 | Savior | 1,782 | 3,564 |
 | 27 | Frankenstein | 234 | 467 |
 | 28 | Titan | 260 | 520 |
-| 29 | Sciron | 1,039 | 2,078 |
+| 29 | Sciron | 936 | 2,058 |
 | 30 | Mist Spirit | 535 | 1,070 |
 | 31 | Phoenix | 269 | 537 |
 | 32 | Hoarfrost Phoenix | 403 | 805 |
@@ -52,7 +52,7 @@ Values are predictions unless separately confirmed. Toy Bear and Jason use fitte
 | 45 | Limitless Rivals | 4,666 | 9,332 |
 | 46 | Vicious | 3,117 | 6,234 |
 | 47 | Typhon | 2,078 | 4,156 |
-| 48 | The Curse | 5,663 | 11,326 |
+| 48 | The Curse | 5,664 | 11,327 |
 | 49 | Hades | 567 | 1,133 |
 | 50 | Judgement Day | 1,781 | 3,561 |
 | 51 | Odin | 5,341 | 10,681 |
@@ -67,14 +67,14 @@ Values are predictions unless separately confirmed. Toy Bear and Jason use fitte
 | 60 | Fafnir | 1,280 | 2,560 |
 | 61 | Ragon | 1,280 | 2,560 |
 | 62 | Serpent Mist | 3,564 | 7,127 |
-| 63 | Yeti | 3,117 | 6,234 |
+| 63 | Yeti | 3,117 | 9,351 |
 | 64 | Achyls | 4,599 | 9,198 |
 | 65 | Parallax | 10,240 | 20,480 |
 | 66 | Mummy | 27 | 53 |
 | 67 | Dancer | 65 | 130 |
 | 68 | Vizier | 112 | 223 |
 | 69 | Black Cat | 142 | 284 |
-| 70 | Sekhmet | 1,188 | 2,376 |
+| 70 | Sekhmet | 1,188 | 4,039 |
 | 71 | Amenhotep | 181 | 362 |
 | 72 | Sphinx | 204 | 407 |
 | 73 | Horus | 294 | 587 |
@@ -92,14 +92,14 @@ Values are predictions unless separately confirmed. Toy Bear and Jason use fitte
 | 85 | Darling | 130 | 260 |
 | 86 | Gunslinger | 160 | 320 |
 | 87 | Artoria of Excalibur | 211 | 422 |
-| 88 | Academy Student | 223 | 446 |
-| 89 | Priest | 1,039 | 2,078 |
+| 88 | Academy Student | 335 | 669 |
+| 89 | Priest | 1,039 | 2,702 |
 | 90 | Control Freak | 260 | 520 |
-| 91 | Vampire Lord | 2,078 | 4,156 |
+| 91 | Vampire Lord | 2,078 | 6,234 |
 | 92 | Admiral Ice | 441 | 881 |
 | 93 | Nao Presence | 1,039 | 2,078 |
 | 94 | Immortal Witch | 290 | 868 |
-| 95 | Tornado | 422 | 844 |
+| 95 | Tornado | 844 | 1,687 |
 | 96 | Failed Mage | 446 | 891 |
 | 97 | Joe | 575 | 1,150 |
 | 98 | Ultimate Brawler | 6,201 | 12,401 |
@@ -119,10 +119,10 @@ Values are predictions unless separately confirmed. Toy Bear and Jason use fitte
 | 112 | River Dragon | 160 | 320 |
 | 113 | Sasaki Kojiro | 211 | 422 |
 | 114 | Inari | 320 | 640 |
-| 115 | Yamato no Orochi | 446 | 891 |
-| 116 | Susanoo | 1,388 | 2,776 |
+| 115 | Yamato no Orochi | 446 | 4,455 |
+| 116 | Susanoo | 833 | 3,331 |
 | 117 | Tsukuyomi | 986 | 1,972 |
-| 118 | Amaterasu | 1,782 | 3,564 |
+| 118 | Amaterasu | 2,139 | 4,277 |
 | 119 | Kuchisake-onna | 2,145 | 4,290 |
 | 120 | Demon Cultivator | 934 | 1,867 |
 | 121 | Martial Artist | 260 | 520 |
@@ -134,17 +134,17 @@ Values are predictions unless separately confirmed. Toy Bear and Jason use fitte
 | 127 | Qilin | 587 | 1,174 |
 | 128 | The Jade Emporer | 1,920 | 3,840 |
 | 129 | The Awakened One | 7,509 | 15,017 |
-| 130 | Nüwa | 2,367 | 4,733 |
+| 130 | Nüwa | 2,705 | 5,409 |
 | 131 | Shén Lóng | 1,577 | 3,154 |
-| 132 | Xīfāng Báihü | 1,943 | 3,886 |
+| 132 | Xīfāng Báihü | 2,014 | 4,027 |
 | 133 | Běi Fāng Xuán Wü | 2,014 | 4,027 |
 | 134 | Dōng Fāng Qīng Lóng | 2,014 | 4,027 |
 | 135 | Nán Fāng Zhū Què | 2,014 | 4,027 |
 | 136 | Shennong | 2,521 | 5,042 |
 | 137 | Fuxi | 2,635 | 5,270 |
 | 138 | Sun Wukong | 3,154 | 6,308 |
-| 139 | Buddha | 5,120 | 10,240 |
-| 140 | Pangu | 5,270 | 10,539 |
+| 139 | Buddha | 5,241 | 10,481 |
+| 140 | Pangu | 5,270 | 21,077 |
 | 141 | Ancient Egg | 50 | 99 |
 | 142 | Stegosaurus | 118 | 235 |
 | 143 | Brachiosaurus | 145 | 289 |
@@ -161,9 +161,9 @@ Values are predictions unless separately confirmed. Toy Bear and Jason use fitte
 | 154 | Velociraptor | 1,197 | 2,394 |
 | 155 | Cyberdon | 5,785 | 11,570 |
 | 156 | Behemoth | 16,624 | 33,247 |
-| 157 | Tyrannosaurus Rex | 2,394 | 4,788 |
+| 157 | Tyrannosaurus Rex | 2,873 | 5,745 |
 | 158 | Megalodon | 4,156 | 8,312 |
-| 159 | Tyrannodon | 5,785 | 11,570 |
+| 159 | Tyrannodon | 8,678 | 17,355 |
 | 160 | Hunter | 50 | 99 |
 | 161 | Resolute Blade | 61 | 122 |
 | 162 | Bacon Hair | 69 | 138 |
@@ -196,19 +196,19 @@ Values are predictions unless separately confirmed. Toy Bear and Jason use fitte
 | 189 | Melanin | 4,940 | 9,879 |
 | 190 | Necro-orc | 3,721 | 7,441 |
 | 191 | NO. 2 | 640 | 1,280 |
-| 192 | Ice King | 1,604 | 3,208 |
+| 192 | Ice King | 1,711 | 3,422 |
 | 193 | Heavenly father | 3,840 | 7,680 |
-| 194 | Durante | 3,561 | 7,121 |
-| 195 | Fresno Nightcrawler | 320 | 640 |
-| 196 | Loch Ness | 844 | 1,687 |
-| 197 | Loveland Frog | 520 | 1,039 |
+| 194 | Durante | 2,374 | 4,747 |
+| 195 | Fresno Nightcrawler | 160 | 320 |
+| 196 | Loch Ness | 549 | 1,097 |
+| 197 | Loveland Frog | 1,039 | 2,078 |
 | 198 | Chupcabra | 520 | 1,039 |
 | 199 | Jersey Devil | 640 | 1,280 |
 | 200 | Mothman | 640 | 1,280 |
 | 201 | Bigfoot | 724 | 1,447 |
-| 202 | Wendigo | 1,265 | 2,530 |
-| 203 | The Rake | 3,374 | 6,747 |
-| 204 | Kraken | 4,599 | 9,198 |
+| 202 | Wendigo | 1,434 | 2,868 |
+| 203 | The Rake | 4,386 | 8,771 |
+| 204 | Kraken | 5,979 | 11,957 |
 | 205 | Chronus The Hoarder | 160 | 320 |
 | 206 | Malik The Sovereign | 320 | 640 |
 | 207 | Gideon The Insatiable | 640 | 1,280 |
@@ -221,55 +221,55 @@ Values are predictions unless separately confirmed. Toy Bear and Jason use fitte
 | 214 | Naga | 381 | 762 |
 | 215 | Uncle Sam | 446 | 891 |
 | 216 | Shay, Heart of the Cards | 594 | 1,187 |
-| 217 | Gorilla | 640 | 1,280 |
+| 217 | Gorilla | 704 | 1,549 |
 | 218 | Valentine's Specter | 711 | 1,421 |
 | 219 | Sisyphus | 724 | 1,447 |
 | 220 | George Washington | 761 | 1,522 |
 | 221 | Cave Goblin & Wind Spirit | 891 | 1,782 |
 | 222 | Hera | 960 | 1,920 |
 | 223 | Dad | 1,039 | 2,078 |
-| 224 | Kid Gohan | 1,174 | 2,348 |
+| 224 | Kid Gohan | 1,761 | 3,522 |
 | 225 | Milk | 1,280 | 2,560 |
 | 226 | Aphrodite | 1,280 | 2,560 |
-| 227 | Frank | 1,353 | 2,705 |
-| 228 | Eclipseborn Luminant | 1,782 | 3,563 |
+| 227 | Frank | 2,029 | 4,057 |
+| 228 | Eclipseborn Luminant | 2,138 | 4,276 |
 | 229 | Turkey | 1,839 | 3,678 |
-| 230 | The Broken One | 1,943 | 3,886 |
+| 230 | The Broken One | 2,332 | 4,663 |
 | 231 | Supreme Ozzy | 1,959 | 3,918 |
-| 232 | Cave Goblin God | 2,266 | 4,531 |
+| 232 | Cave Goblin God | 2,719 | 5,437 |
 | 233 | Anubis & Hades | 2,266 | 4,532 |
-| 234 | Longmu | 2,315 | 4,629 |
-| 235 | Star Eater | 2,394 | 4,788 |
-| 236 | Eonus | 2,471 | 4,942 |
+| 234 | Longmu | 4,629 | 9,257 |
+| 235 | Star Eater | 2,873 | 5,745 |
+| 236 | Eonus | 2,965 | 5,930 |
 | 237 | Pestilence | 2,560 | 5,120 |
 | 238 | Ragon & Fafnir | 2,560 | 5,120 |
-| 239 | Cthulu | 2,635 | 5,270 |
-| 240 | Fate Seamstress | 3,154 | 6,308 |
+| 239 | Cthulu | 5,270 | 10,539 |
+| 240 | Fate Seamstress | 3,785 | 7,570 |
 | 241 | Famine | 3,154 | 6,308 |
 | 242 | War | 3,564 | 7,127 |
-| 243 | Community | 3,564 | 7,127 |
-| 244 | Azure Witch | 3,599 | 7,198 |
+| 243 | Community | 4,277 | 8,553 |
+| 244 | Azure Witch | 3,606 | 7,211 |
 | 245 | Death | 3,886 | 7,772 |
-| 246 | Memories | 4,391 | 8,781 |
-| 247 | Legends | 5,120 | 10,240 |
-| 248 | Sarimanok | 6,308 | 12,616 |
-| 249 | Bakunawa | 6,308 | 12,616 |
-| 250 | Time Lord Stryx | 10,240 | 20,480 |
+| 246 | Memories | 5,269 | 10,537 |
+| 247 | Legends | 6,144 | 12,288 |
+| 248 | Sarimanok | 9,462 | 18,924 |
+| 249 | Bakunawa | 9,462 | 18,924 |
+| 250 | Time Lord Stryx | 15,360 | 30,720 |
 | 251 | Frosty The Snowman | 33 | 65 |
-| 252 | Old Man Winter | 120 | 240 |
+| 252 | Old Man Winter | 80 | 160 |
 | 253 | Rudolph | 117 | 234 |
 | 254 | Gingerbread Man | 144 | 288 |
-| 255 | Dionysus | 960 | 1,920 |
+| 255 | Dionysus | 640 | 1,280 |
 | 256 | The Grinch | 1,600 | 3,200 |
 | 257 | Krampus | 3,154 | 6,308 |
-| 258 | Wandering Snowman | 780 | 1,559 |
+| 258 | Wandering Snowman | 520 | 1,039 |
 | 259 | Mrs. Claus | 1,447 | 2,893 |
-| 260 | Santa Claus | 3,401 | 6,801 |
+| 260 | Santa Claus | 3,886 | 7,772 |
 | 261 | Toy Bear | 1,943 | 3,886 |
 | 262 | Toy Car | 1,943 | 3,886 |
 | 263 | The Jack-in-the-Box | 1,943 | 3,886 |
 | 264 | Toy Nutcracker | 1,943 | 3,886 |
-| 265 | Santa Claws | 3,117 | 6,234 |
+| 265 | Santa Claws | 2,078 | 4,156 |
 | 266 | Zombie | 33 | 65 |
 | 267 | Banshee | 74 | 147 |
 | 268 | Witch | 117 | 234 |
@@ -278,19 +278,19 @@ Values are predictions unless separately confirmed. Toy Bear and Jason use fitte
 | 271 | Revenant | 260 | 520 |
 | 272 | Dr. Frankenstein | 467 | 934 |
 | 273 | Marionette | 587 | 1,174 |
-| 274 | Ghoul | 40 | 80 |
-| 275 | Zombie Nurse | 80 | 160 |
-| 276 | Night Witch | 96 | 191 |
-| 277 | The Hanged Man | 160 | 320 |
-| 278 | Walking Dead | 260 | 520 |
-| 279 | Headless Horseman | 320 | 640 |
+| 274 | Ghoul | 80 | 160 |
+| 275 | Zombie Nurse | 160 | 320 |
+| 276 | Night Witch | 191 | 382 |
+| 277 | The Hanged Man | 320 | 640 |
+| 278 | Walking Dead | 520 | 1,039 |
+| 279 | Headless Horseman | 640 | 1,280 |
 | 280 | The Blood Countess | 3,668 | 7,335 |
-| 281 | The Composer | 587 | 1,174 |
-| 282 | Dracula | 844 | 1,687 |
-| 283 | Flying Dutchman | 891 | 1,782 |
-| 284 | Hecate | 891 | 1,782 |
-| 285 | Abomination | 1,039 | 2,078 |
-| 286 | Sleep Paralysis | 2,078 | 4,156 |
-| 287 | Michael M. | 2,196 | 4,391 |
+| 281 | The Composer | 1,174 | 2,348 |
+| 282 | Dracula | 1,687 | 3,374 |
+| 283 | Flying Dutchman | 1,782 | 7,127 |
+| 284 | Hecate | 4,455 | 8,909 |
+| 285 | Abomination | 9,351 | 18,701 |
+| 286 | Sleep Paralysis | 4,156 | 8,312 |
+| 287 | Michael M. | 4,391 | 8,781 |
 | 288 | Jason | 4,788 | 9,575 |
-| 289 | Glamour | 2,560 | 5,120 |
+| 289 | Glamour | 7,680 | 15,360 |

@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "dataset_sha256": "ea2064dce13c5fe856f6bff029620748e8db067a19317d9d39c39a0f683d7213",
+  "dataset_sha256": "cab292981ab684eba6745bbeecef063f33e1e373e59f400fa53376abd8c7f35e",
   "scope": "Two manually reviewed rarity discrepancies; not an exhaustive screenshot audit",
   "raw_sources_changed": false,
   "conflicts": [
@@ -8,15 +8,12 @@
       "card_id": 48,
       "name": "The Curse",
       "field": "rarity",
-      "status": "unresolved",
-      "canonical_value": 6660000,
-      "canonical_value_lexical": "6660000",
+      "status": "consistent",
+      "canonical_value": 6660666,
+      "canonical_value_lexical": "6660666",
       "canonical_source": {
-        "file": "Cards-2.xml",
-        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[19]",
-        "snap_value_id": "34147",
-        "variable": "Card Rarities",
-        "item_1": 48
+        "file": "../../card_engine/data_corrections.py",
+        "evidence": "DaddyDrago's engine card data, user: more accurate than ours, 2026-10-03"
       },
       "screenshot_value": 6660666,
       "screenshot_display": "6,660,666",
@@ -33,15 +30,12 @@
       "card_id": 132,
       "name": "Xīfāng Báihü",
       "field": "rarity",
-      "status": "unresolved",
-      "canonical_value": 400000000,
-      "canonical_value_lexical": "400000000",
+      "status": "consistent",
+      "canonical_value": 450000000,
+      "canonical_value_lexical": "450000000",
       "canonical_source": {
-        "file": "Cards-2.xml",
-        "xml_path": "/project[1]/scenes[1]/scene[1]/variables[1]/variable[19]",
-        "snap_value_id": "34147",
-        "variable": "Card Rarities",
-        "item_1": 132
+        "file": "../../card_engine/data_corrections.py",
+        "evidence": "DaddyDrago's engine card data, user: more accurate than ours, 2026-10-03"
       },
       "screenshot_value": 450000000,
       "screenshot_display": "450,000,000",

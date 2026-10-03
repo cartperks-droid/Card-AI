@@ -2,7 +2,7 @@ id,name,attack,hp,intrinsic_weather,ability_implemented,verification
 1,Archer,7,13,Base,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
 2,Shining Armor,8,16,Base,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
 3,Good Boy,10,19,Base,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
-4,Useless Seer,11,22,Base,false,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
+4,Useless Seer,11,22,Base,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
 5,Baby Skeleton,13,25,Base,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
 6,Wizard,15,30,Base,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
 7,Forest Spirit,19,37,Base,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
@@ -14,7 +14,7 @@ id,name,attack,hp,intrinsic_weather,ability_implemented,verification
 13,Lucifer,320,640,Blood Rain,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
 14,Knightmare,65,130,Base,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
 15,Arcane Avian,98,195,Storm,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
-16,Tartarus,71,142,Base,false,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
+16,Tartarus,71,142,Base,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
 17,Greedy Belly,80,160,Base,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
 18,Arthur of Excalibur,91,181,Base,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
 19,Wind Spirit,173,345,Aurora,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
@@ -24,140 +24,140 @@ id,name,attack,hp,intrinsic_weather,ability_implemented,verification
 23,Ixion,640,1280,Time Storm,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
 24,Leviathan,160,320,Base,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
 25,Brunhilde,211,422,Base,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
-26,Savior,1782,3564,Blood Rain,false,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
-27,Frankenstein,234,467,Base,false,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
+26,Savior,1782,3564,Blood Rain,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
+27,Frankenstein,234,467,Base,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
 28,Titan,260,520,Base,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
-29,Sciron,1039,2078,Time Storm,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
-30,Mist Spirit,535,1070,Shroud,false,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
+29,Sciron,936,2058,Time Storm,true,HP x1.1 per his card data
+30,Mist Spirit,535,1070,Shroud,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
 31,Phoenix,269,537,Base,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
 32,Hoarfrost Phoenix,403,805,Snow,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
-33,Hell's Army,1280,2560,Rapture,false,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
+33,Hell's Army,1280,2560,Rapture,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
 34,Zeus,480,960,Storm,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
 35,Pegasus,1039,2078,Meteor Shower,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
 36,Bad Boys,320,640,Base,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
-37,Pandora,1600,3200,Eclipse,false,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
+37,Pandora,1600,3200,Eclipse,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
 38,Heaven's Armor,1280,2560,Rapture,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
 39,Jamiy the Bald One,320,640,Base,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
 40,ToadBoiGaming,339,677,Base,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
 41,Boreas,633,1266,Aurora,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
 42,Thor,3549,7097,Armageddon,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
-43,Loki,3549,7097,Armageddon,false,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
+43,Loki,3549,7097,Armageddon,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
 44,Poseidon,446,891,Base,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
 45,Limitless Rivals,4666,9332,Manga,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
 46,Vicious,3117,6234,Virus,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
 47,Typhon,2078,4156,Time Storm,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
-48,The Curse,5663,11326,Manga,false,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
-49,Hades,567,1133,Base,false,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
+48,The Curse,5664,11327,Manga,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
+49,Hades,567,1133,Base,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
 50,Judgement Day,1781,3561,Rapture,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
 51,Odin,5341,10681,Armageddon,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
-52,Black Plague,3840,7680,Virus,false,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
-53,Chaos,3200,6400,Eclipse,false,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
+52,Black Plague,3840,7680,Virus,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
+53,Chaos,3200,6400,Eclipse,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
 54,Deus Ex,640,1280,Base,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
 55,Siegfried,1183,2366,Storm,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
-56,Astraeus,2560,5119,Meteor Shower,false,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
+56,Astraeus,2560,5119,Meteor Shower,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
 57,Surtr,7326,14651,Armageddon,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
 58,Cronus,3374,6747,Time Storm,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
 59,Gilgamesh,1039,2078,Base,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
 60,Fafnir,1280,2560,Base,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
 61,Ragon,1280,2560,Base,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
 62,Serpent Mist,3564,7127,Shroud,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
-63,Yeti,3117,6234,Snow,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
+63,Yeti,3117,9351,Snow,true,HP x1.5 per his card data
 64,Achyls,4599,9198,Shroud,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
 65,Parallax,10240,20480,Time Storm,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
 66,Mummy,27,53,Base,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
 67,Dancer,65,130,Base,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
 68,Vizier,112,223,Base,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
-69,Black Cat,142,284,Base,false,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
-70,Sekhmet,1188,2376,Blood Rain,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
+69,Black Cat,142,284,Base,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
+70,Sekhmet,1188,4039,Blood Rain,true,"user-read borderless 4,039 HP / 1,188 ATK"
 71,Amenhotep,181,362,Base,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
 72,Sphinx,204,407,Base,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
 73,Horus,294,587,Base,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
 74,Shu,362,1230,Aurora,true,experimental stat ratio fitted to user-read borderless 1230 HP / 362 ATK
-75,Set,1878,3755,Eclipse,false,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
-76,Anubis,422,844,Base,false,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
-77,Serket,4339,8678,Virus,false,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
+75,Set,1878,3755,Eclipse,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
+76,Anubis,422,844,Base,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
+77,Serket,4339,8678,Virus,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
 78,Hathor,844,1687,Base,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
-79,Ra,986,1972,Base,false,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
-80,Sorceror,20,40,Base,false,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
+79,Ra,986,1972,Base,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
+80,Sorceror,20,40,Base,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
 81,Demon Hunter,33,65,Base,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
 82,Trainee,40,80,Base,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
-83,Gambler,75,149,Base,false,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
+83,Gambler,75,149,Base,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
 84,Stone Scientist,80,160,Base,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
 85,Darling,130,260,Base,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
 86,Gunslinger,160,320,Base,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
 87,Artoria of Excalibur,211,422,Base,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
-88,Academy Student,223,446,Base,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
-89,Priest,1039,2078,Time Storm,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
-90,Control Freak,260,520,Base,false,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
-91,Vampire Lord,2078,4156,Blood Rain,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
+88,Academy Student,335,669,Base,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
+89,Priest,1039,2702,Time Storm,true,user-reported +30% HP
+90,Control Freak,260,520,Base,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
+91,Vampire Lord,2078,6234,Blood Rain,true,HP x1.5 per his card data; ATK matches user videos IMG_0336/0338
 92,Admiral Ice,441,881,Snow,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
 93,Nao Presence,1039,2078,Meteor Shower,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
 94,Immortal Witch,290,868,Base,true,experimental stat ratio: borderless 868 HP user-confirmed; 290 ATK matches user video; ratios sourced from wiki
-95,Tornado,422,844,Base,false,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
+95,Tornado,844,1687,Base,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
 96,Failed Mage,446,891,Base,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
 97,Joe,575,1150,Base,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
-98,Ultimate Brawler,6201,12401,Manga,false,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
-99,Cosmic Pop Star,2078,4155,Meteor Shower,false,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
+98,Ultimate Brawler,6201,12401,Manga,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
+99,Cosmic Pop Star,2078,4155,Meteor Shower,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
 100,Mastermind,661,1322,Base,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
-101,Cat Lady,724,1447,Base,false,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
+101,Cat Lady,724,1447,Base,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
 102,Domain Master,844,1687,Base,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
-103,Kira,3138,6276,Rapture,false,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
+103,Kira,3138,6276,Rapture,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
 104,Piccolo,3072,6144,Base,true,"experimental stat ratio: user-read 3,072 ATK out of battle; HP ratio assumed equal"
 105,Ninja,20,40,Base,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
-106,Samurai,27,53,Base,false,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
-107,Onmyoji,63,126,Base,false,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
+106,Samurai,27,53,Base,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
+107,Onmyoji,63,126,Base,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
 108,Kitsune,80,160,Base,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
-109,A0-ON1,142,284,Base,false,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
-110,AK4-ON1,142,284,Base,false,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
-111,Shuten-dōji,1265,2530,Blood Rain,false,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
+109,A0-ON1,142,284,Base,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
+110,AK4-ON1,142,284,Base,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
+111,Shuten-dōji,1265,2530,Blood Rain,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
 112,River Dragon,160,320,Base,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
 113,Sasaki Kojiro,211,422,Base,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
 114,Inari,320,640,Base,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
-115,Yamato no Orochi,446,891,Base,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
-116,Susanoo,1388,2776,Storm,false,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
-117,Tsukuyomi,986,1972,Base,false,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
-118,Amaterasu,1782,3564,Base,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
-119,Kuchisake-onna,2145,4290,Base,false,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
-120,Demon Cultivator,934,1867,Blood Rain,false,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
+115,Yamato no Orochi,446,4455,Base,true,"user-read borderless 4,455 HP / 446 ATK"
+116,Susanoo,833,3331,Storm,true,"user-read borderless 3,331 HP / 833 ATK"
+117,Tsukuyomi,986,1972,Base,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
+118,Amaterasu,2139,4277,Base,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
+119,Kuchisake-onna,2145,4290,Base,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
+120,Demon Cultivator,934,1867,Blood Rain,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
 121,Martial Artist,260,520,Base,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
-122,Heavenly Demon,863,1725,Rapture,false,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
+122,Heavenly Demon,863,1725,Rapture,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
 123,Jiāngshī,300,599,Base,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
 124,Buddhist Monk,311,621,Base,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
-125,Divine Doctor,422,844,Base,false,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
-126,Immortal Cultivator,504,1007,Base,false,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
+125,Divine Doctor,422,844,Base,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
+126,Immortal Cultivator,504,1007,Base,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
 127,Qilin,587,1174,Base,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
 128,The Jade Emporer,1920,3840,Rapture,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
-129,The Awakened One,7509,15017,Manga,false,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
-130,Nüwa,2367,4733,Aurora,false,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
+129,The Awakened One,7509,15017,Manga,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
+130,Nüwa,2705,5409,Aurora,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
 131,Shén Lóng,1577,3154,Base,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
-132,Xīfāng Báihü,1943,3886,Base,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
-133,Běi Fāng Xuán Wü,2014,4027,Base,false,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
+132,Xīfāng Báihü,2014,4027,Base,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
+133,Běi Fāng Xuán Wü,2014,4027,Base,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
 134,Dōng Fāng Qīng Lóng,2014,4027,Base,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
 135,Nán Fāng Zhū Què,2014,4027,Base,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
 136,Shennong,2521,5042,Base,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
-137,Fuxi,2635,5270,Base,false,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
-138,Sun Wukong,3154,6308,Base,false,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
-139,Buddha,5120,10240,Base,false,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
-140,Pangu,5270,10539,Base,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
-141,Ancient Egg,50,99,Base,false,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
+137,Fuxi,2635,5270,Base,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
+138,Sun Wukong,3154,6308,Base,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
+139,Buddha,5241,10481,Base,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
+140,Pangu,5270,21077,Base,true,"user-read borderless 21,077 HP / 5,270 ATK"
+141,Ancient Egg,50,99,Base,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
 142,Stegosaurus,118,235,Base,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
-143,Brachiosaurus,145,289,Base,false,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
-144,Tricerotops,160,320,Base,false,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
+143,Brachiosaurus,145,289,Base,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
+144,Tricerotops,160,320,Base,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
 145,Pterodactylus,160,320,Base,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
-146,Dilophosaurus,1559,3117,Virus,false,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
+146,Dilophosaurus,1559,3117,Virus,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
 147,Mammoth,480,960,Snow,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
 148,Umbrasaur,2598,5195,Eclipse,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
 149,Sabertooth Tiger,520,1039,Base,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
 150,Unicorn,1687,3373,Meteor Shower,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
-151,Meteosaurus,1861,3721,Rapture,false,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
-152,Marrowclaw,2078,4155,Meteor Shower,false,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
+151,Meteosaurus,1861,3721,Rapture,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
+152,Marrowclaw,2078,4155,Meteor Shower,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
 153,Ankylosaurus,789,1577,Base,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
-154,Velociraptor,1197,2394,Base,false,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
-155,Cyberdon,5785,11570,Time Storm,false,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
+154,Velociraptor,1197,2394,Base,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
+155,Cyberdon,5785,11570,Time Storm,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
 156,Behemoth,16624,33247,Blood Rain,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
-157,Tyrannosaurus Rex,2394,4788,Base,false,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
+157,Tyrannosaurus Rex,2873,5745,Base,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
 158,Megalodon,4156,8312,Base,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
-159,Tyrannodon,5785,11570,Base,false,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
+159,Tyrannodon,8678,17355,Base,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
 160,Hunter,50,99,Base,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
 161,Resolute Blade,61,122,Base,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
 162,Bacon Hair,69,138,Base,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
@@ -173,118 +173,118 @@ id,name,attack,hp,intrinsic_weather,ability_implemented,verification
 172,Seraphim,320,640,Base,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
 173,Terra's Aria,960,1920,Rapture,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
 174,Count Muscula,395,789,Base,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
-175,Poison Witch,422,844,Base,false,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
+175,Poison Witch,422,844,Base,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
 176,Skeleton King,460,920,Base,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
-177,Juggernoid,640,1280,Base,false,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
-178,Zombie Dragon,659,1318,Base,false,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
+177,Juggernoid,640,1280,Base,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
+178,Zombie Dragon,659,1318,Base,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
 179,Assassin King,724,1447,Base,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
 180,Slum Dweller,2078,4156,Base,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
 181,Malakim,2266,4532,Base,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
 182,Hard Claws,2560,5120,Base,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
-183,Steven,150,300,Base,false,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
-184,Hollow,520,1039,Shroud,false,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
+183,Steven,150,300,Base,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
+184,Hollow,520,1039,Shroud,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
 185,Hell killer,2893,5785,Blood Rain,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
-186,The Sack,422,844,Base,false,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
+186,The Sack,422,844,Base,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
 187,Creed,504,1007,Base,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
 188,god-Slayer,4676,9351,Armageddon,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
-189,Melanin,4940,9879,Armageddon,false,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
+189,Melanin,4940,9879,Armageddon,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
 190,Necro-orc,3721,7441,Virus,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
 191,NO. 2,640,1280,Base,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
-192,Ice King,1604,3208,Snow,false,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
+192,Ice King,1711,3422,Snow,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
 193,Heavenly father,3840,7680,Rapture,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
-194,Durante,3561,7121,Storm,false,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
-195,Fresno Nightcrawler,320,640,Shroud,false,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
-196,Loch Ness,844,1687,Shroud,false,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
-197,Loveland Frog,520,1039,Base,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
+194,Durante,2374,4747,Storm,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
+195,Fresno Nightcrawler,160,320,Shroud,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
+196,Loch Ness,549,1097,Shroud,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
+197,Loveland Frog,1039,2078,Base,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
 198,Chupcabra,520,1039,Base,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
-199,Jersey Devil,640,1280,Base,false,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
+199,Jersey Devil,640,1280,Base,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
 200,Mothman,640,1280,Base,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
 201,Bigfoot,724,1447,Base,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
-202,Wendigo,1265,2530,Snow,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
-203,The Rake,3374,6747,Base,false,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
-204,Kraken,4599,9198,Base,false,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
+202,Wendigo,1434,2868,Snow,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
+203,The Rake,4386,8771,Base,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
+204,Kraken,5979,11957,Base,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
 205,Chronus The Hoarder,160,320,Base,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
 206,Malik The Sovereign,320,640,Base,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
 207,Gideon The Insatiable,640,1280,Base,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
 208,Lilith the Enchantress,1039,2078,Base,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
 209,Morpheus the Slumberer,1577,3154,Base,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
 210,Raze The Destroyer,2078,4156,Base,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
-211,Sable The Envious,2560,5120,Base,false,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
-212,Mother of Beasts,8312,16624,Base,false,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
+211,Sable The Envious,2560,5120,Base,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
+212,Mother of Beasts,8312,16624,Base,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
 213,100 Men,160,32000,Base,true,baseline HP boosted 100x before battle (user-confirmed)
-214,Naga,381,762,Base,false,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
-215,Uncle Sam,446,891,Base,false,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
+214,Naga,381,762,Base,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
+215,Uncle Sam,446,891,Base,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
 216,"Shay, Heart of the Cards",594,1187,Base,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
-217,Gorilla,640,1280,Base,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
-218,Valentine's Specter,711,1421,Base,false,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
+217,Gorilla,704,1549,Base,true,HP x1.1 per his card data
+218,Valentine's Specter,711,1421,Base,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
 219,Sisyphus,724,1447,Base,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
 220,George Washington,761,1522,Base,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
 221,Cave Goblin & Wind Spirit,891,1782,Base,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
 222,Hera,960,1920,Base,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
 223,Dad,1039,2078,Base,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
-224,Kid Gohan,1174,2348,Base,false,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
-225,Milk,1280,2560,Base,false,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
+224,Kid Gohan,1761,3522,Base,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
+225,Milk,1280,2560,Base,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
 226,Aphrodite,1280,2560,Base,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
-227,Frank,1353,2705,Base,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
-228,Eclipseborn Luminant,1782,3563,Base,false,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
+227,Frank,2029,4057,Base,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
+228,Eclipseborn Luminant,2138,4276,Base,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
 229,Turkey,1839,3678,Base,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
-230,The Broken One,1943,3886,Base,false,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
+230,The Broken One,2332,4663,Base,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
 231,Supreme Ozzy,1959,3918,Base,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
-232,Cave Goblin God,2266,4531,Base,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
-233,Anubis & Hades,2266,4532,Base,false,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
-234,Longmu,2315,4629,Base,false,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
-235,Star Eater,2394,4788,Base,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
-236,Eonus,2471,4942,Base,false,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
-237,Pestilence,2560,5120,Base,false,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
+232,Cave Goblin God,2719,5437,Base,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
+233,Anubis & Hades,2266,4532,Base,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
+234,Longmu,4629,9257,Base,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
+235,Star Eater,2873,5745,Base,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
+236,Eonus,2965,5930,Base,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
+237,Pestilence,2560,5120,Base,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
 238,Ragon & Fafnir,2560,5120,Base,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
-239,Cthulu,2635,5270,Base,false,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
-240,Fate Seamstress,3154,6308,Base,false,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
+239,Cthulu,5270,10539,Base,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
+240,Fate Seamstress,3785,7570,Base,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
 241,Famine,3154,6308,Base,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
 242,War,3564,7127,Base,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
-243,Community,3564,7127,Base,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
-244,Azure Witch,3599,7198,Base,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
+243,Community,4277,8553,Base,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
+244,Azure Witch,3606,7211,Base,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
 245,Death,3886,7772,Base,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
-246,Memories,4391,8781,Base,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
-247,Legends,5120,10240,Base,false,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
-248,Sarimanok,6308,12616,Base,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
-249,Bakunawa,6308,12616,Base,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
-250,Time Lord Stryx,10240,20480,Base,false,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
+246,Memories,5269,10537,Base,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
+247,Legends,6144,12288,Base,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
+248,Sarimanok,9462,18924,Base,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
+249,Bakunawa,9462,18924,Base,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
+250,Time Lord Stryx,15360,30720,Base,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
 251,Frosty The Snowman,33,65,Base,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
-252,Old Man Winter,120,240,Snow,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
-253,Rudolph,117,234,Base,false,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
-254,Gingerbread Man,144,288,Base,false,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
-255,Dionysus,960,1920,Rapture,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
+252,Old Man Winter,80,160,Snow,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
+253,Rudolph,117,234,Base,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
+254,Gingerbread Man,144,288,Base,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
+255,Dionysus,640,1280,Rapture,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
 256,The Grinch,1600,3200,Eclipse,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
 257,Krampus,3154,6308,Blood Rain,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
-258,Wandering Snowman,780,1559,Snow,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
+258,Wandering Snowman,520,1039,Snow,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
 259,Mrs. Claus,1447,2893,Base,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
-260,Santa Claus,3401,6801,Aurora,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
+260,Santa Claus,3886,7772,Aurora,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
 261,Toy Bear,1943,3886,Snow,true,"user-confirmed baseline; shared Card Modifier fitted to stats, underlying cause unverified"
 262,Toy Car,1943,3886,Base,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
 263,The Jack-in-the-Box,1943,3886,Base,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
 264,Toy Nutcracker,1943,3886,Base,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
-265,Santa Claws,3117,6234,Snow,false,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
+265,Santa Claws,2078,4156,Snow,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
 266,Zombie,33,65,Base,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
-267,Banshee,74,147,Base,false,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
-268,Witch,117,234,Base,false,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
-269,Scarecrow,160,320,Base,false,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
-270,Bloody Mary,1447,2893,Blood Rain,false,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
+267,Banshee,74,147,Base,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
+268,Witch,117,234,Base,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
+269,Scarecrow,160,320,Base,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
+270,Bloody Mary,1447,2893,Blood Rain,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
 271,Revenant,260,520,Base,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
-272,Dr. Frankenstein,467,934,Base,false,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
-273,Marionette,587,1174,Base,false,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
-274,Ghoul,40,80,Base,false,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
-275,Zombie Nurse,80,160,Base,false,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
-276,Night Witch,96,191,Base,false,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
-277,The Hanged Man,160,320,Base,false,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
-278,Walking Dead,260,520,Base,false,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
-279,Headless Horseman,320,640,Base,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
+272,Dr. Frankenstein,467,934,Base,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
+273,Marionette,587,1174,Base,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
+274,Ghoul,80,160,Base,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
+275,Zombie Nurse,160,320,Base,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
+276,Night Witch,191,382,Base,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
+277,The Hanged Man,320,640,Base,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
+278,Walking Dead,520,1039,Base,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
+279,Headless Horseman,640,1280,Base,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
 280,The Blood Countess,3668,7335,Blood Rain,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
-281,The Composer,587,1174,Base,false,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
-282,Dracula,844,1687,Base,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
-283,Flying Dutchman,891,1782,Base,false,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
-284,Hecate,891,1782,Base,false,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
-285,Abomination,1039,2078,Base,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
-286,Sleep Paralysis,2078,4156,Base,false,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
-287,Michael M.,2196,4391,Base,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
+281,The Composer,1174,2348,Base,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
+282,Dracula,1687,3374,Base,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
+283,Flying Dutchman,1782,7127,Base,true,"user-read borderless 7,127 HP / 1,782 ATK (Halloween 2025 x2 included)"
+284,Hecate,4455,8909,Base,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
+285,Abomination,9351,18701,Base,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
+286,Sleep Paralysis,4156,8312,Base,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
+287,Michael M.,4391,8781,Base,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
 288,Jason,4788,9575,Base,true,"user-confirmed baseline; shared Card Modifier fitted to stats, underlying cause unverified"
-289,Glamour,2560,5120,Base,false,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
+289,Glamour,7680,15360,Base,true,dataset_formula; confirmed 2560/1280 for borderless cards 33 and 38
