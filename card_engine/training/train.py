@@ -8,6 +8,7 @@ directory (rule fingerprint) is used; when rules change, training continues on t
 Checkpoints hold the model (model.checkpoint) plus optimizer/step state for exact resumption.
 """
 
+import functools
 import json
 import math
 import time
@@ -32,33 +33,12 @@ def latest_label_dir(root=SHARD_DIR):
     return store
 
 
-_STAT_FAVOURITE = {}
-
-
-def stat_favourite(path, catalog=None):
-    """Per row of a shard: the side (0/1) with more sqrt(HP x ATK) after supports, the naive baseline."""
-    key = (str(path), Path(path).stat().st_mtime)
-    if key not in _STAT_FAVOURITE:
-        from ..catalog import load_catalog
-        from .labels import compile_spec
-        catalog = catalog or load_catalog()
-        shard = np.load(path)
-        favourite = []
-        for i in range(len(shard["probs"])):
-            battle = compile_spec(catalog, {k: shard[k][i].tolist() for k in FIELDS})
-            strength = [sum((f.hp * f.attack) ** .5 for f in battle.teams[side][:4]) for side in (0, 1)]
-            favourite.append(0 if strength[0] >= strength[1] else 1)
-        _STAT_FAVOURITE[key] = np.array(favourite)
-    return _STAT_FAVOURITE[key]
-
-
 def load_split(directory, device):
     """(train, validation) tensors of the rows still valid under the current rules (training.flags);
     validation = shards whose seed is divisible by VALIDATION_EVERY."""
     from .flags import entity_hashes, valid_rows
     current = entity_hashes()
     split = {"train": [], "val": []}
-    favourites = []
     for path in sorted(Path(directory).glob("shard_*.npz")):
         seed = int(path.stem.split("_")[1])
         validation = seed % VALIDATION_EVERY == 0
@@ -68,8 +48,6 @@ def load_split(directory, device):
         if not mask.any():
             continue
         split["val" if validation else "train"].append({k: v[mask] for k, v in arrays.items()})
-        if validation:
-            favourites.append(stat_favourite(path)[mask])
     out = {}
     for name, parts in split.items():
         if not parts:
@@ -81,15 +59,24 @@ def load_split(directory, device):
         tensors = {key: torch.as_tensor(arrays[key][keep].astype(np.int64), device=device) for key in FIELDS}
         tensors["target"] = torch.as_tensor(arrays["probs"][keep, :2] / finished[keep, None], dtype=torch.float32, device=device)
         if name == "val":
-            tensors["favourite"] = torch.as_tensor(np.concatenate(favourites)[keep], device=device)
+            rows = {key: torch.as_tensor(arrays[key][keep].astype(np.int64)) for key in FIELDS}
+            tensors["favourite"] = stat_favourite(rows).to(device)
         out[name] = tensors
     return out["train"], out["val"]
+
+
+def stat_favourite(rows):
+    """Per row: the side (0/1) with more sqrt(HP x ATK) after supports, the naive baseline (ties go to A)."""
+    stats = card_stats(rows, card_stat_tables())  # float64 on the CPU, so near-ties resolve as the simulator's stats
+    strength = (stats[..., 0] * stats[..., 1]).sqrt().sum(-1)
+    return (strength[:, 1] > strength[:, 0]).long()
 
 
 PREHISTORIC_SUPPORT = 13  # blue: Prehistoric cards gain value% stats per Prehistoric card on the team
 
 
-def card_stat_tables(catalog=None):
+@functools.cache
+def card_stat_tables():
     """(base, red, prehistoric, prehistoric_bonus) for the model's card stats, matching compile_battle.
 
     base [card, border, mutation, 2]: the (HP, ATK) a card compiles to; red [card, support, tier, 2]: the
@@ -100,7 +87,7 @@ def card_stat_tables(catalog=None):
     from ..catalog import load_catalog
     from ..mutations import MUTATION_NAMES
     from ..simulator.catalog_rules import BLUE_SUPPORTS, RED_SUPPORTS, SUPPORTED, _red_bonus, compile_fighter
-    catalog = catalog or load_catalog()
+    catalog = load_catalog()
     cards = max(SUPPORTED) + 1
     base = torch.ones(cards, 17, len(MUTATION_NAMES), 2, dtype=torch.float64)
     for card_id in SUPPORTED:
@@ -124,14 +111,24 @@ def card_stat_tables(catalog=None):
     return base, red, prehistoric, prehistoric_bonus
 
 
+def card_stats(rows, tables):
+    """[N, 2, 4, 2]: each card's (HP, ATK) as it enters the battle, from label rows and card_stat_tables()."""
+    base, red, prehistoric, prehistoric_bonus = tables
+    cards = rows["cards"]
+    red = red[cards, rows["red"][..., None], rows["red_tier"][..., None]]
+    member = prehistoric[cards]
+    bonus = torch.where(rows["blue"] == PREHISTORIC_SUPPORT, prehistoric_bonus[rows["blue_tier"]], 0.0)
+    blue = 1 + member * (bonus * member.sum(-1))[..., None]
+    return base[cards, rows["borders"], rows["mutations"]] * red * blue[..., None]
+
+
 class Inputs:
     """Turns label rows into model keyword inputs."""
 
     def __init__(self, device):
         self.data = load_model_data(device=device)
         self.device = device
-        self.base_stats, self.red_multipliers, self.prehistoric, self.prehistoric_bonus = (
-            table.to(device=device, dtype=torch.float32) for table in card_stat_tables())
+        self.stat_tables = tuple(table.to(device=device, dtype=torch.float32) for table in card_stat_tables())
 
     def __call__(self, rows, card_table):
         cards = rows["cards"]
@@ -143,11 +140,7 @@ class Inputs:
                         support_tiers=torch.stack([rows["red_tier"], rows["blue_tier"]], -1))
         if self.data.class_weights is not None:
             metadata["class_weights"] = self.data.class_weights[index]
-        red = self.red_multipliers[cards, rows["red"][..., None], rows["red_tier"][..., None]]
-        prehistoric = self.prehistoric[cards]
-        bonus = torch.where(rows["blue"] == PREHISTORIC_SUPPORT, self.prehistoric_bonus[rows["blue_tier"]], 0.0)
-        blue = 1 + prehistoric * (bonus * prehistoric.sum(-1))[..., None]
-        metadata["card_stats"] = self.base_stats[cards, rows["borders"], rows["mutations"]] * red * blue[..., None]
+        metadata["card_stats"] = card_stats(rows, self.stat_tables)
         return dict(card_embeddings=card_table[index], **metadata)
 
 
