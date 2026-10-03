@@ -64,7 +64,8 @@ def load_split(directory, device):
             keep = mask & (finished > 0)
             rows = {key: arrays[key][keep].astype(np.int16) for key in FIELDS}
             rows["target"] = (arrays["probs"][keep, :2] / finished[keep, None]).astype(np.float32)
-            rows["favourite"] = stat_favourite({key: torch.as_tensor(rows[key].astype(np.int64)) for key in FIELDS}).numpy().astype(np.int8)
+            if validation:
+                rows["favourite"] = stat_favourite({key: torch.as_tensor(rows[key].astype(np.int64)) for key in FIELDS}).numpy().astype(np.int8)
             cached = (mtime, rules, validation, rows)
         seen[path] = cached
         if len(cached[3]["target"]):
@@ -221,7 +222,6 @@ def weight_norm(model):
 
 
 def train(*, steps=None, batch_size=512, lr=3e-4, warmup=1000, weight_decay=0.05, dropout=0.1, freeze_language_at=None,
-          upset_weight=1.0,
           eval_every=1000,
           checkpoint_every=1000, reload_every=1000, device=None, run_dir=RUN_DIR, label_root=SHARD_DIR):
     device = device or ("mps" if torch.backends.mps.is_available() else "cpu")
@@ -292,15 +292,7 @@ def train(*, steps=None, batch_size=512, lr=3e-4, warmup=1000, weight_decay=0.05
             batch = {k: v[picks] for k, v in train_rows.items()}
             for group in optimizer.param_groups:
                 group["lr"] = lr * min(1.0, (step + 1) / warmup)
-            model_inputs = inputs(batch, current_table())
-            if upset_weight != 1 and model_inputs["card_embeddings"].requires_grad:
-                # User: amplify the upsets' gradients only once they have passed through the strategic transformer.
-                # Rows are independent, so scaling each row's gradient where the card vectors enter it gives the
-                # description encoder the upset-weighted gradient while the strategic transformer's stays unweighted.
-                upset = batch["favourite"] != batch["target"].argmax(-1)
-                scale = 1 + (upset_weight - 1) * upset.to(model_inputs["card_embeddings"].dtype)
-                model_inputs["card_embeddings"].register_hook(lambda grad, scale=scale: grad * scale[:, None, None, None])
-            logits = model(**model_inputs)
+            logits = model(**inputs(batch, current_table()))
             loss = -(batch["target"] * logits.log_softmax(-1)).sum(-1).mean()
             total = loss + model.strategy.identity_penalty()
             optimizer.zero_grad(set_to_none=True)
@@ -356,10 +348,8 @@ if __name__ == "__main__":
     parser.add_argument("--eval-every", type=int, default=1000,
                         help="steps between evaluations; each scores the whole validation set, so it grows with the data")
     parser.add_argument("--run-dir", default=RUN_DIR, help="checkpoints and log; a new directory starts from random weights")
-    parser.add_argument("--upset-weight", type=float, default=1.0,
-                        help="multiplies upsets' gradients into the description encoder (not the strategic transformer)")
     parsed = parser.parse_args()
     train(steps=parsed.steps, batch_size=parsed.batch_size, lr=parsed.lr, device=parsed.device, reload_every=parsed.reload_every,
           weight_decay=parsed.weight_decay, dropout=parsed.dropout, freeze_language_at=parsed.freeze_language_at,
-          upset_weight=parsed.upset_weight, eval_every=parsed.eval_every,
+          eval_every=parsed.eval_every,
           run_dir=parsed.run_dir)

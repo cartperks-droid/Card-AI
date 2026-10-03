@@ -36,7 +36,7 @@
 - **Validation:** shards whose seed is divisible by 25 are held out.
 - **Data refresh:** every 1,000 steps the newest label directory is reloaded, which picks up new shards or new rules.
 - **Resuming:** the model checkpoint, optimiser state and step count live in `data/training/`. The log is `data/training/log.jsonl`.
-- **Upset weight (user):** `--upset-weight W` multiplies the upsets' gradients by W, but only after they have passed through the strategic transformer. The description encoder learns with upsets weighted, while the strategic transformer's own update stays unweighted. It acts only while the description encoder is unfrozen.
+- **Tried and dropped (2026-10-03):** amplifying upsets' gradients for the description encoder only (weight 2) made the two encoders chase different losses. Validation KL rose from 0.055 to 0.186 within 15,000 steps, and upsets fell from 78% to 52%. The same resume without it held at 0.0535.
 - **Separate runs:** `--run-dir` puts a run elsewhere. A new directory starts from random weights; `predict.py --run-dir` reads that run's model.
 
 ```sh
