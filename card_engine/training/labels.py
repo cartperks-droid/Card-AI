@@ -156,5 +156,6 @@ if __name__ == "__main__":
     parser.add_argument("--shards", type=int, default=1)
     parser.add_argument("--rows", type=int, default=2000)
     parser.add_argument("--workers", type=int)
+    parser.add_argument("--first-seed", type=int, help="number shards from here (a second machine uses its own range)")
     parsed = parser.parse_args()
-    print(generate(parsed.shards, rows=parsed.rows, workers=parsed.workers))
+    print(generate(parsed.shards, rows=parsed.rows, workers=parsed.workers, first_seed=parsed.first_seed))
