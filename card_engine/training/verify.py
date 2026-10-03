@@ -180,7 +180,7 @@ def predict(model, inputs, specs, device, enemy_stats=None, batch=1024):
             if enemy_stats is not None:
                 kwargs["card_stats"][:, 1] = torch.tensor(enemy_stats[start:start + batch], dtype=kwargs["card_stats"].dtype, device=device)
             out.append(model(**kwargs).softmax(-1)[:, 0].float().cpu())
-            given.append(kwargs["card_stats"].double().cpu())
+            given.append(kwargs["card_stats"].cpu().double())
     return torch.cat(out).numpy(), torch.cat(given)
 
 
