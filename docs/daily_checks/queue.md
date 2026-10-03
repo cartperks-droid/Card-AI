@@ -13,6 +13,7 @@ These are open rule and class questions, most important first. The daily task pi
 7. **Cross-check with DaddyDrago's engine** (`docs/drago_crosscheck.md`). His stats, rarities and Final Testament values are adopted (user, 2026-10-03). Still open:
    - **Double KO:** is it a draw (his) or a loss for the attacker (ours)?
    - **New cards:** about 16 cards in his data but not ours. Do they exist in game?
+8. **The One Ring at Ruby.** Our binder reading (IMG_0350–0354) has 157%, the same as its Crystal value. Every other red support fits a Ruby rarity ×500, which gives The One Ring 256%. The engine uses 256% until a stat readout of a Ruby One Ring confirms or corrects it.
 
 ## Answered
 - 2026-10-03 **Card stats:** DaddyDrago's engine data is more accurate (user). His rarities (4 cards), stat multipliers (36 cards, incl. HP multipliers for Sciron, Gorilla, Yeti, Vampire Lord) and Final Testament's 7.5/12.5 are adopted; see `docs/drago_crosscheck.md`.
