@@ -9,10 +9,10 @@
 - **Borders:** 70% of battles keep every border within two rarity ranks of a shared level. The rest draw borders uniformly.
 - **Who starts:** side A always initiates. A draw (double KO, or the 2,000-turn cap) counts as A's loss.
 - **Search (user's design, `sim_js/search.ts`):** every random draw in his engine is a chance point. A branch is the list of choices made at those points, replayed from the start of the battle.
-  - **Large branches first:** the most probable open branch is expanded next, up to 2,000 battles per label (`drago.SEARCH`).
+  - **Large branches first:** the most probable open branch is expanded next, up to 100 per label (`labels.LABEL_SEARCH`; the counter search and verify use 2,000, `drago.SEARCH`). His engine cannot pause mid-battle, so each expansion replays the battle from the start. That is why the budget is smaller than the C kernel's: at 100 nodes and a 7% error target his engine labels about 26 battles/s per core, against the old kernel's 30.
   - **Small branches:** a branch below 0.1% probability is not expanded. It joins the playout pool.
   - **Leftover branches:** small branches, plus whatever is open when the budget runs out, are resolved by pooled playouts. Each playout picks a branch in proportion to its probability, then plays on at random.
-  - **Variance-based count:** playouts continue, up to 1,024, until the standard error of the A-win estimate is at most 3%.
+  - **Variance-based count:** playouts continue, up to 1,024, until the standard error of the A-win estimate is at most 7% for labels (3% for the counter search and verify).
 - **Exact vs estimated:**
   - A battle with no estimated probability is **exact** and goes into the tablebase (`data/tablebase/<fingerprint>.sqlite`).
   - Estimated outcomes are never stored. A battle that comes up again is re-estimated with fresh playouts, so over time the model sees the spread of probabilistic outcomes.
