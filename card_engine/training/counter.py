@@ -40,6 +40,10 @@ from ..simulator.catalog_rules import BLUE_SUPPORTS, RED_SUPPORTS, _blank
 from ..stats import base_stats
 from .labels import compile_spec, evaluate
 
+BORDER_NAMES = {1: "no border", 2: "Pl", 3: "Cr", 4: "CrPl", 5: "Ru", 6: "RuPl", 7: "RuCr", 8: "RuCrPl", 9: "Ga", 10: "GaPl",
+                11: "GaCr", 12: "GaCrPl", 13: "GaRu", 14: "GaRuPl", 15: "GaRuCr", 16: "GaRuCrPl"}
+
+
 def _side(cards, borders, mutations, red, blue):
     return {"cards": list(cards), "borders": list(borders), "mutations": [MUTATION_NAMES.index(m) for m in mutations],
             "arts": [0] * len(cards), "red": red[0], "red_tier": red[1] if red[0] else 0,
@@ -330,8 +334,7 @@ class Search:
                                     key=lambda x: float(x[1][5:]), default=None)}
 
     def border_name(self, border):
-        return {1: "no border", 2: "Pl", 3: "Cr", 4: "CrPl", 5: "Ru", 6: "RuPl", 7: "RuCr", 8: "RuCrPl", 9: "Ga", 10: "GaPl",
-                11: "GaCr", 12: "GaCrPl", 13: "GaRu", 14: "GaRuPl", 15: "GaRuCr", 16: "GaRuCrPl"}[border]
+        return BORDER_NAMES[border]
 
 
 def candidates(rows, search, limit=8, max_shared=1, stress_pool=300):
