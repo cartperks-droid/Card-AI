@@ -52,17 +52,40 @@ src = src.replace('/*RAND*/', randBody)
 
 // The runtime carries the chance source; a battle may arrive with a prebuilt (two-sided) state.
 exact('  rng: SeededRng\n', '  rng: SeededRng\n  chance: any\n')
-// Ability lookups (user: hash the index): a card's ability list depends only on its ability override, identity
-// override and bonus abilities (bonus lists are only ever replaced, never edited in place), so it is cached per card
-// and rebuilt only when one of those changes. The list itself is computed exactly as before.
-exact('function abilityNames(card: CombatCard | undefined): string[] {\n  if (!card) return []\n  return [',
-      'const ABILITY_CACHE = new WeakMap<CombatCard, { override: any; identity: any; bonus: any; names: string[] }>()\n\n'
-      + 'function abilityNames(card: CombatCard | undefined): string[] {\n  if (!card) return []\n'
-      + '  const hit = ABILITY_CACHE.get(card)\n'
-      + '  if (hit && hit.override === card.abilityOverride && hit.identity === card.identityOverride && hit.bonus === card.bonusAbilities) return hit.names\n'
-      + '  const names = Object.freeze(uncachedAbilityNames(card)) as string[]\n'
-      + '  ABILITY_CACHE.set(card, { override: card.abilityOverride, identity: card.identityOverride, bonus: card.bonusAbilities, names })\n'
-      + '  return names\n}\n\nfunction uncachedAbilityNames(card: CombatCard): string[] {\n  return [')
+// Ability lookups (user: precompute like a chess engine's lookup tables): each card keeps one entry with its ability,
+// its ability names and their set, rebuilt only when what they depend on changes (ability override, identity
+// override, bonus abilities, definition; bonus lists are only ever replaced, never edited in place). The entry is a
+// non-enumerable property, so a copied card never inherits it. hasAbility reads the entry: same checks, same order.
+exact('function ability(card: CombatCard | undefined): string | null {\n  if (!card) return null\n  if (card.abilityOverride !== undefined)',
+      'function ability(card: CombatCard | undefined): string | null {\n  return card ? abilityEntry(card).ability : null\n}\n\n'
+      + 'function uncachedAbility(card: CombatCard): string | null {\n  if (card.abilityOverride !== undefined)')
+exact('function abilityNames(card: CombatCard | undefined): string[] {\n  if (!card) return []\n  return [...new Set([ability(card), ...(card.bonusAbilities || [])].filter((name): name is string => Boolean(name)))]\n}',
+      'interface AbilityEntry { override: any; identity: any; bonus: any; definition: any; ability: string | null; names: string[]; set: Set<string> }\n'
+      + 'const ENTRY = Symbol(\'abilities\')\n\n'
+      + 'function abilityEntry(card: CombatCard): AbilityEntry {\n'
+      + '  const hit: AbilityEntry | undefined = (card as any)[ENTRY]\n'
+      + '  if (hit && hit.override === card.abilityOverride && hit.identity === card.identityOverride && hit.bonus === card.bonusAbilities\n'
+      + '      && hit.definition === card.definition) return hit\n'
+      + '  const own = uncachedAbility(card)\n'
+      + '  const names = Object.freeze([...new Set([own, ...(card.bonusAbilities || [])].filter((name): name is string => Boolean(name)))]) as string[]\n'
+      + '  const entry = { override: card.abilityOverride, identity: card.identityOverride, bonus: card.bonusAbilities, definition: card.definition,\n'
+      + '    ability: own, names, set: new Set(names) }\n'
+      + '  Object.defineProperty(card, ENTRY, { value: entry, writable: true, configurable: true, enumerable: false })\n'
+      + '  return entry\n}\n\n'
+      + 'function abilityNames(card: CombatCard | undefined): string[] {\n  return card ? abilityEntry(card).names : []\n}')
+exact("  const ownName = effectiveCardName(card)\n  const opposingName = effectiveCardName(opposingCard)\n  let matched = abilityNames(card).includes(name)\n"
+      + "  if (!matched && ability(card) === 'Jealousy' && opposingCard && opposingName !== 'Amenhotep') {\n"
+      + "    matched = abilityNames(opposingCard).includes(name)\n  }\n  if (!matched) return false\n"
+      + "  if (opposingCard && ability(opposingCard) === 'Jealousy' && ownName !== 'Amenhotep') return false\n"
+      + "  const honorActive = [active(runtime, 'Allies'), active(runtime, 'Enemies')].some((activeCard) =>\n"
+      + "    activeCard && !activeCard.dead && !activeCard.flags.sealed && abilityNames(activeCard).includes('Honor')\n  )\n"
+      + "  if (honorActive && name !== 'Honor') return false\n",
+      "  const own = abilityEntry(card)\n  let matched = own.set.has(name)\n"
+      + "  if (!matched && own.ability === 'Jealousy' && opposingCard && effectiveCardName(opposingCard) !== 'Amenhotep') {\n"
+      + "    matched = abilityEntry(opposingCard).set.has(name)\n  }\n  if (!matched) return false\n"
+      + "  if (opposingCard && abilityEntry(opposingCard).ability === 'Jealousy' && effectiveCardName(card) !== 'Amenhotep') return false\n"
+      + "  if (name !== 'Honor') {\n    for (const activeCard of [active(runtime, 'Allies'), active(runtime, 'Enemies')]) {\n"
+      + "      if (activeCard && !activeCard.dead && !activeCard.flags.sealed && abilityEntry(activeCard).set.has('Honor')) return false\n    }\n  }\n")
 
 // The search saves a battle at the start of each turn (onTurn: the state plus the loop's own counters) and later
 // resumes it from there (resume), so expanding a branch continues the battle instead of replaying it from turn 1.
