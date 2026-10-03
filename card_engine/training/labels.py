@@ -72,10 +72,13 @@ def evaluate(catalog, spec, seed, **overrides):
     """((A, B, tie, unfinished), exact) for one label spec; ties never happen (a draw is A's loss).
 
     A battle the engine fails on (e.g. "Maximum call stack size exceeded") is left unfinished, so training skips
-    the row, and is appended to ENGINE_ERRORS instead of stopping the whole label run."""
+    the row, and is appended to ENGINE_ERRORS instead of stopping the whole label run. If the engine process itself
+    died (a broken pipe or an empty reply), the next battle starts a fresh one."""
     try:
         return drago.evaluate(catalog, spec, seed, **overrides)
-    except RuntimeError as error:
+    except (RuntimeError, OSError, ValueError) as error:  # engine error; dead process (pipe); empty reply (JSON)
+        if not isinstance(error, RuntimeError):
+            drago._WORKER = None
         ENGINE_ERRORS.parent.mkdir(parents=True, exist_ok=True)
         with open(ENGINE_ERRORS, "a") as log:
             log.write(json.dumps({"error": str(error), "seed": int(seed), "spec": spec}) + "\n")

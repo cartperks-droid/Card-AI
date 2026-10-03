@@ -60,6 +60,10 @@ class TrainingTests(unittest.TestCase):
                 mock.patch.object(labels, "ENGINE_ERRORS", log):
             self.assertEqual(labels.evaluate(self.catalog, spec, 5), ((0.0, 0.0, 0.0, 1.0), False))
         self.assertIn("Maximum call stack", log.read_text())
+        with mock.patch.object(drago, "evaluate", side_effect=BrokenPipeError(32, "Broken pipe")), \
+                mock.patch.object(labels, "ENGINE_ERRORS", log), mock.patch.object(drago, "_WORKER", object()):
+            self.assertEqual(labels.evaluate(self.catalog, spec, 5), ((0.0, 0.0, 0.0, 1.0), False))
+            self.assertIsNone(drago._WORKER)  # the next battle starts a fresh engine process
 
     def test_engine_supports_every_card_and_aura(self):
         cards, blue = drago.supported(self.catalog)
