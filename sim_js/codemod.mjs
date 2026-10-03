@@ -118,8 +118,8 @@ export function createTwoSidedState(a: TeamLoadout, b: TeamLoadout): BattleState
 exact("from './auras'", "from './auras.label'")
 writeFileSync(output, src)
 
-// Ruby support cards (user's binder, IMG_0350-0354). Red: 26 of the 27 values read fit his formula
-// floor(2^log10(rarity x multiplier) / 2) with a Ruby multiplier of 500. Blue: Ruby uses the base values (user).
+// Ruby support cards (user's binder, IMG_0350-0354). Red: his formula floor(2^log10(rarity x multiplier) / 2) with a
+// Ruby multiplier of 500 gives every value read (user: The One Ring 256%, Dinosaur King 207% / 334% boosted). Blue: Ruby uses the base values (user).
 const aurasPath = input.replace(/battle-v2\.ts$/, 'auras.ts')
 src = readFileSync(aurasPath, 'utf8')
 exact("  Crystal: 100,\n  Galaxy: 1_000,\n}", "  Crystal: 100,\n  Ruby: 500,\n  Galaxy: 1_000,\n}")

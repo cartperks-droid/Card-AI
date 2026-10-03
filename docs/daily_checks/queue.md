@@ -13,9 +13,9 @@ These are open rule and class questions, most important first. The daily task pi
 7. **Cross-check with DaddyDrago's engine** (`docs/drago_crosscheck.md`). His stats, rarities and Final Testament values are adopted (user, 2026-10-03). Still open:
    - **Double KO:** is it a draw (his) or a loss for the attacker (ours)?
    - **New cards:** about 16 cards in his data but not ours. Do they exist in game?
-8. **The One Ring at Ruby.** Our binder reading (IMG_0350–0354) has 157%, the same as its Crystal value. Every other red support fits a Ruby rarity ×500, which gives The One Ring 256%. The engine uses 256% until a stat readout of a Ruby One Ring confirms or corrects it.
 
 ## Answered
+- 2026-10-03 **Ruby red supports** (user): The One Ring at Ruby is 256%; the old 157% reading was wrong. Ruby Dinosaur King is 207%, and 334% on Prehistoric cards. The engine's Ruby rarity ×500 gives exactly these: 207%, and 334.76% on Prehistoric cards, which the game displays as 334. Every red support now fits ×500.
 - 2026-10-03 **Card stats:** DaddyDrago's engine data is more accurate (user). His rarities (4 cards), stat multipliers (36 cards, incl. HP multipliers for Sciron, Gorilla, Yeti, Vampire Lord) and Final Testament's 7.5/12.5 are adopted; see `docs/drago_crosscheck.md`.
 - 2026-10-02 **Buddha:**
   - If the enemy can't kill it, Buddha does nothing but revive the dead, one per turn in setup order, while staying in front.

@@ -8,7 +8,7 @@ This project simulates a Roblox "Snap!"-style card game and trains an AI to pred
   - `sim_js/search.ts` is the best-first chance-tree search with pooled playouts. It also applies per-battle tweaks: fixed, scaled or ability-stripped cards.
   - `sim_js/worker.ts` answers one JSON request per line.
   - `card_engine/simulator/drago.py` maps our cards, borders, mutations and supports to his names (`CARD_ALIASES`) and runs one worker per process. Its functions are `evaluate`, `initial_stats` and `stat_tables`.
-  - Support tiers: 1 base, 2 Platinum, 3 Crystal, 4 Ruby, 5 Galaxy. His engine lacks Ruby; `codemod.mjs` adds it in `auras.label.ts`. Red supports use a rarity ×500, fitted to the user's binder (IMG_0350–0354); blue supports use their base values. Astraeus draws its art in battle, so the `arts` input is always 0.
+  - Support tiers: 1 base, 2 Platinum, 3 Crystal, 4 Ruby, 5 Galaxy. His engine lacks Ruby; `codemod.mjs` adds it in `auras.label.ts`. Red supports use a rarity ×500, fitted to the user's binder (IMG_0350–0354) and confirmed by the user (The One Ring 256%, Dinosaur King 207%/334%); blue supports use their base values. Astraeus draws its art in battle, so the `arts` input is always 0.
 - `card_engine/data_corrections.py` and `card_engine/import_snap.py` hold the user's corrections: classes, weathers, border rarities. Re-import with `python -m card_engine.import_snap --raw-dir data/raw --output-dir data/clean`.
 - `card_engine/training/` holds the AI pipeline:
   - `labels.py`: battle labels from the best-first search over his engine.
