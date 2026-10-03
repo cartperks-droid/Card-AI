@@ -34,15 +34,11 @@ class ReportTests(unittest.TestCase):
         for index in (32, 37):
             self.assertEqual((rows[index]["borderless_hp_formula"], rows[index]["borderless_atk_formula"]), ("2560", "1280"))
 
-    def test_coverage_is_conservative_for_every_card(self):
-        rows = list(csv.DictReader(io.StringIO(self.artifacts["simulator_coverage.csv"])))
-        self.assertEqual([int(row["card_id"]) for row in rows], list(range(1, 290)))
-        self.assertEqual(sum(r["status"] == "experimental_complete_ability_subset" for r in rows), 289)
-        self.assertEqual(sum(r["status"] == "unsupported" for r in rows), 0)
-        self.assertTrue(all(r["training_labels_allowed"] == "false" for r in rows))
-        supports = list(csv.DictReader(io.StringIO(self.artifacts["support_coverage.csv"])))
-        self.assertEqual(len(supports), 43)
-        self.assertEqual([(r["color"], r["support_id"]) for r in supports if r["status"] != "unsupported"], [('red', '1'), ('red', '2'), ('red', '3'), ('red', '4'), ('red', '5'), ('red', '6'), ('red', '7'), ('red', '8'), ('red', '9'), ('red', '10'), ('red', '11'), ('red', '12'), ('red', '13'), ('red', '14'), ('red', '15'), ('red', '16'), ('red', '17'), ('red', '18'), ('red', '19'), ('red', '20'), ('red', '21'), ('red', '22'), ('red', '23'), ('red', '24'), ('red', '25'), ('red', '26'), ('red', '27'), ('red', '28'), ('blue', '1'), ('blue', '2'), ('blue', '3'), ('blue', '4'), ('blue', '5'), ('blue', '6'), ('blue', '7'), ('blue', '8'), ('blue', '9'), ('blue', '10'), ('blue', '11'), ('blue', '12'), ('blue', '13'), ('blue', '14'), ('blue', '15')])
+    def test_every_card_and_support_maps_to_the_engine(self):
+        rows = list(csv.DictReader(io.StringIO(self.artifacts["engine_mapping.csv"])))
+        self.assertEqual([int(r["id"]) for r in rows if r["kind"] == "card"], list(range(1, 290)))
+        self.assertEqual([len([r for r in rows if r["kind"] == kind]) for kind in ("red", "blue")], [28, 15])
+        self.assertTrue(all(r["supported"] == "true" and r["engine_name"] for r in rows))
 
     def test_conflicts_keep_canonical_values_and_exact_screenshot_readings(self):
         document = json.loads(self.artifacts["source_conflicts.json"])

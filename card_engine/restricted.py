@@ -19,7 +19,6 @@ from pathlib import Path
 
 from .catalog import load_catalog
 from .deck import BORDERS, _border, _match
-from .simulator.catalog_rules import SUPPORTED
 
 ROOT = Path(__file__).resolve().parents[1]
 RESTRICTED_FILE = ROOT / "data" / "restricted_deck.json"
@@ -47,10 +46,10 @@ def save(rules, catalog, path=RESTRICTED_FILE, doc=RESTRICTED_DOC):
 
 
 def cards(rules, catalog, *, limited=True):
-    """Card IDs in the restricted deck (only cards the simulator supports)."""
+    """Card IDs in the restricted deck."""
     out = []
     for card in catalog.cards:
-        if card.id not in SUPPORTED or card.id in rules["removed_cards"]:
+        if card.id in rules["removed_cards"]:
             continue
         excluded = card.packs[0] in rules["excluded_packs"]
         exception = card.id in rules["limited_exceptions"] and limited

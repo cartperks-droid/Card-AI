@@ -11,6 +11,10 @@ from ..schema import validate_dataset
 from .config import CLASS_NAMES
 from .networks import DescriptionModel, _long_ids, _range
 
+# Astraeus's constellation arts (model input "arts": index + 1, 0 = none). DaddyDrago's engine draws the art in
+# battle, so labels always use 0; the embedding slots stay for checkpoint compatibility of the input layout.
+ASTRAEUS_ARTS = ("scorpio", "aquarius", "virgo", "gemini", "sagittarius", "taurus", "cancer")
+
 
 CLASS_POLICIES = ("disabled", "verified_only", "wiki_supported", "include_candidates")
 
@@ -106,7 +110,6 @@ def load_model_data(path=None, *, class_names=CLASS_NAMES, class_policy="verifie
             if member in class_index:
                 class_weights[index, class_index[member]] = 1.0
     from ..card_keys import assign_identity_keys
-    from ..simulator.catalog_rules import ASTRAEUS_ARTS
     art_keys = [0] + assign_identity_keys([f"Astraeus ({art})" for art in ASTRAEUS_ARTS])
     return ModelData(tuple(row["name"] for row in dataset["cards"]), descriptions,
                      torch.tensor(packs, dtype=torch.long, device=device), class_weights,

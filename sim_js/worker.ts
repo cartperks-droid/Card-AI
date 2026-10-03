@@ -1,14 +1,15 @@
 // Label worker: one JSON request per input line, one JSON result per output line, in order.
 //   battle:  {"a": TeamLoadout, "b": TeamLoadout, "options": {...}}   (side A moves first)
 //            -> {"a": P(A wins), "b": P(B wins), "draw": P(draw), "exact", "nodes", "playouts", "unsupported": [...]}
-//   initial: {"op": "initial", "a": ..., "b": ...} -> {"a": [[hp, attack] per card], "b": [...]} at the start of battle
+//   initial: {"op": "initial", "a": ..., "b": ..., "options": tweaks} -> {"a": [[hp, attack, ability] per card], "b": [...]}
+//            at the start of battle
 //   tables:  {"op": "tables", "cards": [names], "borders": [[border names] per border id], "mutations": [names],
 //             "reds": [aura names], "tiers": [aura border or null per tier]}
 //            -> {"base": [card][border][mutation] = [hp, attack], "red": [card][mutation][red][tier] = [hp x, attack x],
 //                "prehistoric": [per card], "jurassic": [Jurassic World % per Prehistoric card, per tier]}
 //   check:   {"op": "check", "a": ..., "b": ...} -> {"unsupported": [...]} without running the battle
 import { createInterface } from 'node:readline'
-import { solve } from './search'
+import { solve, startState } from './search'
 import { createTwoSidedState } from './vendor/CardRngExpansionDepths/src/engine/battle-v2.label'
 import { getAttack, getHealth } from './vendor/CardRngExpansionDepths/src/engine/stats'
 import { getAura, getSkillAuraValue, statAuraPercentForCard } from './vendor/CardRngExpansionDepths/src/engine/auras'
@@ -39,8 +40,9 @@ lines.on('line', (line) => {
     const req = JSON.parse(line)
     if (req.op === 'tables') reply = tables(req)
     else if (req.op === 'initial') {
-      const state = createTwoSidedState(req.a, req.b)
-      reply = { a: state.teams.Allies.map((c: any) => [c.hp, c.damage]), b: state.teams.Enemies.map((c: any) => [c.hp, c.damage]) }
+      const state = startState(req.a, req.b, req.options || {})
+      const cards = (team: any[]) => team.map((c: any) => [c.hp, c.damage, c.abilityOverride === undefined ? c.definition.ability : c.abilityOverride])
+      reply = { a: cards(state.teams.Allies), b: cards(state.teams.Enemies) }
     } else if (req.op === 'check') {
       reply = { unsupported: [...createTwoSidedState(req.a, req.b).unsupportedAbilities] }
     } else {

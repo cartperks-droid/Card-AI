@@ -4,13 +4,12 @@ Every rules version has one small snapshot of entity fingerprints (data/labels/s
 every shard made under it; a shard stores only the 12-character snapshot id). Rows already hold their cards,
 borders, mutations and supports, so what a row involves is derived when loading, never stored.
 
-Entities:
-  card:<id>        the card's compiled rules (ability fields, stats, classes, pack; forms for transforming cards)
-  art:<name>       an Astraeus art
+Entities (all from DaddyDrago's engine, the label simulator; sim_js/setup.sh):
+  card:<id>        his card definition (rarity, stat and HP multipliers, ability, weather, pack) and its ability text
   support:<color><id>:<tier>, border:<id>, mutation:<index>
-  support_logic    how supports are applied (involved by every row with a support)
-  pool             every card's ability (involved by rows with random-ability cards: Pandora, Glamour, Nuwa...)
-  core             the engines and battle assembly (reference.py, card_sim.c/h, stats formula, compile_battle)
+  support_logic    his aura code (auras.ts; involved by every row with a support)
+  pool             every card definition (involved by rows with cards that draw random cards or abilities)
+  core             his battle engine code, the chance-point patch, the search, the worker and our spec translation
 
 A row stays valid if every entity it involves is unchanged. A core change cannot be attributed automatically:
 labels made before it are held back until it is declared, with the cards/supports it affects (or --all):
@@ -23,22 +22,21 @@ labels made before it are held back until it is declared, with the cards/support
 
 import argparse
 import hashlib
-import inspect
 import json
 from pathlib import Path
 
 import numpy as np
 
 from ..catalog import load_catalog
-from ..mutations import MULTIPLIERS, MUTATION_NAMES
-from ..simulator import catalog_rules
-from ..simulator.catalog_rules import (ASTRAEUS, ASTRAEUS_ARTS, BLUE_SUPPORTS, FORMS, RANDOM_ABILITY_FIELDS, RED_SUPPORTS,
-                                       SUPPORTED, compile_fighter)
+from ..mutations import MUTATION_NAMES
+from ..simulator import drago
 
 ROOT = Path(__file__).resolve().parents[2]
 SNAPSHOT_DIR = ROOT / "data" / "labels" / "snapshots"
 CHANGES_FILE = ROOT / "data" / "labels" / "rule_changes.json"
-ART_NAMES = tuple(ASTRAEUS_ARTS)
+# Abilities that draw from every card's definition (his engine: PANDORA_ABILITY_POOL, randomBattleCard).
+POOL_ABILITIES = ("Pandora's Box", "God of Trickery", "Shapeshifter")
+ENGINE_SOURCES = drago.ENGINE_DIR / "src" / "engine"
 
 
 def _digest(*parts):
@@ -48,34 +46,36 @@ def _digest(*parts):
     return h.hexdigest()[:12]
 
 
+def _his_cards(catalog):
+    """Our card id -> his card definition."""
+    cards, _, _ = drago.names(catalog)
+    by_name = {card["name"]: card for card in drago.his_data("cards")}
+    return {card_id: by_name[name] for card_id, name in cards.items()}
+
+
 def entity_hashes(catalog=None):
     catalog = catalog or load_catalog()
-    out, pool = {}, []
-    for card in catalog.cards:
-        if card.id not in SUPPORTED:
-            continue
-        fighter = compile_fighter(catalog, card.id)
-        forms = FORMS if (fighter.form_first or fighter.transform_form or fighter.kill_summon_form) else None
-        out[f"card:{card.id}"] = _digest(fighter, card.classes, card.packs, forms)
-        pool.append(out[f"card:{card.id}"])
-    for art in ART_NAMES:
-        out[f"art:{art}"] = _digest(compile_fighter(catalog, ASTRAEUS, art=art))
-    for color, table in (("red", RED_SUPPORTS), ("blue", BLUE_SUPPORTS)):
-        for sid, row in table.items():
-            values = row[2] if isinstance(row, tuple) else row
-            for tier, value in enumerate(values, 1):
-                out[f"support:{color}{sid}:{tier}"] = _digest(row[:2] if isinstance(row, tuple) else None, value)
+    out = {}
+    abilities = drago.his_data("abilities")
+    his_cards = _his_cards(catalog)
+    for card_id, card in sorted(his_cards.items()):
+        out[f"card:{card_id}"] = _digest(sorted(card.items()), abilities.get(card["ability"]))
+    out["pool"] = _digest(sorted((c["name"], c["ability"], c["unobtainable"]) for c in drago.his_data("cards")))
+    auras = {aura["name"]: aura for aura in drago.his_data("auras")}
+    _, red, blue = drago.names(catalog)
+    for color, table in (("red", red), ("blue", blue)):
+        for sid, name in table.items():
+            for tier, border in drago.AURA_BORDERS.items():
+                out[f"support:{color}{sid}:{tier}"] = _digest(sorted(auras[name].items()), border)
     for border in range(1, 17):
-        out[f"border:{border}"] = _digest(catalog.border(border).rarity)
+        out[f"border:{border}"] = _digest(drago.border_names(catalog, border))
     for index, name in enumerate(MUTATION_NAMES):
-        out[f"mutation:{index}"] = _digest(name, MULTIPLIERS[name])
-    out["support_logic"] = _digest(*(inspect.getsource(f) for f in (catalog_rules._apply_supports, catalog_rules._red_bonus,
-                                                                     catalog_rules._awaken)))
-    out["pool"] = _digest(pool, list(out[f"art:{a}"] for a in ART_NAMES))
-    core = [(ROOT / p).read_bytes() for p in ("card_engine/simulator/reference.py", "sim/card_sim.c", "sim/card_sim.h",
-                                             "card_engine/stats.py", "card_engine/mutations.py")]
-    core += [inspect.getsource(f) for f in (catalog_rules.compile_battle, catalog_rules._spares)]
-    out["core"] = _digest(*core)
+        out[f"mutation:{index}"] = _digest(name)
+    out["support_logic"] = _digest((ENGINE_SOURCES / "auras.ts").read_bytes())
+    core = [path.read_bytes() for path in sorted(ENGINE_SOURCES.glob("*.ts")) if path.name not in ("auras.ts", "battle-v2.ts")]
+    core += [(ROOT / p).read_bytes() for p in ("sim_js/search.ts", "sim_js/worker.ts", "card_engine/simulator/drago.py",
+                                             "card_engine/mutations.py")]
+    out["core"] = _digest(*core)  # battle-v2.label.ts is his battle-v2.ts after codemod.mjs
     return out
 
 
@@ -95,13 +95,7 @@ def load_snapshot(ident):
 
 
 def _pool_cards(catalog):
-    cards = set()
-    for card in catalog.cards:
-        if card.id in SUPPORTED:
-            fighter = compile_fighter(catalog, card.id)
-            if any(getattr(fighter, name) for name in RANDOM_ABILITY_FIELDS):
-                cards.add(card.id)
-    return cards
+    return {card_id for card_id, card in _his_cards(catalog).items() if card["ability"] in POOL_ABILITIES}
 
 
 def load_changes():
@@ -134,14 +128,12 @@ def valid_rows(arrays, old_ident, current=None, catalog=None, changes=None, pool
     if not changed:
         return np.ones(rows, dtype=bool)
     pool_cards = _pool_cards(catalog) if pool_cards is None else pool_cards
-    cards, arts = arrays["cards"].reshape(rows, -1), arrays["arts"].reshape(rows, -1)
+    cards = arrays["cards"].reshape(rows, -1)
     bad = np.zeros(rows, dtype=bool)
     for key in changed:
         kind, _, value = key.partition(":")
         if kind == "card":
             bad |= (cards == int(value)).any(1)
-        elif kind == "art":
-            bad |= (arts == ART_NAMES.index(value) + 1).any(1)
         elif kind == "border":
             bad |= (arrays["borders"].reshape(rows, -1) == int(value)).any(1)
         elif kind == "mutation":

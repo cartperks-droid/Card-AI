@@ -1,5 +1,1 @@
-"""Explicit experimental battle semantics; unsupported cards fail closed."""
-
-from .reference import Battle, Fighter, Options, Result, simulate, simulate_batch
-
-__all__ = ["Battle", "Fighter", "Options", "Result", "simulate", "simulate_batch"]
+"""Battle simulation: DaddyDrago's engine with a chance-tree label search (drago.py, sim_js/)."""

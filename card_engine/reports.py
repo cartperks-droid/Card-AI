@@ -13,7 +13,7 @@ import json
 from pathlib import Path
 
 from .catalog import load_catalog
-from .simulator.catalog_rules import coverage, support_coverage
+from .simulator import drago
 from .stats import base_stats
 
 
@@ -45,9 +45,7 @@ CATALOG_FIELDS = (
     "stat_advisory", "refined_description", "screenshot_file",
     "screenshot_number", "screenshot_card_ordinal",
 )
-COVERAGE_FIELDS = (
-    "card_id", "name", "status", "training_labels_allowed", "reason",
-)
+ENGINE_FIELDS = ("kind", "id", "name", "engine_name", "supported")
 
 
 def _cell(value):
@@ -105,8 +103,15 @@ def build_reports(dataset_path=DEFAULT_DATASET):
     conflicts_by_id = {row["card_id"]: row for row in conflicts}
     rows = []
     stat_rows = []
-    coverage_rows = coverage(catalog)
-    implemented = {row["card_id"] for row in coverage_rows if row["status"] != "unsupported"}
+    # DaddyDrago's battle engine (the label simulator): our names mapped to his, and what it implements.
+    engine_cards, engine_red, engine_blue = drago.names(catalog)
+    implemented, implemented_blue = drago.supported(catalog)
+    engine_rows = ([{"kind": "card", "id": c.id, "name": c.name, "engine_name": engine_cards[c.id], "supported": c.id in implemented}
+                    for c in catalog.cards]
+                   + [{"kind": "red", "id": s.id, "name": s.name, "engine_name": engine_red[s.id], "supported": True}
+                      for s in catalog.red_supports]
+                   + [{"kind": "blue", "id": s.id, "name": s.name, "engine_name": engine_blue[s.id], "supported": s.id in implemented_blue}
+                      for s in catalog.blue_supports])
     for card in dataset["cards"]:
         card_id = card["card_id"]
         metadata = card["metadata"]
@@ -170,8 +175,7 @@ def build_reports(dataset_path=DEFAULT_DATASET):
         "stats_to_verify.csv": _csv_text(stat_rows, tuple(stat_rows[0])),
         "stats_to_verify.md": "\n".join(stat_lines) + "\n",
         "catalog_overview.csv": _csv_text(rows, CATALOG_FIELDS),
-        "simulator_coverage.csv": _csv_text(coverage_rows, COVERAGE_FIELDS),
-        "support_coverage.csv": _csv_text(support_coverage(catalog), ("color", "support_id", "name", "status", "reason", "training_labels_allowed")),
+        "engine_mapping.csv": _csv_text(engine_rows, ENGINE_FIELDS),
         "source_conflicts.json": json.dumps(conflict_document, ensure_ascii=False, indent=2) + "\n",
     }
 

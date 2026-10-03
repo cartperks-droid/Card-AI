@@ -30,9 +30,8 @@ import torch
 from ..catalog import load_catalog
 from ..model.checkpoint import load_checkpoint
 from ..mutations import MUTATION_NAMES
-from ..simulator.catalog_rules import ASTRAEUS, SUPPORTED
-from .counter import BORDER_NAMES, _with_stats
-from .labels import ART_NAMES, FIELDS, compile_spec, evaluate, label_specs, random_spec
+from .counter import BORDER_NAMES
+from .labels import FIELDS, evaluate, label_specs, random_spec
 from .train import Inputs, card_table
 
 BORDER_IDS = {name.lower(): border for border, name in BORDER_NAMES.items()}
@@ -73,7 +72,7 @@ def spec_from_entry(catalog, entry):
         spec["cards"].append(cards)
         spec["borders"].append([_border(b) for b in team.get("borders", [1] * 4)])
         spec["mutations"].append(mutations)
-        spec["arts"].append([1 if c == ASTRAEUS else 0 for c in cards])
+        spec["arts"].append([0] * 4)  # Astraeus draws its art in battle
         for color in ("red", "blue"):
             support, tier = _support(team.get(color))
             spec[color].append(support)
@@ -89,14 +88,13 @@ def coherent_spec(rng, catalog, groups):
         cards = rng.sample(members, 4)
         spec["cards"][side] = cards
         spec["mutations"][side] = [m if catalog.card(c).weather_id == 1 else 0 for c, m in zip(cards, spec["mutations"][side])]
-        spec["arts"][side] = [rng.randint(1, len(ART_NAMES)) if c == ASTRAEUS else 0 for c in cards]
     return spec
 
 
 def theme_groups(catalog):
     """Classes and packs with at least 4 simulated cards: (label, card IDs)."""
     groups = {}
-    for card_id in sorted(SUPPORTED):
+    for card_id in sorted(card.id for card in catalog.cards):
         card = catalog.card(card_id)
         for label in [f"class {c}" for c in card.classes] + [f"pack {p}" for p in card.packs]:
             groups.setdefault(label, []).append(card_id)
@@ -123,12 +121,11 @@ def tower_suite(rng, catalog, n, difficulty, aura_tier, pool_name="restricted"):
         pool = [_card(catalog, name) for name in data["cheese_cards"]]
     else:
         from ..restricted import cards as restricted_cards, load as load_restricted
-        pool = sorted(c for c in restricted_cards(load_restricted(), catalog) if c in SUPPORTED)
+        pool = sorted(restricted_cards(load_restricted(), catalog))
     single = {_card(catalog, name) for name in data["single_copy"]}
     specs, enemy_stats, floors = [], [], []
     for floor, team in data["teams"].items():
         enemy = [_card(catalog, entry[0]) for entry in team]
-        enemy_arts = [ART_NAMES.index(entry[2]) + 1 if len(entry) > 2 else 0 for entry in team]
         stats = tower_stats(int(floor), difficulty, [entry[1] for entry in team], data["difficulty_ids"])
         for _ in range(n):
             while True:
@@ -137,7 +134,7 @@ def tower_suite(rng, catalog, n, difficulty, aura_tier, pool_name="restricted"):
                     break
             blue = rng.choice(data["cheese_blue_supports"])
             specs.append({"cards": [cards, enemy], "borders": [[1] * 4, [1] * 4], "mutations": [[0] * 4, [0] * 4],
-                          "arts": [[1 if c == ASTRAEUS else 0 for c in cards], [a or (1 if c == ASTRAEUS else 0) for c, a in zip(enemy, enemy_arts)]],
+                          "arts": [[0] * 4, [0] * 4],
                           "red": [0, 0], "red_tier": [0, 0], "blue": [blue, 0], "blue_tier": [aura_tier if blue else 0, 0]})
             enemy_stats.append(stats)
             floors.append(int(floor))
@@ -152,7 +149,7 @@ def _simulate(job):
     probs = np.zeros((len(specs), 4), dtype=np.float32)
     exact = np.zeros(len(specs), dtype=bool)
     for i, (spec, enemy) in enumerate(zip(specs, stats)):
-        outcome, is_exact = evaluate(_with_stats(compile_spec(catalog, spec), 1, enemy), seed * 1_000_003 + i)
+        outcome, is_exact = evaluate(catalog, spec, seed * 1_000_003 + i, fixed=(1, enemy))
         probs[i], exact[i] = outcome, is_exact
     return probs, exact
 

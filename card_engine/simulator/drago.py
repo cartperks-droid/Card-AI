@@ -6,6 +6,7 @@ This module translates our label specs (card IDs, border IDs, mutation indices, 
 loadouts and keeps one Node worker per process.
 """
 
+import atexit
 import json
 import re
 import subprocess
@@ -32,11 +33,13 @@ def _norm(name):
     return re.sub(r"[^a-z0-9]", "", name.lower())
 
 
-def _his_data(kind):
+def his_data(kind):
+    """His data files of one kind (cards, auras: lists of entries; abilities: one name -> text mapping)."""
     files = sorted((ENGINE_DIR / "src" / "data").glob(f"{kind}-*.json"))
     if not files:
         raise EngineUnavailable(f"DaddyDrago's engine is not set up: run sim_js/setup.sh ({ENGINE_DIR} is missing)")
-    return [entry for path in files for entry in json.loads(path.read_text())]
+    parts = [json.loads(path.read_text()) for path in files]
+    return {k: v for part in parts for k, v in part.items()} if isinstance(parts[0], dict) else [e for p in parts for e in p]
 
 
 _NAMES = {}
@@ -46,7 +49,7 @@ def names(catalog):
     """(card id -> his card name, red support id -> his aura name, blue support id -> his aura name)."""
     if id(catalog) in _NAMES:
         return _NAMES[id(catalog)]
-    his_cards = {_norm(c["name"]): c["name"] for c in _his_data("cards")}
+    his_cards = {_norm(c["name"]): c["name"] for c in his_data("cards")}
     cards = {}
     for card in catalog.cards:
         key = _norm(card.name)
@@ -54,7 +57,7 @@ def names(catalog):
         if key not in his_cards:
             raise EngineUnavailable(f"Card {card.id} {card.name} has no counterpart in DaddyDrago's data")
         cards[card.id] = his_cards[key]
-    auras = {(a["type"], _norm(a["name"])): a["name"] for a in _his_data("auras")}
+    auras = {(a["type"], _norm(a["name"])): a["name"] for a in his_data("auras")}
     red = {s.id: auras[("Stat", _norm(s.name))] for s in catalog.red_supports}
     blue = {s.id: auras[("Skill", _norm(s.name))] for s in catalog.blue_supports}
     _NAMES[id(catalog)] = cards, red, blue
@@ -117,6 +120,7 @@ def worker():
     global _WORKER
     if _WORKER is None:
         _WORKER = Worker()
+        atexit.register(_WORKER.close)
     return _WORKER
 
 
@@ -136,11 +140,29 @@ def supported(catalog):
     return ok_cards, ok_blue
 
 
-def initial_stats(catalog, spec):
-    """[side][card] = (HP, ATK) as his engine starts the battle (supports and deck passives applied)."""
+def _tweaks(fixed=None, scale=None, strip=None):
+    """Search options for the per-battle tweaks (see evaluate)."""
+    side = "ab".__getitem__
+    options = {}
+    if fixed is not None:
+        options["fixed"] = [side(fixed[0]), [[float(hp), float(attack)] for hp, attack in fixed[1]]]
+    if scale is not None and scale[1] != 1:
+        options["scale"] = [side(scale[0]), float(scale[1])]
+    if strip is not None:
+        options["strip"] = [side(strip[0]), int(strip[1])]
+    return options
+
+
+def initial_cards(catalog, spec, **tweaks):
+    """[side][card] = (HP, ATK, ability) as his engine starts the battle (supports, deck passives and tweaks applied)."""
     a, b = loadouts(catalog, spec)
-    reply = worker().request({"op": "initial", "a": a, "b": b})
+    reply = worker().request({"op": "initial", "a": a, "b": b, "options": _tweaks(**tweaks)})
     return [reply["a"], reply["b"]]
+
+
+def initial_stats(catalog, spec, **tweaks):
+    """[side][card] = (HP, ATK) as his engine starts the battle."""
+    return [[card[:2] for card in side] for side in initial_cards(catalog, spec, **tweaks)]
 
 
 def stat_tables(catalog):
@@ -170,15 +192,14 @@ def stat_tables(catalog):
     return base, table, prehistoric, jurassic
 
 
-def evaluate(catalog, spec, seed, b_stats=None, **overrides):
-    """((P(A wins), P(B wins), 0, unfinished), exact) for a label spec; side A moves first, and a draw counts as B's.
+def evaluate(catalog, spec, seed, *, fixed=None, scale=None, strip=None, **overrides):
+    """((P(A wins), P(B wins), 0, unfinished), exact) for a label spec; side A moves first, and a draw counts as A's loss.
 
-    b_stats optionally fixes side B's (HP, ATK) per card (event or Tower teams). A battle with an ability or aura
-    his engine marks unsupported gets no answer: ((0, 0, 0, 1), False)."""
+    Optional tweaks, each naming a side (0 = A, 1 = B): fixed=(side, [(HP, ATK) per card]) sets that side's stats
+    (event or Tower teams); scale=(side, factor) multiplies its HP and ATK; strip=(side, slot) removes one card's
+    ability, stats kept. A battle with an ability or aura his engine marks unsupported gets no answer: ((0,0,0,1), False)."""
     a, b = loadouts(catalog, spec)
-    options = {**SEARCH, **overrides, "seed": int(seed) % 2 ** 31 or 1}
-    if b_stats is not None:
-        options["bStats"] = [[float(hp), float(attack)] for hp, attack in b_stats]
+    options = {**SEARCH, **overrides, **_tweaks(fixed, scale, strip), "seed": int(seed) % 2 ** 31 or 1}
     reply = worker().request({"a": a, "b": b, "options": options})
     if reply["unsupported"]:
         return (0.0, 0.0, 0.0, 1.0), False

@@ -19,19 +19,17 @@ import numpy as np
 from ..catalog import load_catalog
 from ..mutations import MUTATION_NAMES
 from ..simulator import drago
-from ..simulator.catalog_rules import ASTRAEUS_ARTS, BLUE_SUPPORTS, RED_SUPPORTS, SUPPORTED
 from .tablebase import Tablebase
 
 ROOT = Path(__file__).resolve().parents[2]
 SHARD_DIR = ROOT / "data" / "labels"
-ART_NAMES = tuple(ASTRAEUS_ARTS)  # art id = index + 1; 0 = not Astraeus
 FIELDS = ("cards", "borders", "mutations", "arts", "red", "red_tier", "blue", "blue_tier")
 
 
 AURA_TIERS = tuple(drago.AURA_BORDERS)  # support cards come in Base, Platinum, Crystal and Galaxy (no Ruby)
 
 
-def random_spec(rng, catalog, cards=tuple(sorted(SUPPORTED)), none_support=0.1, mutation_rate=0.5, matched=0.7):
+def random_spec(rng, catalog, cards=None, none_support=0.1, mutation_rate=0.5, matched=0.7):
     """One random 4v4 matchup: any card, border, eligible mutation, and support tier. Astraeus draws its art in
     battle (his engine), so arts stay 0.
 
@@ -42,6 +40,7 @@ def random_spec(rng, catalog, cards=tuple(sorted(SUPPORTED)), none_support=0.1, 
     ranked = sorted(range(1, 17), key=lambda b: (catalog.border(b).rarity, b))
     level = rng.randrange(16) if rng.random() < matched else None
     border = lambda: rng.randint(1, 16) if level is None else ranked[min(15, max(0, level + rng.randint(-2, 2)))]
+    cards = cards or tuple(card.id for card in catalog.cards)
     for _side in (0, 1):
         row = {name: [] for name in ("cards", "borders", "mutations", "arts")}
         for _slot in range(4):
@@ -55,12 +54,12 @@ def random_spec(rng, catalog, cards=tuple(sorted(SUPPORTED)), none_support=0.1, 
             row["arts"].append(0)
         for name, values in row.items():
             spec[name].append(values)
-        for color, table in (("red", RED_SUPPORTS), ("blue", BLUE_SUPPORTS)):
+        for color, table in (("red", catalog.red_supports), ("blue", catalog.blue_supports)):
             if rng.random() < none_support:
                 spec[color].append(0)
                 spec[color + "_tier"].append(0)
             else:
-                support = rng.choice(sorted(table))
+                support = rng.choice(sorted(s.id for s in table))
                 spec[color].append(support)
                 spec[color + "_tier"].append(rng.choice(AURA_TIERS))
     return spec

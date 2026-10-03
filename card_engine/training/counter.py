@@ -28,7 +28,6 @@ import math
 import multiprocessing as mp
 import os
 import random
-from dataclasses import replace
 from pathlib import Path
 
 from ..availability import DEFAULT_WEATHER, roll_rarity
@@ -36,9 +35,8 @@ from ..catalog import load_catalog
 from ..deck import DECK_FILE, load as load_deck, owned_entries, owned_supports
 from ..restricted import entries as restricted_entries, load as load_restricted
 from ..mutations import MUTATION_NAMES
-from ..simulator.catalog_rules import BLUE_SUPPORTS, RED_SUPPORTS, _blank
-from ..stats import base_stats
-from .labels import compile_spec, evaluate
+from ..simulator.drago import stat_tables
+from .labels import AURA_TIERS, evaluate
 
 BORDER_NAMES = {1: "no border", 2: "Pl", 3: "Cr", 4: "CrPl", 5: "Ru", 6: "RuPl", 7: "RuCr", 8: "RuCrPl", 9: "Ga", 10: "GaPl",
                 11: "GaCr", 12: "GaCrPl", 13: "GaRu", 14: "GaRuPl", 15: "GaRuCr", 16: "GaRuCrPl"}
@@ -62,42 +60,20 @@ def _init():
     _CATALOG = load_catalog()
 
 
-def _with_stats(battle, side, stats):
-    """The battle with `side`'s lineup set to fixed (HP, ATK) per card; None keeps the catalogue's stats."""
-    if stats is None:
-        return battle
-    team = list(battle.teams[side])
-    for slot, (hp, attack) in enumerate(stats):
-        team[slot] = replace(team[slot], hp=float(hp), attack=float(attack))
-    teams = list(battle.teams)
-    teams[side] = tuple(team)
-    return replace(battle, teams=tuple(teams))
-
-
 STRESS = (1.5, 2.0, 3.0)  # enemy HP and ATK multipliers for the headroom test
 
 
-def _stressed(battle, side, factor, vanilla_slot):
-    """The battle with `side` (the enemy) at `factor` times its HP and ATK, and the player's card at `vanilla_slot`
-    stripped of its ability (stats kept); factor 1 and slot None leave it unchanged."""
-    teams = list(battle.teams)
-    if factor != 1:
-        teams[side] = tuple(replace(f, hp=f.hp * factor, attack=f.attack * factor) for f in teams[side])
-    if vanilla_slot is not None:
-        own = list(teams[1 - side])
-        own[vanilla_slot] = replace(_blank(own[vanilla_slot]), spare=0)
-        teams[1 - side] = tuple(own)
-    return replace(battle, teams=tuple(teams))
-
-
 def _evaluate(job):
-    """(player win probability attacking first, ... defending first)."""
+    """(player win probability attacking first, ... defending first). The enemy's stats are fixed (enemy_stats) and
+    scaled by `factor`; the player's card at `vanilla_slot` loses its ability (stats kept)."""
     player, enemy, seed, enemy_stats, factor, vanilla_slot = job
-    first, _ = evaluate(_stressed(_with_stats(compile_spec(_CATALOG, _spec(player, enemy)), 1, enemy_stats), 1, factor,
-                                  vanilla_slot), seed)
-    second, _ = evaluate(_stressed(_with_stats(compile_spec(_CATALOG, _spec(enemy, player)), 0, enemy_stats), 0, factor,
-                                   vanilla_slot), seed + 1)
-    return first[0], second[1]
+    results = []
+    for enemy_side, spec in ((1, _spec(player, enemy)), (0, _spec(enemy, player))):
+        tweaks = dict(fixed=None if enemy_stats is None else (enemy_side, enemy_stats), scale=(enemy_side, factor),
+                      strip=None if vanilla_slot is None else (1 - enemy_side, vanilla_slot))
+        probs, _ = evaluate(_CATALOG, spec, seed + (1 - enemy_side), **tweaks)
+        results.append(probs[1 - enemy_side])
+    return tuple(results)
 
 
 class Search:
@@ -121,12 +97,11 @@ class Search:
         self.index = {}
         for i, (card, border, *_rest) in enumerate(self.entries):
             self.index.setdefault((card, border), i)
-        # Base stats (HP + ATK) of every entry: stats = 2^log10(card x border rarity) x weather x card modifier, so for a
+        # Base stats (HP + ATK) of every entry (DaddyDrago's engine): stats grow as 2^log10(card x border rarity), so for a
         # target stat level each card has a cheapest border that reaches it (weather cards need far rarer borders less).
-        self.stats = []
-        for card, border, mutation, *_ in self.entries:
-            s = base_stats(catalog, card, border, mutation=mutation)
-            self.stats.append(math.log10(s.hp + s.attack))
+        base = stat_tables(catalog)[0]
+        self.stats = [math.log10(base[card, border, MUTATION_NAMES.index(mutation)].sum())
+                      for card, border, mutation, *_ in self.entries]
         self.by_card = {}
         for i, (card, *_rest) in enumerate(self.entries):
             self.by_card.setdefault(card, []).append(i)
@@ -393,8 +368,8 @@ def main():
     else:
         scenario["owned"] = []
         # The scenario's supports (another player's), else the player base: every support at every tier.
-        scenario.setdefault("red", [[s, t] for s, (_, _, tiers) in RED_SUPPORTS.items() for t in range(1, 6) if tiers[t - 1] is not None])
-        scenario.setdefault("blue", [[s, t] for s, tiers in BLUE_SUPPORTS.items() for t in range(1, 6) if tiers[t - 1] is not None])
+        scenario.setdefault("red", [[s.id, t] for s in catalog.red_supports for t in AURA_TIERS])
+        scenario.setdefault("blue", [[s.id, t] for s in catalog.blue_supports for t in AURA_TIERS])
     scenario["candidates"] = ([] if args.mode == "own" else
                               restricted_entries(load_restricted(), catalog, limited=not args.no_limited))
     search = Search(scenario, catalog, workers=args.workers, max_rolls=args.max_rolls)

@@ -12,7 +12,7 @@ import torch
 from ..catalog import load_catalog
 from ..model.checkpoint import load_checkpoint
 from .flags import snapshot
-from .labels import ART_NAMES, label_specs
+from .labels import label_specs
 from .tablebase import Tablebase
 from .train import RUN_DIR, Inputs, card_table
 
@@ -52,7 +52,6 @@ def main():
         parser.add_argument(f"--mutations-{side}", help="four mutation indices (default 0 = none)")
         parser.add_argument(f"--red-{side}", help="red support id[:tier]")
         parser.add_argument(f"--blue-{side}", help="blue support id[:tier]")
-        parser.add_argument(f"--art-{side}", choices=ART_NAMES, help="Astraeus art for every Astraeus on this side")
     parser.add_argument("--run-dir", default=RUN_DIR, help="training run whose model.checkpoint is used")
     args = parser.parse_args()
     spec = {"cards": [], "borders": [], "mutations": [], "arts": [], "red": [], "red_tier": [], "blue": [], "blue_tier": []}
@@ -61,8 +60,7 @@ def main():
         spec["cards"].append(cards)
         spec["borders"].append(_ints(getattr(args, f"borders_{side}"), 1))
         spec["mutations"].append(_ints(getattr(args, f"mutations_{side}"), 0))
-        art = getattr(args, f"art_{side}") or ART_NAMES[0]
-        spec["arts"].append([ART_NAMES.index(art) + 1 if card == 56 else 0 for card in cards])
+        spec["arts"].append([0] * 4)  # Astraeus draws its art in battle
         for color in ("red", "blue"):
             support, tier = _support(getattr(args, f"{color}_{side}"))
             spec[color].append(support)

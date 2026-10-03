@@ -5,8 +5,12 @@
 // Side A moves first. Outcomes: A wins, B wins, draw (both wiped out, or the turn cap).
 import { createTwoSidedState, rollContext, simulateBattleV2 } from './vendor/CardRngExpansionDepths/src/engine/battle-v2.label'
 
-export interface Options { nodeBudget: number; sampleBelow: number; rollouts: number; rolloutError: number; maxTurns: number; seed: number
-  bStats?: number[][] }  // side B's fixed (HP, ATK) per card, for event or Tower teams
+// Per-battle tweaks, each on side 'a' or 'b': fixed (HP, ATK) per card (event or Tower teams), stats scaled by a factor
+// (counter-search stress test), or one card's ability removed with its stats kept.
+export interface Tweaks { fixed?: [Side, number[][]]; scale?: [Side, number]; strip?: [Side, number] }
+type Side = 'a' | 'b'
+export interface Options extends Tweaks { nodeBudget: number; sampleBelow: number; rollouts: number; rolloutError: number
+  maxTurns: number; seed: number }
 export const DEFAULTS: Options = { nodeBudget: 20000, sampleBelow: 1e-3, rollouts: 1024, rolloutError: 0.03, maxTurns: 2000, seed: 1 }
 export interface Result { a: number; b: number; draw: number; exact: boolean; nodes: number; playouts: number }
 
@@ -58,16 +62,26 @@ function chanceFor(tape: Tape) {
   }
 }
 
-function play(a: any, b: any, tape: Tape, maxTurns: number, bStats?: number[][]): 'a' | 'b' | 'draw' {
+export function startState(a: any, b: any, tweaks: Tweaks = {}) {
   const state = createTwoSidedState(a, b)
-  bStats?.forEach(([hp, attack], i) => {
-    const card = state.teams.Enemies[i]
-    if (!card) return
+  const team = (side: Side) => state.teams[side === 'a' ? 'Allies' : 'Enemies']
+  const set = (card: any, hp: number, attack: number) => {
     card.hp = card.maxHp = hp
     card.damage = attack
     card.counters.normalDamage = attack
     card.counters.normalMaxHp = hp
-  })
+  }
+  if (tweaks.fixed) tweaks.fixed[1].forEach(([hp, attack], i) => { const card = team(tweaks.fixed![0])[i]; if (card) set(card, hp, attack) })
+  if (tweaks.scale) for (const card of team(tweaks.scale[0])) set(card, card.maxHp * tweaks.scale[1], card.damage * tweaks.scale[1])
+  if (tweaks.strip) {
+    const card = team(tweaks.strip[0])[tweaks.strip[1]]
+    if (card) { card.abilityOverride = null; card.bonusAbilities = [] }
+  }
+  return state
+}
+
+function play(a: any, b: any, tape: Tape, maxTurns: number, tweaks: Tweaks): 'a' | 'b' | 'draw' {
+  const state = startState(a, b, tweaks)
   const r = simulateBattleV2(a, [], 1, maxTurns, false, false, undefined, { state, chance: chanceFor(tape) })
   return r.winner === 'Allies' ? 'a' : r.winner === 'Enemies' ? 'b' : 'draw'
 }
@@ -83,7 +97,7 @@ export function solve(a: any, b: any, options: Partial<Options> = {}): Result {
     for (let i = 1; i < open.length; i++) if (open[i].p > open[best].p) best = i
     const node = open[best]; open[best] = open[open.length - 1]; open.pop()
     nodes++
-    try { out[play(a, b, new Tape(node.choices, null), o.maxTurns, o.bStats)] += node.p }
+    try { out[play(a, b, new Tape(node.choices, null), o.maxTurns, o)] += node.p }
     catch (e) {
       if (!(e instanceof Branch)) throw e
       e.probs.forEach((q, k) => { if (q > 0) (node.p * q < o.sampleBelow ? rare : open).push({ p: node.p * q, choices: [...node.choices, k] }) })
@@ -102,7 +116,7 @@ export function solve(a: any, b: any, options: Partial<Options> = {}): Result {
       const u = random() * mass
       let lo = 0, hi = cum.length - 1
       while (lo < hi) { const mid = (lo + hi) >> 1; if (cum[mid] < u) lo = mid + 1; else hi = mid }
-      tally[play(a, b, new Tape(left[lo].choices, random), o.maxTurns, o.bStats)]++
+      tally[play(a, b, new Tape(left[lo].choices, random), o.maxTurns, o)]++
     }
     const pa = tally.a / n
     if (mass * Math.sqrt(Math.max(pa * (1 - pa), 1 / n) / n) <= o.rolloutError) break
