@@ -353,11 +353,13 @@ if __name__ == "__main__":
     parser.add_argument("--freeze-language-at", type=int, help="step after which the description transformer is frozen")
     parser.add_argument("--device")
     parser.add_argument("--reload-every", type=int, default=1000)
+    parser.add_argument("--eval-every", type=int, default=1000,
+                        help="steps between evaluations; each scores the whole validation set, so it grows with the data")
     parser.add_argument("--run-dir", default=RUN_DIR, help="checkpoints and log; a new directory starts from random weights")
     parser.add_argument("--upset-weight", type=float, default=1.0,
                         help="multiplies upsets' gradients into the description encoder (not the strategic transformer)")
     parsed = parser.parse_args()
     train(steps=parsed.steps, batch_size=parsed.batch_size, lr=parsed.lr, device=parsed.device, reload_every=parsed.reload_every,
           weight_decay=parsed.weight_decay, dropout=parsed.dropout, freeze_language_at=parsed.freeze_language_at,
-          upset_weight=parsed.upset_weight,
+          upset_weight=parsed.upset_weight, eval_every=parsed.eval_every,
           run_dir=parsed.run_dir)
