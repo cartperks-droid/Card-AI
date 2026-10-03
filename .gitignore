@@ -18,3 +18,5 @@ data/raw/**/*.mp4
 *.checkpoint
 /Card AI/
 /card-engine/
+sim_js/vendor/
+sim_js/node_modules/

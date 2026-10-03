@@ -1,0 +1,7 @@
+{
+  "name": "card-engine-labels",
+  "private": true,
+  "type": "module",
+  "description": "Label search around DaddyDrago's battle engine (fetched by setup.sh, not stored in this repository)",
+  "dependencies": { "tsx": "4.20.6" }
+}
