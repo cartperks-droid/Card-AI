@@ -26,6 +26,13 @@ python -m card_engine.training.train --device cuda --batch-size 512 --weight-dec
 ```
 Training resumes from the checkpoints in `data/training/`.
 
+## Send new label shards while training runs (on the Mac)
+The Mac only generates labels; the pod trains. Rerun this whenever new shards exist. It copies only shards the pod lacks and never deletes anything on the pod. The trainer reloads shards every `--reload-every` steps (default 1000).
+```sh
+rsync -avz --ignore-existing --progress -e "ssh -p $PORT" data/labels/store/ root@$HOST:/workspace/Card-AI/data/labels/store/
+```
+To repeat it automatically every 10 minutes: `while true; do <the rsync above>; sleep 600; done`
+
 ## Download checkpoints (on the Mac)
 ```sh
 rsync -avz --progress -e "ssh -p $PORT" root@$HOST:/workspace/Card-AI/data/training/ data/training/
