@@ -1,0 +1,333 @@
+kind,id,name,engine_name,supported
+card,1,Archer,Archer,true
+card,2,Shining Armor,Shining Armor,true
+card,3,Good Boy,Good Boy,true
+card,4,Useless Seer,Useless Seer,true
+card,5,Baby Skeleton,Baby Skeleton,true
+card,6,Wizard,Wizard,true
+card,7,Forest Spirit,Forest Spirit,true
+card,8,General Moon Zoo,General Moon Zoo,true
+card,9,Crown Prince,Crown Prince,true
+card,10,Arthur,Arthur,true
+card,11,Beelzebub,Beelzebub,true
+card,12,Michael,Michael,true
+card,13,Lucifer,Lucifer,true
+card,14,Knightmare,Knightmare,true
+card,15,Arcane Avian,Arcane Avian,true
+card,16,Tartarus,Tartarus,true
+card,17,Greedy Belly,Greedy Belly,true
+card,18,Arthur of Excalibur,Arthur of Excalibur,true
+card,19,Wind Spirit,Wind Spirit,true
+card,20,Conqueror,Conqueror,true
+card,21,Ice Queen,Ice Queen,true
+card,22,Three-Legged Golden Crow,Three-Legged Golden Crow,true
+card,23,Ixion,Ixion,true
+card,24,Leviathan,Leviathan,true
+card,25,Brunhilde,Brunhilde,true
+card,26,Savior,Savior,true
+card,27,Frankenstein,Frankenstein,true
+card,28,Titan,Titan,true
+card,29,Sciron,Sciron,true
+card,30,Mist Spirit,Mist Spirit,true
+card,31,Phoenix,Phoenix,true
+card,32,Hoarfrost Phoenix,Hoarfrost Phoenix,true
+card,33,Hell's Army,Hell's Army,true
+card,34,Zeus,Zeus,true
+card,35,Pegasus,Pegasus,true
+card,36,Bad Boys,Bad Boys,true
+card,37,Pandora,Pandora,true
+card,38,Heaven's Armor,Heaven's Armor,true
+card,39,Jamiy the Bald One,Jamiy the Bald One,true
+card,40,ToadBoiGaming,ToadBoiGaming,true
+card,41,Boreas,Boreas,true
+card,42,Thor,Thor,true
+card,43,Loki,Loki,true
+card,44,Poseidon,Poseidon,true
+card,45,Limitless Rivals,Limitless Rivals,true
+card,46,Vicious,Vicious,true
+card,47,Typhon,Typhon,true
+card,48,The Curse,The Curse,true
+card,49,Hades,Hades,true
+card,50,Judgement Day,Judgment Day,true
+card,51,Odin,Odin,true
+card,52,Black Plague,Black Plague,true
+card,53,Chaos,Chaos,true
+card,54,Deus Ex,Deus Ex,true
+card,55,Siegfried,Siegfried,true
+card,56,Astraeus,Astraeus,true
+card,57,Surtr,Surtr,true
+card,58,Cronus,Cronus,true
+card,59,Gilgamesh,Gilgamesh,true
+card,60,Fafnir,Fafnir,true
+card,61,Ragon,Ragon,true
+card,62,Serpent Mist,Serpent Mist,true
+card,63,Yeti,Yeti,true
+card,64,Achyls,Achlys,true
+card,65,Parallax,Parallax,true
+card,66,Mummy,Mummy,true
+card,67,Dancer,Dancer,true
+card,68,Vizier,Vizier,true
+card,69,Black Cat,Black Cat,true
+card,70,Sekhmet,Sekhmet,true
+card,71,Amenhotep,Amenhotep,true
+card,72,Sphinx,Sphinx,true
+card,73,Horus,Horus,true
+card,74,Shu,Shu,true
+card,75,Set,Set,true
+card,76,Anubis,Anubis,true
+card,77,Serket,Serket,true
+card,78,Hathor,Hathor,true
+card,79,Ra,Ra,true
+card,80,Sorceror,Sorcerer,true
+card,81,Demon Hunter,Demon Hunter,true
+card,82,Trainee,Trainee,true
+card,83,Gambler,Gambler,true
+card,84,Stone Scientist,Stone Scientist,true
+card,85,Darling,Darling,true
+card,86,Gunslinger,Gunslinger,true
+card,87,Artoria of Excalibur,Artoria of Excalibur,true
+card,88,Academy Student,Academy Student,true
+card,89,Priest,Priest,true
+card,90,Control Freak,Control Freak,true
+card,91,Vampire Lord,Vampire Lord,true
+card,92,Admiral Ice,Admiral Ice,true
+card,93,Nao Presence,Nao Presence,true
+card,94,Immortal Witch,Immortal Witch,true
+card,95,Tornado,Tornado,true
+card,96,Failed Mage,Failed Mage,true
+card,97,Joe,Joe,true
+card,98,Ultimate Brawler,Ultimate Brawler,true
+card,99,Cosmic Pop Star,Cosmic Pop Star,true
+card,100,Mastermind,Mastermind,true
+card,101,Cat Lady,Cat Lady,true
+card,102,Domain Master,Domain Master,true
+card,103,Kira,Kira,true
+card,104,Piccolo,Piccolo,true
+card,105,Ninja,Ninja,true
+card,106,Samurai,Samurai,true
+card,107,Onmyoji,Onmyoji,true
+card,108,Kitsune,Kitsune,true
+card,109,A0-ON1,A0-ON1,true
+card,110,AK4-ON1,AK4-ON1,true
+card,111,Shuten-dōji,Shuten-dōji,true
+card,112,River Dragon,River Dragon,true
+card,113,Sasaki Kojiro,Sasaki Kojiro,true
+card,114,Inari,Inari,true
+card,115,Yamato no Orochi,Yamato no Orochi,true
+card,116,Susanoo,Susanoo,true
+card,117,Tsukuyomi,Tsukuyomi,true
+card,118,Amaterasu,Amaterasu,true
+card,119,Kuchisake-onna,Kuchisake-onna,true
+card,120,Demon Cultivator,Demonic Cultivator,true
+card,121,Martial Artist,Martial Artist,true
+card,122,Heavenly Demon,Heavenly Demon,true
+card,123,Jiāngshī,Jiāngshī,true
+card,124,Buddhist Monk,Buddhist Monk,true
+card,125,Divine Doctor,Divine Doctor,true
+card,126,Immortal Cultivator,Immortal Cultivator,true
+card,127,Qilin,Qilin,true
+card,128,The Jade Emporer,The Jade Emperor,true
+card,129,The Awakened One,The Awakened One,true
+card,130,Nüwa,Nüwa,true
+card,131,Shén Lóng,Shén Lóng,true
+card,132,Xīfāng Báihü,Xīfāng Báihǔ,true
+card,133,Běi Fāng Xuán Wü,Běi Fāng Xuán Wǔ,true
+card,134,Dōng Fāng Qīng Lóng,Dōng Fāng Qīng Lóng,true
+card,135,Nán Fāng Zhū Què,Nán Fāng Zhū Què,true
+card,136,Shennong,Shennong,true
+card,137,Fuxi,Fuxi,true
+card,138,Sun Wukong,Sun Wukong,true
+card,139,Buddha,Buddha,true
+card,140,Pangu,Pangu,true
+card,141,Ancient Egg,Ancient Egg,true
+card,142,Stegosaurus,Stegosaurus,true
+card,143,Brachiosaurus,Brachiosaurus,true
+card,144,Tricerotops,Triceratops,true
+card,145,Pterodactylus,Pterodactylus,true
+card,146,Dilophosaurus,Dilophosaurus,true
+card,147,Mammoth,Mammoth,true
+card,148,Umbrasaur,Umbrasaur,true
+card,149,Sabertooth Tiger,Sabertooth Tiger,true
+card,150,Unicorn,Unicorn,true
+card,151,Meteosaurus,Meteosaurus,true
+card,152,Marrowclaw,Marrowclaw,true
+card,153,Ankylosaurus,Ankylosaurus,true
+card,154,Velociraptor,Velociraptor,true
+card,155,Cyberdon,Cyberdon,true
+card,156,Behemoth,Behemoth,true
+card,157,Tyrannosaurus Rex,Tyrannosaurus rex,true
+card,158,Megalodon,Megalodon,true
+card,159,Tyrannodon,Tyranodon,true
+card,160,Hunter,Hunter,true
+card,161,Resolute Blade,Resolute Blade,true
+card,162,Bacon Hair,Bacon Hair,true
+card,163,Soft Paw,Soft Paw,true
+card,164,True Prophet,True Prophet,true
+card,165,Cherub,Cherub,true
+card,166,Engineer,Engineer,true
+card,167,Volcano Spirit,Volcano Spirit,true
+card,168,Julius Leader,Julius Leader,true
+card,169,Noveau Riche,Noveau Riche,true
+card,170,Robin Hood,Robin Hood,true
+card,171,Infected Maw,Infected Maw,true
+card,172,Seraphim,Seraphim,true
+card,173,Terra's Aria,Terra's Aria,true
+card,174,Count Muscula,Count Muscula,true
+card,175,Poison Witch,Poison Witch,true
+card,176,Skeleton King,Skeleton King,true
+card,177,Juggernoid,Juggernoid,true
+card,178,Zombie Dragon,Zombie Dragon,true
+card,179,Assassin King,Assassin King,true
+card,180,Slum Dweller,Slum Dweller,true
+card,181,Malakim,Malakim,true
+card,182,Hard Claws,Hard Claws,true
+card,183,Steven,Steven,true
+card,184,Hollow,Hollow,true
+card,185,Hell killer,Hell killer,true
+card,186,The Sack,The Sack,true
+card,187,Creed,Creed,true
+card,188,god-Slayer,God-Slayer,true
+card,189,Melanin,Melanin,true
+card,190,Necro-orc,Necro-orc,true
+card,191,NO. 2,NO.2,true
+card,192,Ice King,Ice King,true
+card,193,Heavenly father,Heavenly Father,true
+card,194,Durante,Durante,true
+card,195,Fresno Nightcrawler,Fresno Nightcrawler,true
+card,196,Loch Ness,Loch Ness,true
+card,197,Loveland Frog,Loveland Frog,true
+card,198,Chupcabra,Chupacabra,true
+card,199,Jersey Devil,Jersey Devil,true
+card,200,Mothman,Mothman,true
+card,201,Bigfoot,Bigfoot,true
+card,202,Wendigo,Wendigo,true
+card,203,The Rake,The Rake,true
+card,204,Kraken,Kraken,true
+card,205,Chronus The Hoarder,Chronus The Hoarder,true
+card,206,Malik The Sovereign,Malik The Sovereign,true
+card,207,Gideon The Insatiable,Gideon The Insatiable,true
+card,208,Lilith the Enchantress,Lilith The Enchantress,true
+card,209,Morpheus the Slumberer,Morpheus The Slumberer,true
+card,210,Raze The Destroyer,Raze The Destroyer,true
+card,211,Sable The Envious,Sable The Envious,true
+card,212,Mother of Beasts,Mother of Beasts,true
+card,213,100 Men,100 Men,true
+card,214,Naga,Naga,true
+card,215,Uncle Sam,Uncle Sam,true
+card,216,"Shay, Heart of the Cards","Shay, Heart of the Cards",true
+card,217,Gorilla,Gorilla,true
+card,218,Valentine's Specter,Valentine's Specter,true
+card,219,Sisyphus,Sisyphus,true
+card,220,George Washington,George Washington,true
+card,221,Cave Goblin & Wind Spirit,Cave Goblin & Wind Spirit,true
+card,222,Hera,Hera,true
+card,223,Dad,Dad,true
+card,224,Kid Gohan,Kid Gohan,true
+card,225,Milk,Milk,true
+card,226,Aphrodite,Aphrodite,true
+card,227,Frank,Frank,true
+card,228,Eclipseborn Luminant,Eclipseborn Luminant,true
+card,229,Turkey,Turkey,true
+card,230,The Broken One,The Broken One,true
+card,231,Supreme Ozzy,Supreme Ozzy,true
+card,232,Cave Goblin God,Cave Goblin God,true
+card,233,Anubis & Hades,Anubis & Hades,true
+card,234,Longmu,Longmu,true
+card,235,Star Eater,Star Eater,true
+card,236,Eonus,Eonus,true
+card,237,Pestilence,Pestilence,true
+card,238,Ragon & Fafnir,Ragon & Fafnir,true
+card,239,Cthulu,Cthulu,true
+card,240,Fate Seamstress,Fate Seamstress,true
+card,241,Famine,Famine,true
+card,242,War,War,true
+card,243,Community,Community,true
+card,244,Azure Witch,Azure Witch,true
+card,245,Death,Death,true
+card,246,Memories,Memories,true
+card,247,Legends,Legends,true
+card,248,Sarimanok,Sarimanok,true
+card,249,Bakunawa,Bakunawa,true
+card,250,Time Lord Stryx,Time Lord Stryx,true
+card,251,Frosty The Snowman,Frosty The Snowman,true
+card,252,Old Man Winter,Old Man Winter,true
+card,253,Rudolph,Rudolph,true
+card,254,Gingerbread Man,Gingerbread Man,true
+card,255,Dionysus,Dionysus,true
+card,256,The Grinch,The Grinch,true
+card,257,Krampus,Krampus,true
+card,258,Wandering Snowman,Wandering Snowman,true
+card,259,Mrs. Claus,Mrs. Claus,true
+card,260,Santa Claus,Santa Claus,true
+card,261,Toy Bear,Toy Bear,true
+card,262,Toy Car,Toy Car,true
+card,263,The Jack-in-the-Box,Toy Jack-in-the-Box,true
+card,264,Toy Nutcracker,Toy Nutcracker,true
+card,265,Santa Claws,Santa Claws,true
+card,266,Zombie,Zombie,true
+card,267,Banshee,Banshee,true
+card,268,Witch,Witch,true
+card,269,Scarecrow,Scarecrow,true
+card,270,Bloody Mary,Bloody Mary,true
+card,271,Revenant,Revenant,true
+card,272,Dr. Frankenstein,Dr. Frankenstein,true
+card,273,Marionette,Marionette,true
+card,274,Ghoul,Ghoul,true
+card,275,Zombie Nurse,Zombie Nurse,true
+card,276,Night Witch,Night Witch,true
+card,277,The Hanged Man,The Hanged Man,true
+card,278,Walking Dead,Walking Dead,true
+card,279,Headless Horseman,Headless Horseman,true
+card,280,The Blood Countess,The Blood Countess,true
+card,281,The Composer,The Composer,true
+card,282,Dracula,Dracula,true
+card,283,Flying Dutchman,Flying Dutchman,true
+card,284,Hecate,Hecate,true
+card,285,Abomination,Abomination,true
+card,286,Sleep Paralysis,Sleep Paralysis,true
+card,287,Michael M.,Michael M.,true
+card,288,Jason,Jason,true
+card,289,Glamour,Glamour,true
+red,1,Adventurer,Adventurer,true
+red,2,General Sun Tzu,General Sun Tzu,true
+red,3,Neko,Neko,true
+red,4,Stormcaller,Stormcaller,true
+red,5,Khione,Khione,true
+red,6,Shrinemaiden,Shrinemaiden,true
+red,7,Imp,Imp,true
+red,8,Iris,Iris,true
+red,9,Shatbi,Shatbi,true
+red,10,Astrologist,Astrologist,true
+red,11,Kala,Kala,true
+red,12,Satan,Satan,true
+red,13,Dragon King,Dragon King,true
+red,14,Army's Reinforcements,Army's Reinforcements,true
+red,15,Avian King,Avian King,true
+red,16,Taoist,Taoist,true
+red,17,Niflheim,Niflheim,true
+red,18,Eclipse Chaser,Eclipse Chaser,true
+red,19,The Sequel,The Sequel,true
+red,20,Myths,Myths,true
+red,21,Gamer,Gamer,true
+red,22,Elohim,Elohim,true
+red,23,Mangeka,Mangeka,true
+red,24,Disease,Disease,true
+red,25,Yggdrasil,Yggdrasil,true
+red,26,Dinosaur King,Dinosaur King,true
+red,27,Desmond Of Despair,Desmond Of Despair,true
+red,28,The One Ring,The One Ring,true
+blue,1,Shielder,Shielder,true
+blue,2,Flame Wizard,Flame Wizard,true
+blue,3,Berserker,Berserker,true
+blue,4,Phantom,Phantom,true
+blue,5,Vampire Matron,Vampire Matron,true
+blue,6,Synth Human,Synth Human,true
+blue,7,Executioner,Executioner,true
+blue,8,Fate,Fate,true
+blue,9,Mirror Knight,Mirror Knight,true
+blue,10,Final Testament,Final Testament,true
+blue,11,Storm Spirit,Storm Spirit,true
+blue,12,Magical Elf,Magical Elf,true
+blue,13,Jurassic World,Jurassic World,true
+blue,14,End Times,End Times,true
+blue,15,Guardian Angel,Guardian Angel,true

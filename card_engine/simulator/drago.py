@@ -111,6 +111,7 @@ class Worker:
     def close(self):
         self.process.stdin.close()
         self.process.wait()
+        self.process.stdout.close()
 
 
 _WORKER = None

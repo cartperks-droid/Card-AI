@@ -1,22 +1,23 @@
 # Training the general win predictor
 
 ## Labels (`card_engine/training/labels.py`)
-- **Battles:** random 4v4 matchups over all 289 cards. Each Astraeus gets a random art. Each card also gets:
+- **Engine:** DaddyDrago's battle engine (`sim_js/`, set up with `bash sim_js/setup.sh`; see CLAUDE.md). Our old Python/C simulator was deleted on 2026-10-03.
+- **Battles:** random 4v4 matchups over all 289 cards. Astraeus draws its art in battle, so `arts` is 0. Each card also gets:
   - a border;
   - a mutation, for eligible (Base-weather) cards only, 50% of the time;
-  - red and blue supports with a tier, absent 10% of the time.
+  - red and blue supports, absent 10% of the time, each with a tier: Base, Platinum, Crystal or Galaxy (1, 2, 3, 5).
 - **Borders:** 70% of battles keep every border within two rarity ranks of a shared level. The rest draw borders uniformly.
-- **Who starts:** side A always initiates.
-- **Search (user's design):** each battle is searched best-first in branch mode.
-  - **Large branches first:** the most probable states are expanded first, up to 512 per step and 20,000 expansions in total.
-  - **Small chance rolls:** a roll whose smallest branch would carry less than 0.1% probability is sampled. One seeded draw keeps the whole weight; this is what stops Pandora and Glamour pool picks from exploding.
-  - **Leftover branches:** branches pruned at a step, or left when the budget runs out, are resolved by pooled playouts. Each playout starts from a state drawn in proportion to its probability.
-  - **Variance-based count:** playouts continue until the pool's share of the variance is small, at least 8 and at most 1,024 each time. This keeps a label's standard error at about 3% or less.
+- **Who starts:** side A always initiates. A draw (double KO, or the 2,000-turn cap) counts as A's loss.
+- **Search (user's design, `sim_js/search.ts`):** every random draw in his engine is a chance point. A branch is the list of choices made at those points, replayed from the start of the battle.
+  - **Large branches first:** the most probable open branch is expanded next, up to 2,000 battles per label (`drago.SEARCH`).
+  - **Small branches:** a branch below 0.1% probability is not expanded. It joins the playout pool.
+  - **Leftover branches:** small branches, plus whatever is open when the budget runs out, are resolved by pooled playouts. Each playout picks a branch in proportion to its probability, then plays on at random.
+  - **Variance-based count:** playouts continue, up to 1,024, until the standard error of the A-win estimate is at most 3%.
 - **Exact vs estimated:**
   - A battle with no estimated probability is **exact** and goes into the tablebase (`data/tablebase/<fingerprint>.sqlite`).
   - Estimated outcomes are never stored. A battle that comes up again is re-estimated with fresh playouts, so over time the model sees the spread of probabilistic outcomes.
   - Unfinished probability is column 3 of `probs` and is left out of training targets.
-- **Storage:** shards go to `data/labels/<kernel version>_<rules hash>/shard_<seed>.npz` (`probs`, `exact`). A rule fix starts a new directory. Training switches to it once it has 100 shards.
+- **Storage:** shards go to `data/labels/store/shard_<seed>.npz` (`probs`, `exact`), stamped with a rules snapshot. `training/flags.py` decides per row whether it is still valid.
 
 ```sh
 ../.venv/bin/python -m card_engine.training.labels --shards 1000 --rows 2000 --workers 12
@@ -24,9 +25,9 @@
 
 ## Model inputs
 - **Supports:** tiers get their own embedding (`support_tiers [B,2,2]`, 1 base .. 5 Galaxy).
-- **Astraeus:** each art has its own permanent identity key (`data/annotations/card_keys.json`, keys 290-296).
+- **Astraeus:** the art identity keys (`data/annotations/card_keys.json`, keys 290-296) stay in the model, but labels never set an art: his engine draws it in battle.
 - **Classes:** the user-verified memberships are used.
-- **Card stats (user):** each card's (HP, ATK) as it enters the battle: border, mutation, the red support and the blue Prehistoric support, exactly as `compile_battle` computes them. Stat changes from abilities are left to the model. The stats are log-scaled, then centred on one shared mean over all visible cards of both teams. No interaction depends on absolute stat sizes, so only ratios remain, and HP and ATK share the scale, which keeps their ratio (hits to kill). A linear projection to the token width skips around a GELU MLP (3,072 wide), and the sum is added to every card token. Before this, base stats had to be encoded in the card's language vector and identity embedding.
+- **Card stats (user):** each card's (HP, ATK) as it enters the battle: border, mutation, the red support and the blue Jurassic World support, from his engine's tables (`drago.stat_tables`). They match his battle-start stats exactly, except for the deck passives (General Moon Zoo, Julius Leader). Stat changes from abilities are left to the model. The stats are log-scaled, then centred on one shared mean over all visible cards of both teams. No interaction depends on absolute stat sizes, so only ratios remain, and HP and ATK share the scale, which keeps their ratio (hits to kill). A linear projection to the token width skips around a GELU MLP (3,072 wide), and the sum is added to every card token. Before this, base stats had to be encoded in the card's language vector and identity embedding.
 - **Adding the stat input to a run that predates it:** stop every trainer on the run first, then run `python -m card_engine.training.add_stat_mlp`. It adds the projection and MLP at zero, so predictions are unchanged at first, and keeps Adam's state. The originals are kept as `*.pre-stat-mlp`. Files already upgraded are skipped, so it is safe to run again. The script is one-off: delete it once the run is migrated.
 
 ## Training (`card_engine/training/train.py`)
@@ -52,7 +53,7 @@
 ```sh
 ../.venv/bin/python -m card_engine.training.predict --a 21,104,18,10 --b 205,44,3,1 --borders-a 5,5,5,5 --red-a 12:3 --blue-b 15:2
 ```
-This prints the model's A / B / tie probabilities next to the simulator's: exact from the tablebase when possible, otherwise estimated.
+This prints the model's A / B probabilities next to the simulator's: exact from the tablebase when possible, otherwise estimated.
 
 ## Validation metrics
 - `accuracy`: how often the model picks the most frequent outcome.

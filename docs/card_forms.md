@@ -27,7 +27,7 @@ Base text: "Six Realms Staff: on entry, manifest 1 of 6 weapons, gaining its uni
 
 ## Astraeus (IMG_0333, IMG_0334, user)
 
-User: each art is a separate card, all named Astraeus ("Constellar: gain an ability based on the card's art"). compile_battle(arts={(side, position): name}) picks one; an Astraeus with no art given draws one on entry. In the ability pool (Nuwa, Pandora, Glamour, Loki) each art is its own card.
+User: each art is a separate card, all named Astraeus ("Constellar: gain an ability based on the card's art"). DaddyDrago's engine (the label simulator since 2026-10-03) draws the art on entry, so labels never fix one. In the ability pool (Nuwa, Pandora, Glamour, Loki) each art is its own card.
 
 | Art | Ability |
 |---|---|

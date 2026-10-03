@@ -3,16 +3,20 @@
 This project simulates a Roblox "Snap!"-style card game and trains an AI to predict and build winning teams. Rules come from the user's in-game observations: videos, screenshots and stated facts. **Every rule must be evidence-derived.** Ask the user rather than guess, and never mark a prediction as an observation.
 
 ## Layout
-- `card_engine/simulator/reference.py` is the Python reference engine. `sim/card_sim.c` and `sim/card_sim.h` are the C kernel (called through `card_engine/simulator/native.py`). **The two must agree exactly**: parity tests compare their outcome probabilities and state counts. Bump the kernel version string in both `card_sim.c` and `native.py` whenever the C code changes.
-- `card_engine/simulator/catalog_rules.py` maps all 289 cards to rule fields and holds the support tables (`RED_SUPPORTS`, `BLUE_SUPPORTS`, tiers 1 base to 5 Galaxy).
+- **Battle engine: DaddyDrago's** (user, 2026-10-03: his engine, stats and abilities are more accurate; it replaced our own simulator). It is TypeScript from github.com/daddydrag0/CardRngExpansionDepths and has **no license**. Never copy it into this repo. `sim_js/setup.sh` clones it at the pinned `sim_js/ENGINE_COMMIT` into the gitignored `sim_js/vendor/`, patches it and installs `tsx`. It needs Node and git. Rerun it after changing `ENGINE_COMMIT` or `codemod.mjs`.
+  - `sim_js/codemod.mjs` turns each of his random draws into a chance point and fails loudly if any are left unconverted.
+  - `sim_js/search.ts` is the best-first chance-tree search with pooled playouts. It also applies per-battle tweaks: fixed, scaled or ability-stripped cards.
+  - `sim_js/worker.ts` answers one JSON request per line.
+  - `card_engine/simulator/drago.py` maps our cards, borders, mutations and supports to his names (`CARD_ALIASES`) and runs one worker per process. Its functions are `evaluate`, `initial_stats` and `stat_tables`.
+  - Support tiers: 1 base, 2 Platinum, 3 Crystal, 5 Galaxy. There is no tier 4 (Ruby). Astraeus draws its art in battle, so the `arts` input is always 0.
 - `card_engine/data_corrections.py` and `card_engine/import_snap.py` hold the user's corrections: classes, weathers, border rarities. Re-import with `python -m card_engine.import_snap --raw-dir data/raw --output-dir data/clean`.
 - `card_engine/training/` holds the AI pipeline:
-  - `labels.py`: battle labels from the C kernel's best-first search.
+  - `labels.py`: battle labels from the best-first search over his engine.
   - `train.py`: the classifier trainer.
   - `counter.py`: counter-team search.
   - `tablebase.py`: stores exact outcomes.
   - `predict.py`: compares the model with the simulator on one matchup.
-- `card_engine/model/` has two transformers: a description (language) encoder and a strategic encoder. The head gives **two outcomes, A win and B win. There are no ties**: the attacker A loses if both sides are wiped out.
+- `card_engine/model/` has two transformers: a description (language) encoder and a strategic encoder. The head gives **two outcomes, A win and B win. There are no ties**: a draw (both sides wiped out, or his 2,000-turn cap) counts as the attacker A's loss.
 - Player tools:
   - `card_engine/deck.py`: the user's own collection (`data/my_deck.json`).
   - `card_engine/restricted.py`: player-base availability (`data/restricted_deck.json`).
@@ -28,7 +32,7 @@ This project simulates a Roblox "Snap!"-style card game and trains an AI to pred
 
 ## Commands
 ```sh
-python -c 'from card_engine.simulator.native import build_library; print(build_library())'   # build the C kernel first
+bash sim_js/setup.sh                                                                           # fetch and patch DaddyDrago's engine first
 python -m unittest $(ls tests/test_*.py | sed 's#/#.#;s#\.py$##')                            # all tests
 python -m card_engine.training.labels --shards 1000 --rows 2000 --workers N                    # generate labels
 python -m card_engine.training.train --batch-size 512 --weight-decay 0.05 --dropout 0.1 --freeze-language-at 130000
@@ -50,7 +54,7 @@ python -m card_engine.training.train --batch-size 512 --weight-decay 0.05 --drop
   - A commitment penalty and an entropy check stop slots blurring between several cards.
   - Enemies are generated broadly (high temperature); 32 counters are generated tightly; the simulator verifies every team.
 - **Label storage:** every shard lives in `data/labels/store/`, stamped with a rules snapshot ID (`training/flags.py`).
-  - **Automatic invalidation:** each snapshot records per-entity fingerprints (cards, arts, supports at each tier, borders, mutations, support logic, the random-ability pool, the engine core). When an entity changes, only the rows involving it drop out.
+  - **Automatic invalidation:** each snapshot records per-entity fingerprints, taken from his data and code: cards, supports at each tier, borders, mutations, aura logic, the random-ability pool, and the engine core. When an entity changes, only the rows involving it drop out.
   - **Core changes:** an engine-code change must be declared with `python -m card_engine.training.flags declare --cards ... | --all | --none --note "..."`. Until then, older labels are held back. `flags status` shows the state.
   - **Storage:** nothing extra is stored per row.
 

@@ -1,6 +1,6 @@
 # Cross-check with DaddyDrago's engine
 
-DaddyDrago's Card RNG Expansion Depths calculator (github.com/daddydrag0/CardRngExpansionDepths, read 2026-10-03) simulates the same game and is used by hundreds of players (user). The user rates his stats and abilities as more accurate than ours (2026-10-03). His rarities, card stats and Final Testament values are adopted (`card_engine/data_corrections.py` `DRAGO_STATS`, `stats.STAT_RATIO_PROFILES`, `catalog_rules.BLUE_SUPPORTS`); the rule differences below stay open as checks (`docs/daily_checks/queue.md`, item 7).
+DaddyDrago's Card RNG Expansion Depths calculator (github.com/daddydrag0/CardRngExpansionDepths, read 2026-10-03) simulates the same game and is used by hundreds of players (user). The user rates his stats and abilities as more accurate than ours (2026-10-03). His rarities, card stats and Final Testament values are adopted (`card_engine/data_corrections.py` `DRAGO_STATS`, `stats.STAT_RATIO_PROFILES`). Later that day his engine replaced ours for every battle (`sim_js/`). The rule differences below record where our deleted simulator differed. The in-game checks stay open (`docs/daily_checks/queue.md`, item 7).
 
 ## Where we agree
 
