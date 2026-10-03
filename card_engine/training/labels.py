@@ -26,7 +26,7 @@ SHARD_DIR = ROOT / "data" / "labels"
 FIELDS = ("cards", "borders", "mutations", "arts", "red", "red_tier", "blue", "blue_tier")
 
 
-AURA_TIERS = tuple(drago.AURA_BORDERS)  # support cards come in Base, Platinum, Crystal and Galaxy (no Ruby)
+AURA_TIERS = tuple(drago.AURA_BORDERS)  # support cards: Base, Platinum, Crystal, Ruby, Galaxy
 
 
 def random_spec(rng, catalog, cards=None, none_support=0.1, mutation_rate=0.5, matched=0.7):

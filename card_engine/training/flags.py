@@ -7,7 +7,7 @@ borders, mutations and supports, so what a row involves is derived when loading,
 Entities (all from DaddyDrago's engine, the label simulator; sim_js/setup.sh):
   card:<id>        his card definition (rarity, stat and HP multipliers, ability, weather, pack) and its ability text
   support:<color><id>:<tier>, border:<id>, mutation:<index>
-  support_logic    his aura code (auras.ts; involved by every row with a support)
+  support_logic    his aura code with our Ruby patch (auras.label.ts; involved by every row with a support)
   pool             every card definition (involved by rows with cards that draw random cards or abilities)
   core             his battle engine code, the chance-point patch, the search, the worker and our spec translation
 
@@ -71,11 +71,12 @@ def entity_hashes(catalog=None):
         out[f"border:{border}"] = _digest(drago.border_names(catalog, border))
     for index, name in enumerate(MUTATION_NAMES):
         out[f"mutation:{index}"] = _digest(name)
-    out["support_logic"] = _digest((ENGINE_SOURCES / "auras.ts").read_bytes())
-    core = [path.read_bytes() for path in sorted(ENGINE_SOURCES.glob("*.ts")) if path.name not in ("auras.ts", "battle-v2.ts")]
+    out["support_logic"] = _digest((ENGINE_SOURCES / "auras.label.ts").read_bytes())
+    core = [path.read_bytes() for path in sorted(ENGINE_SOURCES.glob("*.ts"))
+            if path.name not in ("auras.ts", "auras.label.ts", "battle-v2.ts")]
     core += [(ROOT / p).read_bytes() for p in ("sim_js/search.ts", "sim_js/worker.ts", "card_engine/simulator/drago.py",
                                              "card_engine/mutations.py")]
-    out["core"] = _digest(*core)  # battle-v2.label.ts is his battle-v2.ts after codemod.mjs
+    out["core"] = _digest(*core)  # *.label.ts are his files after codemod.mjs
     return out
 
 

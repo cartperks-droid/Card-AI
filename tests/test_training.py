@@ -47,7 +47,7 @@ class TrainingTests(unittest.TestCase):
                 for card, mutation, art in zip(spec["cards"][side], spec["mutations"][side], spec["arts"][side]):
                     self.assertTrue(mutation == 0 or self.catalog.card(card).weather_id == 1)  # weather cards never mutate
                     self.assertEqual(art, 0)  # Astraeus draws its art in battle
-                self.assertNotIn(spec["red_tier"][side], (4,))  # support cards have no Ruby border
+                self.assertIn(spec["red_tier"][side], (0, 1, 2, 3, 4, 5))
         probs, exact = labels.label_specs(self.catalog, specs[:6], seed=1, rolloutError=0.2, nodeBudget=500)
         self.assertTrue(((probs.sum(1) - 1) ** 2 < 1e-9).all())
         self.assertTrue(exact.any())  # many battles are deterministic

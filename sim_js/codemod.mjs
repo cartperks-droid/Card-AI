@@ -6,6 +6,7 @@
 //   Math.floor(runtime.rng.next() * N)       -> runtime.chance.pick(N)
 // roll/pickRoll keep rand()'s rules (Unlucky and noRng force 0; Fate rerolls), so the probabilities are exact.
 // Four sites that keep a roll in a variable are rewritten by exact text and fail loudly if his code changes.
+// Supports: his auras.ts has no Ruby border; auras.label.ts (written next to the output) adds it (see below).
 // Usage: node codemod.mjs <his battle-v2.ts> <output .ts in the same directory>
 import { readFileSync, writeFileSync } from 'node:fs'
 
@@ -114,5 +115,14 @@ export function createTwoSidedState(a: TeamLoadout, b: TeamLoadout): BattleState
   return state
 }
 `
+exact("from './auras'", "from './auras.label'")
 writeFileSync(output, src)
+
+// Ruby support cards (user's binder, IMG_0350-0354). Red: 26 of the 27 values read fit his formula
+// floor(2^log10(rarity x multiplier) / 2) with a Ruby multiplier of 500. Blue: Ruby uses the base values (user).
+const aurasPath = input.replace(/battle-v2\.ts$/, 'auras.ts')
+src = readFileSync(aurasPath, 'utf8')
+exact("  Crystal: 100,\n  Galaxy: 1_000,\n}", "  Crystal: 100,\n  Ruby: 500,\n  Galaxy: 1_000,\n}")
+exact("  Crystal: 2,\n  Galaxy: 3,\n}", "  Crystal: 2,\n  Ruby: 0,\n  Galaxy: 3,\n}")
+writeFileSync(aurasPath.replace(/\.ts$/, '.label.ts'), src)
 console.error(JSON.stringify(counts))

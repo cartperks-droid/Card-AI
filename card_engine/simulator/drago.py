@@ -16,7 +16,7 @@ ROOT = Path(__file__).resolve().parents[2]
 SIM_DIR = ROOT / "sim_js"
 ENGINE_DIR = SIM_DIR / "vendor" / "CardRngExpansionDepths"
 BORDER_PARTS = {"Ga": "Galaxy", "Ru": "Ruby", "Cr": "Crystal", "Pl": "Platinum"}
-AURA_BORDERS = {1: None, 2: "Platinum", 3: "Crystal", 5: "Galaxy"}  # support cards have no Ruby border
+AURA_BORDERS = {1: None, 2: "Platinum", 3: "Crystal", 4: "Ruby", 5: "Galaxy"}  # Ruby: patched in by codemod.mjs
 # our spelling -> his, where they differ beyond case and punctuation
 CARD_ALIASES = {"judgementday": "judgmentday", "achyls": "achlys", "sorceror": "sorcerer",
                 "demoncultivator": "demoniccultivator", "thejadeemporer": "thejadeemperor", "tricerotops": "triceratops",
@@ -85,8 +85,6 @@ def loadouts(catalog, spec):
         for color, table, key in (("red", red, "statAura"), ("blue", blue, "abilityAura")):
             support, tier = spec[color][side], spec[color + "_tier"][side]
             if support:
-                if tier not in AURA_BORDERS:
-                    raise ValueError(f"{color} support {support} tier {tier}: support cards have no Ruby border")
                 loadout[key] = {"auraName": table[support], "border": AURA_BORDERS[tier]}
         sides.append(loadout)
     return sides
@@ -169,8 +167,7 @@ def initial_stats(catalog, spec, **tweaks):
 def stat_tables(catalog):
     """(base, red, prehistoric, jurassic) from his engine: base[card id, border id, mutation] = (HP, ATK); red[card id,
     mutation, red support, tier] = (HP, ATK) multiplier of the side's red (stat) support; prehistoric[card id] = Prehistoric
-    pack membership; jurassic[tier] = the blue Jurassic World support's fraction per Prehistoric card on the team.
-    Tier 4 (Ruby) doesn't exist: its red multiplier stays 1 and its Jurassic fraction 0."""
+    pack membership; jurassic[tier] = the blue Jurassic World support's fraction per Prehistoric card on the team."""
     import numpy as np
     from ..mutations import MUTATION_NAMES
     cards, red, _ = names(catalog)
@@ -179,17 +176,17 @@ def stat_tables(catalog):
     reply = worker().request({"op": "tables", "cards": [cards[i] for i in ids],
                               "borders": [border_names(catalog, b) for b in range(1, 17)],
                               "mutations": [None if m == "None" else m for m in MUTATION_NAMES],
-                              "reds": [red[r] for r in reds], "tiers": [AURA_BORDERS[t] for t in (1, 2, 3, 5)]})
+                              "reds": [red[r] for r in reds], "tiers": list(AURA_BORDERS.values())})
     base = np.ones((max(ids) + 1, 17, len(MUTATION_NAMES), 2))
     base[np.array(ids)[:, None, None], np.arange(1, 17)[None, :, None], np.arange(len(MUTATION_NAMES))[None, None, :]] = reply["base"]
     table = np.ones((max(ids) + 1, len(MUTATION_NAMES), max(reds) + 1, 6, 2))
-    values = np.array(reply["red"])  # [card, mutation, red, tier 1/2/3/5, 2]
-    for slot, tier in enumerate((1, 2, 3, 5)):
+    values = np.array(reply["red"])  # [card, mutation, red, tier, 2]
+    for slot, tier in enumerate(AURA_BORDERS):
         table[np.array(ids)[:, None, None], np.arange(len(MUTATION_NAMES))[None, :, None], np.array(reds)[None, None, :], tier] = values[:, :, :, slot]
     prehistoric = np.zeros(max(ids) + 1)
     prehistoric[ids] = reply["prehistoric"]
     jurassic = np.zeros(6)
-    jurassic[[1, 2, 3, 5]] = np.array(reply["jurassic"]) / 100
+    jurassic[list(AURA_BORDERS)] = np.array(reply["jurassic"]) / 100
     return base, table, prehistoric, jurassic
 
 

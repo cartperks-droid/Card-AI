@@ -5,7 +5,7 @@
 - **Battles:** random 4v4 matchups over all 289 cards. Astraeus draws its art in battle, so `arts` is 0. Each card also gets:
   - a border;
   - a mutation, for eligible (Base-weather) cards only, 50% of the time;
-  - red and blue supports, absent 10% of the time, each with a tier: Base, Platinum, Crystal or Galaxy (1, 2, 3, 5).
+  - red and blue supports, absent 10% of the time, each with a tier: Base, Platinum, Crystal, Ruby or Galaxy (1-5).
 - **Borders:** 70% of battles keep every border within two rarity ranks of a shared level. The rest draw borders uniformly.
 - **Who starts:** side A always initiates. A draw (double KO, or the 2,000-turn cap) counts as A's loss.
 - **Search (user's design, `sim_js/search.ts`):** every random draw in his engine is a chance point. A branch is the list of choices made at those points, replayed from the start of the battle.

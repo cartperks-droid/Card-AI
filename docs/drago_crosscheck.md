@@ -7,7 +7,7 @@ DaddyDrago's Card RNG Expansion Depths calculator (github.com/daddydrag0/CardRng
 - **Stat formula:** power = 10 × 2^log10(rarity) × card multiplier × mutation; ATK = power / 2.
 - **Border rarities:** Platinum 1e2, Crystal 1e4, Ruby 1e5, Galaxy 1e6, multiplied when combined (RuPl 1e7, GaCrPl 1e12).
 - **Mutation factors:** Storm 1.1, Snow 1.2, Aurora 1.3, Shroud 1.5, Meteor Shower 1.8, Time Storm 2, Eclipse 2.5, Virus 3, Blood Rain 3.5, Armageddon 4, Manga 4.5.
-- **Supports:** a red stat aura and a blue ability aura; support cards come only in base, Platinum, Crystal and Galaxy (our tier 4, Ruby, repeats base and doesn't exist). Galaxy values match (Storm Spirit 30, End Times 25).
+- **Supports:** a red stat aura and a blue ability aura; his engine has support cards only in base, Platinum, Crystal and Galaxy. Ruby supports exist in the game (user, 2026-10-03; binder IMG_0350–0354): red ones fit a rarity ×500, blue ones use their base values. `sim_js/codemod.mjs` adds Ruby to his aura tables. Galaxy values match (Storm Spirit 30, End Times 25).
 - **Vampire Lord:** steals ATK and HP equal to damage dealt.
 
 ## Rules that differ
