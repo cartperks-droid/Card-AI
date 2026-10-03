@@ -14,6 +14,9 @@ if [ "${3:-}" = code ]; then
   rsync -az --no-owner --no-group -e "$ssh_cmd" --exclude .git --exclude .venv --exclude __pycache__ --exclude 'data/labels/' \
     --exclude 'data/training*' --exclude data/tablebase --exclude 'sim_js/vendor' --exclude 'sim_js/node_modules' \
     --exclude '*.MOV' --exclude '*.mov' --exclude '*.mp4' --exclude '*.checkpoint' ./ "$remote/"
+  # Rule declarations travel with the code, so a running trainer never sees new code without them.
+  rsync -az --no-owner --no-group -e "$ssh_cmd" --include 'snapshots/***' --include rule_changes.json --exclude '*' \
+    data/labels/ "$remote/data/labels/"
   echo "code copied to $remote"
   exit 0
 fi

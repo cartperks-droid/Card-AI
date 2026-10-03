@@ -31,6 +31,7 @@ from ..catalog import load_catalog
 from ..model.checkpoint import load_checkpoint
 from ..mutations import MUTATION_NAMES
 from .counter import BORDER_NAMES
+from ..teams import ASTRAEUS, ASTRAEUS_ARTS, parse_card
 from .labels import FIELDS, evaluate, label_specs, random_spec
 from .train import Inputs, card_table
 
@@ -65,14 +66,17 @@ def spec_from_entry(catalog, entry):
     spec = {name: [] for name in FIELDS}
     for side in ("a", "b"):
         team = entry[side]
-        cards = [_card(catalog, c) for c in team["cards"]]
-        if len(cards) != 4:
+        if len(team["cards"]) != 4:
             raise SystemExit(f"Each side needs 4 cards: {team['cards']}")
+        parsed = [parse_card(catalog, c) if isinstance(c, str) else (c, 1, 0, 0) for c in team["cards"]]
+        cards = [p[0] for p in parsed]
+        if any(c == ASTRAEUS and not p[3] for c, p in zip(cards, parsed)):
+            raise SystemExit("Name Astraeus with its art, e.g. \"Astraeus+Virgo\"")
         mutations = [MUTATION_NAMES.index(m) if isinstance(m, str) else m for m in team.get("mutations", [0] * 4)]
         spec["cards"].append(cards)
         spec["borders"].append([_border(b) for b in team.get("borders", [1] * 4)])
         spec["mutations"].append(mutations)
-        spec["arts"].append([0] * 4)  # Astraeus draws its art in battle
+        spec["arts"].append([p[3] for p in parsed])
         for color in ("red", "blue"):
             support, tier = _support(team.get(color))
             spec[color].append(support)
@@ -88,6 +92,7 @@ def coherent_spec(rng, catalog, groups):
         cards = rng.sample(members, 4)
         spec["cards"][side] = cards
         spec["mutations"][side] = [m if catalog.card(c).weather_id == 1 else 0 for c, m in zip(cards, spec["mutations"][side])]
+        spec["arts"][side] = [rng.randint(1, len(ASTRAEUS_ARTS)) if c == ASTRAEUS else 0 for c in cards]
     return spec
 
 
@@ -126,6 +131,7 @@ def tower_suite(rng, catalog, n, difficulty, aura_tier, pool_name="restricted"):
     specs, enemy_stats, floors = [], [], []
     for floor, team in data["teams"].items():
         enemy = [_card(catalog, entry[0]) for entry in team]
+        enemy_arts = [ASTRAEUS_ARTS.index(entry[2]) + 1 if len(entry) > 2 else 0 for entry in team]  # floor 65
         stats = tower_stats(int(floor), difficulty, [entry[1] for entry in team], data["difficulty_ids"])
         for _ in range(n):
             while True:
@@ -134,7 +140,7 @@ def tower_suite(rng, catalog, n, difficulty, aura_tier, pool_name="restricted"):
                     break
             blue = rng.choice(data["cheese_blue_supports"])
             specs.append({"cards": [cards, enemy], "borders": [[1] * 4, [1] * 4], "mutations": [[0] * 4, [0] * 4],
-                          "arts": [[0] * 4, [0] * 4],
+                          "arts": [[rng.randint(1, len(ASTRAEUS_ARTS)) if c == ASTRAEUS else 0 for c in cards], enemy_arts],
                           "red": [0, 0], "red_tier": [0, 0], "blue": [blue, 0], "blue_tier": [aura_tier if blue else 0, 0]})
             enemy_stats.append(stats)
             floors.append(int(floor))

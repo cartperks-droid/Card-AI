@@ -72,14 +72,20 @@ def border_names(catalog, border_id):
 def loadouts(catalog, spec):
     """His (side A, side B) team loadouts for one of our label specs."""
     from ..mutations import MUTATION_NAMES
+    from ..teams import ASTRAEUS, ASTRAEUS_ARTS
     cards, red, blue = names(catalog)
     sides = []
     for side in (0, 1):
         team = []
-        for card, border, mutation in zip(spec["cards"][side], spec["borders"][side], spec["mutations"][side]):
+        for card, border, mutation, art in zip(spec["cards"][side], spec["borders"][side], spec["mutations"][side],
+                                               spec["arts"][side]):
             entry = {"cardName": cards[card], "borders": border_names(catalog, border)}
             if mutation:
                 entry["mutationWeather"] = MUTATION_NAMES[mutation]
+            if card == ASTRAEUS:  # each art is its own card with a fixed ability (user); his engine would draw one
+                if not art:
+                    raise ValueError("Astraeus needs its art (spec arts: 1-7)")
+                entry["constellar"] = "Constellar" + ASTRAEUS_ARTS[art - 1].title()
             team.append(entry)
         loadout = {"cards": team, "statAura": None, "abilityAura": None}
         for color, table, key in (("red", red, "statAura"), ("blue", blue, "abilityAura")):

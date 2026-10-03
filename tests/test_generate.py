@@ -17,8 +17,11 @@ from card_engine.training.predict import Classifier
 class TeamTests(unittest.TestCase):
     def test_names_borders_mutations_and_supports(self):
         catalog = load_catalog()
-        self.assertEqual(parse_card(catalog, "Vampire Lord@GaPl"), (91, 10, 0))
-        self.assertEqual(parse_card(catalog, "Good Boy@Pl/Storm"), (3, 2, 1))
+        self.assertEqual(parse_card(catalog, "Vampire Lord@GaPl"), (91, 10, 0, 0))
+        self.assertEqual(parse_card(catalog, "Good Boy@Pl/Storm"), (3, 2, 1, 0))
+        self.assertEqual(parse_card(catalog, "Astraeus+Virgo@Pl"), (56, 2, 0, 3))
+        with self.assertRaises(SystemExit):
+            parse_card(catalog, "Astraeus")  # each art is its own card
         self.assertEqual(parse_support(catalog, "red", "Stormcaller@Ruby"), (4, 4))
         self.assertEqual(parse_support(catalog, "blue", "Guardian Angel"), (15, 1))
         team = parse_side(catalog, ["Vampire Lord@GaPl", "Set", "Good Boy@Pl/Storm", "Archer"], "Stormcaller@Galaxy")
@@ -50,7 +53,8 @@ class GeneratorTests(unittest.TestCase):
 
     def test_slot_tokens_reproduce_the_classifier(self):
         rng = np.random.default_rng(3)
-        teams = [generate.random_team(self.pool, rng) for _ in range(6)]
+        teams = [generate.random_team(self.pool, rng) for _ in range(5)]
+        teams.append(parse_side(self.catalog, ["Astraeus+Gemini", "Astraeus+Virgo@Pl", "Archer", "Set"]))  # art identities
         with torch.no_grad():
             logits = self.space.logits(self.space.fixed(teams[:3]), self.space.fixed(teams[3:]))
         expected = self.classifier.win_a([spec(a, b) for a, b in zip(teams[:3], teams[3:])])
@@ -63,7 +67,7 @@ class GeneratorTests(unittest.TestCase):
         allowed = {tuple(e) for e in self.pool.entries.tolist()}
         self.assertTrue(found)
         for team, wins, blur in found:
-            self.assertTrue(all(e in allowed for e in zip(team["cards"], team["borders"], team["mutations"])))
+            self.assertTrue(all(e in allowed for e in zip(team["cards"], team["borders"], team["mutations"], team["arts"])))
             self.assertTrue((team["red"], team["red_tier"]) in self.pool.reds)
             np.testing.assert_allclose(wins, self.classifier.ally_win([(team, enemy)])[0], atol=1e-5)
         scores = [sum(wins) for _, wins, _ in found]
@@ -76,7 +80,7 @@ class GeneratorTests(unittest.TestCase):
         path = Path(self.temp.name) / "deck.json"
         path.write_text(__import__("json").dumps(deck))
         pool = generate.make_pool(self.catalog, "own", deck_path=path)
-        self.assertEqual((pool.entries.tolist(), pool.copies.tolist()), ([[1, 1, 0], [3, 2, 1]], [1, 3]))
+        self.assertEqual((pool.entries.tolist(), pool.copies.tolist()), ([[1, 1, 0, 0], [3, 2, 1, 0]], [1, 3]))
         self.assertEqual((pool.reds, pool.blues), ([(4, 5)], [(0, 0)]))
         space = generate.SlotSpace(self.classifier, pool)
         self.assertFalse(generate._allowed(space, [0, 0, 1, 1]))

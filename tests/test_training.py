@@ -46,7 +46,7 @@ class TrainingTests(unittest.TestCase):
             for side in (0, 1):
                 for card, mutation, art in zip(spec["cards"][side], spec["mutations"][side], spec["arts"][side]):
                     self.assertTrue(mutation == 0 or self.catalog.card(card).weather_id == 1)  # weather cards never mutate
-                    self.assertEqual(art, 0)  # Astraeus draws its art in battle
+                    self.assertEqual(art > 0, card == 56)  # each Astraeus art is its own card
                 self.assertIn(spec["red_tier"][side], (0, 1, 2, 3, 4, 5))
         probs, exact = labels.label_specs(self.catalog, specs[:6], seed=1, rolloutError=0.2, nodeBudget=500)
         self.assertTrue(((probs.sum(1) - 1) ** 2 < 1e-9).all())
@@ -64,6 +64,14 @@ class TrainingTests(unittest.TestCase):
                 mock.patch.object(labels, "ENGINE_ERRORS", log), mock.patch.object(drago, "_WORKER", object()):
             self.assertEqual(labels.evaluate(self.catalog, spec, 5), ((0.0, 0.0, 0.0, 1.0), False))
             self.assertIsNone(drago._WORKER)  # the next battle starts a fresh engine process
+
+    def test_astraeus_plays_the_art_it_is_given(self):
+        spec = {"cards": [[56, 56, 1, 2], [3, 4, 5, 6]], "borders": [[1] * 4] * 2, "mutations": [[0] * 4] * 2,
+                "arts": [[3, 4, 0, 0], [0] * 4], "red": [0, 0], "red_tier": [0, 0], "blue": [0, 0], "blue_tier": [0, 0]}
+        abilities = [card[2] for card in drago.initial_cards(self.catalog, spec)[0][:2]]
+        self.assertEqual(abilities, ["ConstellarVirgo", "ConstellarGemini"])
+        with self.assertRaises(ValueError):
+            drago.loadouts(self.catalog, {**spec, "arts": [[0] * 4, [0] * 4]})
 
     def test_engine_supports_every_card_and_aura(self):
         cards, blue = drago.supported(self.catalog)

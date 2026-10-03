@@ -50,14 +50,14 @@ from ..catalog import load_catalog
 from ..deck import BORDERS, DECK_FILE, load as load_deck
 from ..mutations import MUTATION_NAMES
 from ..restricted import entries as restricted_entries, load as load_restricted
-from ..teams import describe, parse_side, side
+from ..teams import ASTRAEUS, ASTRAEUS_ARTS, describe, parse_side, side
 from .predict import Classifier
 from .train import RUN_DIR, card_stats
 
 
 @dataclass
 class Pool:
-    entries: np.ndarray  # [E, 3]: card, border, mutation
+    entries: np.ndarray  # [E, 4]: card, border, mutation, art (Astraeus once per art, user: each art is its own card)
     copies: np.ndarray | None  # [E]: how many of each the player owns (None: unlimited)
     reds: list  # [(support id, tier)]; (0, 0) = none
     blues: list
@@ -74,7 +74,7 @@ def make_pool(catalog, kind, borders=None, limited=True, deck_path=DECK_FILE):
         for e in deck["cards"]:
             key = (e["card"], e["border"], MUTATION_NAMES.index(e["mutation"]))
             owned[key] = owned.get(key, 0) + e["count"]
-        rows = sorted(owned)
+        rows = sorted(owned)  # the deck has no arts, so an owned Astraeus is offered in every art
         copies = np.array([owned[r] for r in rows])
         reds = sorted({(e["support"], e["tier"]) for e in deck["supports"] if e["color"] == "red"}) or [(0, 0)]
         blues = sorted({(e["support"], e["tier"]) for e in deck["supports"] if e["color"] == "blue"}) or [(0, 0)]
@@ -85,13 +85,24 @@ def make_pool(catalog, kind, borders=None, limited=True, deck_path=DECK_FILE):
         rows = [(c.id, border, mutation) for c in catalog.cards for border in range(1, 17)
                 for mutation in (range(len(MUTATION_NAMES)) if c.weather_id == 1 else (0,))]
         reds, blues = every_support(catalog.red_supports), every_support(catalog.blue_supports)
-    entries = np.array(rows, dtype=np.int64).reshape(-1, 3)
+    rows = [(*row, art) for row in rows for art in (range(1, len(ASTRAEUS_ARTS) + 1) if row[0] == ASTRAEUS else (0,))]
+    if copies is not None:
+        copies = np.array([count for row, count in zip(sorted(owned), copies)
+                           for _ in (ASTRAEUS_ARTS if row[0] == ASTRAEUS else (0,))])
+    entries = np.array(rows, dtype=np.int64).reshape(-1, 4)
     if borders:
         keep = np.isin(entries[:, 1], borders)
         entries, copies = entries[keep], None if copies is None else copies[keep]
     if not len(entries):
         raise SystemExit("The pool is empty")
     return Pool(entries, copies, reds, blues)
+
+
+ART_KEY = 289  # card_table row of Astraeus's art n is ART_KEY + n
+
+
+def card_keys(cards, arts):
+    return torch.where(arts > 0, ART_KEY + arts, cards)
 
 
 def _sqdist(x, table):
@@ -112,20 +123,27 @@ class SlotSpace:
         width = strategy.config.width
         with torch.no_grad():
             parts = strategy.card_part(classifier.table, data.pack_ids, data.class_weights, data.identity_keys)
-            self.card_table = torch.cat([parts.new_zeros(1, width), parts])  # by card id
+            astraeus = ASTRAEUS - 1
+            arts = strategy.card_part(classifier.table[astraeus].expand(len(ASTRAEUS_ARTS), -1),
+                                      data.pack_ids[astraeus].expand(len(ASTRAEUS_ARTS)),
+                                      None if data.class_weights is None else data.class_weights[astraeus].expand(len(ASTRAEUS_ARTS), -1),
+                                      data.art_identity_keys[1:])
+            # by card key: the card id, or ART_KEY + art for each Astraeus art (its own identity, as in training)
+            self.card_table = torch.cat([parts.new_zeros(1, width), parts, arts])
             self.border_table = strategy.border_embedding.weight  # by border id - 1
             self.mutation_table = strategy.mutation_vectors(torch.arange(len(MUTATION_NAMES), device=device))
             entries = torch.as_tensor(pool.entries, device=device)
             self.entries = entries
+            keys = card_keys(entries[:, 0], entries[:, 3])
             self.factors = []  # (options [U, W], entry -> option index [E], mean [W], std [W], median nearest gap)
             for column, table in ((0, self.card_table), (1, None), (2, self.mutation_table)):
-                values, inverse = torch.unique(entries[:, column], return_inverse=True)
+                values, inverse = torch.unique(keys if column == 0 else entries[:, column], return_inverse=True)
                 options = self.border_table[values - 1] if column == 1 else table[values]
                 std = options.std(0, unbiased=False)
                 gaps = _sqdist(options, options).fill_diagonal_(float("inf")).amin(-1) if len(options) > 1 else std.new_ones(1)
                 self.factors.append((options, inverse, options.mean(0), std, float(gaps.median().clamp_min(1e-12))))
             base, red, _, _ = classifier.inputs.stat_tables
-            card, border, mutation = entries.unbind(1)
+            card, border, mutation, _ = entries.unbind(1)
             self.log_base = base[card, border, mutation].log()  # [E, 2]
             self.reds = torch.as_tensor(pool.reds, device=device)
             self.blues = torch.as_tensor(pool.blues, device=device)
@@ -144,8 +162,8 @@ class SlotSpace:
     def fixed(self, sides):
         """Exact tokens of discrete sides: card tokens without stats [N, 4, W], log stats [N, 4, 2], red, blue [N, W]."""
         rows = {key: torch.tensor([[s[key], s[key]] for s in sides], device=self.device)
-                for key in ("cards", "borders", "mutations", "red", "red_tier", "blue", "blue_tier")}
-        tokens = (self.card_table[rows["cards"][:, 0]] + self.border_table[rows["borders"][:, 0] - 1]
+                for key in ("cards", "borders", "mutations", "arts", "red", "red_tier", "blue", "blue_tier")}
+        tokens = (self.card_table[card_keys(rows["cards"][:, 0], rows["arts"][:, 0])] + self.border_table[rows["borders"][:, 0] - 1]
                   + self.mutation_table[rows["mutations"][:, 0]])
         stats = card_stats(rows, self.classifier.inputs.stat_tables)[:, 0].log()
         red = self.model.support_vectors(0, rows["red"][:, 0], rows["red_tier"][:, 0])

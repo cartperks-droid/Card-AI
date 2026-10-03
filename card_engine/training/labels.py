@@ -19,6 +19,7 @@ import numpy as np
 from ..catalog import load_catalog
 from ..mutations import MUTATION_NAMES
 from ..simulator import drago
+from ..teams import ASTRAEUS, ASTRAEUS_ARTS
 from .tablebase import Tablebase
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -30,8 +31,7 @@ AURA_TIERS = tuple(drago.AURA_BORDERS)  # support cards: Base, Platinum, Crystal
 
 
 def random_spec(rng, catalog, cards=None, none_support=0.1, mutation_rate=0.5, matched=0.7):
-    """One random 4v4 matchup: any card, border, eligible mutation, and support tier. Astraeus draws its art in
-    battle (his engine), so arts stay 0.
+    """One random 4v4 matchup: any card (Astraeus with a random art), border, eligible mutation, and support tier.
 
     With probability `matched`, every border sits within two rarity ranks of a shared level, so the
     outcome depends on the cards rather than on a border gap; the rest draw borders uniformly.
@@ -51,7 +51,7 @@ def random_spec(rng, catalog, cards=None, none_support=0.1, mutation_rate=0.5, m
             row["cards"].append(card)
             row["borders"].append(border())
             row["mutations"].append(mutation)
-            row["arts"].append(0)
+            row["arts"].append(rng.randint(1, len(ASTRAEUS_ARTS)) if card == ASTRAEUS else 0)
         for name, values in row.items():
             spec[name].append(values)
         for color, table in (("red", catalog.red_supports), ("blue", catalog.blue_supports)):

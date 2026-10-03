@@ -11,9 +11,7 @@ from ..schema import validate_dataset
 from .config import CLASS_NAMES
 from .networks import DescriptionModel, _long_ids, _range
 
-# Astraeus's constellation arts (model input "arts": index + 1, 0 = none). DaddyDrago's engine draws the art in
-# battle, so labels always use 0; the embedding slots stay for checkpoint compatibility of the input layout.
-ASTRAEUS_ARTS = ("scorpio", "aquarius", "virgo", "gemini", "sagittarius", "taurus", "cancer")
+from ..teams import ASTRAEUS_ARTS
 
 
 CLASS_POLICIES = ("disabled", "verified_only", "wiki_supported", "include_candidates")

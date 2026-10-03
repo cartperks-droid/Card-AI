@@ -2,7 +2,7 @@
 
 ## Labels (`card_engine/training/labels.py`)
 - **Engine:** DaddyDrago's battle engine (`sim_js/`, set up with `bash sim_js/setup.sh`; see CLAUDE.md). Our old Python/C simulator was deleted on 2026-10-03.
-- **Battles:** random 4v4 matchups over all 289 cards. Astraeus draws its art in battle, so `arts` is 0. Each card also gets:
+- **Battles:** random 4v4 matchups over all 289 cards. Each Astraeus gets a random art, and the art is its own card (user). Each card also gets:
   - a border;
   - a mutation, for eligible (Base-weather) cards only, 50% of the time;
   - red and blue supports, absent 10% of the time, each with a tier: Base, Platinum, Crystal, Ruby or Galaxy (1-5).
@@ -25,7 +25,7 @@
 
 ## Model inputs
 - **Supports:** tiers get their own embedding (`support_tiers [B,2,2]`, 1 base .. 5 Galaxy).
-- **Astraeus:** the art identity keys (`data/annotations/card_keys.json`, keys 290-296) stay in the model, but labels never set an art: his engine draws it in battle.
+- **Astraeus:** each art has its own permanent identity key (`data/annotations/card_keys.json`, keys 290-296).
 - **Classes:** the user-verified memberships are used.
 - **Card stats (user):** each card's (HP, ATK) as it enters the battle: border, mutation, the red support and the blue Jurassic World support, from his engine's tables (`drago.stat_tables`). They match his battle-start stats exactly, except for the deck passives (General Moon Zoo, Julius Leader). Stat changes from abilities are left to the model. The stats are log-scaled, then centred on one shared mean over all visible cards of both teams. No interaction depends on absolute stat sizes, so only ratios remain, and HP and ATK share the scale, which keeps their ratio (hits to kill). A linear projection to the token width skips around a GELU MLP (3,072 wide), and the sum is added to every card token. Before this, base stats had to be encoded in the card's language vector and identity embedding.
 - **Adding the stat input to a run that predates it:** stop every trainer on the run first, then run `python -m card_engine.training.add_stat_mlp`. It adds the projection and MLP at zero, so predictions are unchanged at first, and keeps Adam's state. The originals are kept as `*.pre-stat-mlp`. Files already upgraded are skipped, so it is safe to run again. The script is one-off: delete it once the run is migrated.

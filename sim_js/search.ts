@@ -65,6 +65,13 @@ function chanceFor(tape: Tape) {
 export function startState(a: any, b: any, tweaks: Tweaks = {}) {
   const state = createTwoSidedState(a, b)
   const team = (side: Side) => state.teams[side === 'a' ? 'Allies' : 'Enemies']
+  // Astraeus: each art is its own card with a fixed Constellar ability (user); his engine only draws one when none is set.
+  for (const [side, loadout] of [['a', a], ['b', b]] as [Side, any][]) {
+    const arts = loadout.cards.filter((entry: any) => entry.constellar).map((entry: any) => entry.constellar)
+    team(side).filter((card: any) => card.definition.name === 'Astraeus').forEach((card: any, i: number) => {
+      if (arts[i]) card.abilityOverride = arts[i]
+    })
+  }
   const set = (card: any, hp: number, attack: number) => {
     card.hp = card.maxHp = hp
     card.damage = attack

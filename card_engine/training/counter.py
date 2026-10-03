@@ -36,15 +36,16 @@ from ..deck import DECK_FILE, load as load_deck, owned_entries, owned_supports
 from ..restricted import entries as restricted_entries, load as load_restricted
 from ..mutations import MUTATION_NAMES
 from ..simulator.drago import stat_tables
+from ..teams import ASTRAEUS, ASTRAEUS_ARTS
 from .labels import AURA_TIERS, evaluate
 
 BORDER_NAMES = {1: "no border", 2: "Pl", 3: "Cr", 4: "CrPl", 5: "Ru", 6: "RuPl", 7: "RuCr", 8: "RuCrPl", 9: "Ga", 10: "GaPl",
                 11: "GaCr", 12: "GaCrPl", 13: "GaRu", 14: "GaRuPl", 15: "GaRuCr", 16: "GaRuCrPl"}
 
 
-def _side(cards, borders, mutations, red, blue):
+def _side(cards, borders, mutations, red, blue, arts=None):
     return {"cards": list(cards), "borders": list(borders), "mutations": [MUTATION_NAMES.index(m) for m in mutations],
-            "arts": [0] * len(cards), "red": red[0], "red_tier": red[1] if red[0] else 0,
+            "arts": list(arts) if arts else [0] * len(cards), "red": red[0], "red_tier": red[1] if red[0] else 0,
             "blue": blue[0], "blue_tier": blue[1] if blue[0] else 0}
 
 
@@ -80,23 +81,26 @@ class Search:
     def __init__(self, scenario, catalog, workers=None, seed=1, max_rolls=None):
         enemy = scenario["enemy"]
         self.enemy = _side(enemy["cards"], enemy["borders"], enemy.get("mutations", ["None"] * len(enemy["cards"])),
-                           enemy["red"], enemy["blue"])
+                           enemy["red"], enemy["blue"], enemy.get("arts"))  # arts: 1-7 for each Astraeus
         # Optional fixed enemy stats (e.g. an event's cards): "hp" and "attack", one per card, replace the catalogue's.
         self.enemy_stats = list(zip(enemy["hp"], enemy["attack"], strict=True)) if "hp" in enemy else None
         self.catalog = catalog
-        # Entries: (card, border, mutation, cost, owned). Owned cards first; then the candidate (card, border) pairs
-        # the search may add (the restricted deck in semi/restricted mode).
-        self.entries = [(e["card"], e["border"], e.get("mutation", "None"), 1.0, True) for e in scenario.get("owned", [])]
+        # Entries: (card, border, mutation, cost, owned, art). Owned cards first; then the candidate (card, border) pairs
+        # the search may add (the restricted deck in semi/restricted mode). Astraeus comes once per art (each art is
+        # its own card, user).
+        arts = lambda card: range(1, len(ASTRAEUS_ARTS) + 1) if card == ASTRAEUS else (0,)
+        self.entries = [(e["card"], e["border"], e.get("mutation", "None"), 1.0, True, art)
+                        for e in scenario.get("owned", []) for art in arts(e["card"])]
         owned = {(c, b) for c, b, *_ in self.entries}
         self.ranked_borders = sorted(range(1, 17), key=lambda b: (catalog.border(b).rarity, b))
         weather = scenario.get("weather_availability", DEFAULT_WEATHER)
         for card, border in scenario.get("candidates", []):
             cost = roll_rarity(catalog, card, border, weather)
             if (card, border) not in owned and (max_rolls is None or cost <= max_rolls):
-                self.entries.append((card, border, "None", cost, False))
+                self.entries += [(card, border, "None", cost, False, art) for art in arts(card)]
         self.index = {}
-        for i, (card, border, *_rest) in enumerate(self.entries):
-            self.index.setdefault((card, border), i)
+        for i, (card, border, _, _, _, art) in enumerate(self.entries):
+            self.index.setdefault((card, border, art), i)
         # Base stats (HP + ATK) of every entry (DaddyDrago's engine): stats grow as 2^log10(card x border rarity), so for a
         # target stat level each card has a cheapest border that reaches it (weather cards need far rarer borders less).
         base = stat_tables(catalog)[0]
@@ -146,7 +150,7 @@ class Search:
     def _player(self, team):
         lineup, red, blue = team
         chosen = [self.entries[i] for i in lineup]
-        return _side([e[0] for e in chosen], [e[1] for e in chosen], [e[2] for e in chosen], red, blue)
+        return _side([e[0] for e in chosen], [e[1] for e in chosen], [e[2] for e in chosen], red, blue, [e[5] for e in chosen])
 
     def _run(self, teams, factor=1, vanilla_slot=None):
         jobs = []
@@ -236,7 +240,7 @@ class Search:
                 rank = self.ranked_borders.index(border)
                 for step in (-1, 1):
                     if 0 <= rank + step < 16:
-                        j = self.index.get((card, self.ranked_borders[rank + step]))
+                        j = self.index.get((card, self.ranked_borders[rank + step], self.entries[i][5]))
                         if j is not None:
                             out.append((lineup[:slot] + (j,) + lineup[slot + 1:], red, blue))
         for a in range(4):
@@ -256,12 +260,12 @@ class Search:
         while improved:
             improved = False
             for slot, i in enumerate(lineup):
-                card, border, _, _, owned = self.entries[i]
+                card, border, _, _, owned, art = self.entries[i]
                 if owned:
                     continue
                 rank = self.ranked_borders.index(border)
                 for cheaper in self.ranked_borders[:rank]:
-                    j = self.index.get((card, cheaper))
+                    j = self.index.get((card, cheaper, art))
                     if j is None:
                         continue
                     trial = (tuple(lineup[:slot] + [j] + lineup[slot + 1:]), team[1], team[2])
@@ -302,7 +306,8 @@ class Search:
 
     def describe(self, probs, team):
         entries = [self.entries[i] for i in team[0]]
-        return {"lineup": [f"{self.catalog.card(e[0]).name} ({self.border_name(e[1])}{', owned' if e[4] else ''})" for e in entries],
+        name = lambda e: self.catalog.card(e[0]).name + (f"+{ASTRAEUS_ARTS[e[5] - 1].title()}" if e[5] else "")
+        return {"lineup": [f"{name(e)} ({self.border_name(e[1])}{', owned' if e[4] else ''})" for e in entries],
                 "red": team[1], "blue": team[2], "win_attacking_first": round(probs[0], 3), "win_defending": round(probs[1], 3),
                 "availability_log10_rolls": round(self.availability(team), 2),
                 "hardest_card": max(((self.catalog.card(e[0]).name, f"1 in {e[3]:.3g}") for e in entries if not e[4]),
