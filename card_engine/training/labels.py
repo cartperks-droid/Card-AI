@@ -65,9 +65,21 @@ def random_spec(rng, catalog, cards=None, none_support=0.1, mutation_rate=0.5, m
     return spec
 
 
+ENGINE_ERRORS = SHARD_DIR / "engine_errors.jsonl"  # battles the engine could not finish, for investigation
+
+
 def evaluate(catalog, spec, seed, **overrides):
-    """((A, B, tie, unfinished), exact) for one label spec; ties never happen (a draw is A's loss)."""
-    return drago.evaluate(catalog, spec, seed, **overrides)
+    """((A, B, tie, unfinished), exact) for one label spec; ties never happen (a draw is A's loss).
+
+    A battle the engine fails on (e.g. "Maximum call stack size exceeded") is left unfinished, so training skips
+    the row, and is appended to ENGINE_ERRORS instead of stopping the whole label run."""
+    try:
+        return drago.evaluate(catalog, spec, seed, **overrides)
+    except RuntimeError as error:
+        ENGINE_ERRORS.parent.mkdir(parents=True, exist_ok=True)
+        with open(ENGINE_ERRORS, "a") as log:
+            log.write(json.dumps({"error": str(error), "seed": int(seed), "spec": spec}) + "\n")
+        return (0.0, 0.0, 0.0, 1.0), False
 
 
 def label_specs(catalog, specs, *, seed, tablebase=None, **overrides):

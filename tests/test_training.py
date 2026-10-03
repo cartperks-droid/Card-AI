@@ -52,6 +52,15 @@ class TrainingTests(unittest.TestCase):
         self.assertTrue(((probs.sum(1) - 1) ** 2 < 1e-9).all())
         self.assertTrue(exact.any())  # many battles are deterministic
 
+    def test_an_engine_failure_leaves_the_row_unfinished(self):
+        from unittest import mock
+        spec = labels.random_spec(random.Random(1), self.catalog)
+        log = Path(self.temp.name) / "errors.jsonl"
+        with mock.patch.object(drago, "evaluate", side_effect=RuntimeError("Maximum call stack size exceeded")), \
+                mock.patch.object(labels, "ENGINE_ERRORS", log):
+            self.assertEqual(labels.evaluate(self.catalog, spec, 5), ((0.0, 0.0, 0.0, 1.0), False))
+        self.assertIn("Maximum call stack", log.read_text())
+
     def test_engine_supports_every_card_and_aura(self):
         cards, blue = drago.supported(self.catalog)
         self.assertEqual(len(cards), len(self.catalog.cards))
