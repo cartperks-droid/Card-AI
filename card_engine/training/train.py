@@ -202,7 +202,7 @@ def weight_norm(model):
 def train(*, steps=None, batch_size=512, lr=3e-4, warmup=1000, weight_decay=0.05, dropout=0.1, freeze_language_at=None,
           eval_every=1000,
           checkpoint_every=1000, reload_every=1000, device=None, run_dir=RUN_DIR, label_root=SHARD_DIR):
-    device = device or ("mps" if torch.backends.mps.is_available() else "cpu")
+    device = device or ("cuda" if torch.cuda.is_available() else "mps" if torch.backends.mps.is_available() else "cpu")
     run_dir = Path(run_dir)
     run_dir.mkdir(parents=True, exist_ok=True)
     model_path, state_path, log_path = run_dir / "model.checkpoint", run_dir / "trainer.pt", run_dir / "log.jsonl"
