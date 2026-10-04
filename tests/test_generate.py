@@ -62,16 +62,17 @@ class GeneratorTests(unittest.TestCase):
 
     def test_counters_are_decoded_from_the_pool(self):
         enemy = parse_side(self.catalog, ["Immortal Witch", "Archer", "Good Boy", "Set"])
-        found = generate.counters(self.space, enemy, count=3, restarts=4,
-                                  settings=generate.Settings(steps=30, rechecks=1, nearest=2))
         allowed = {tuple(e) for e in self.pool.entries.tolist()}
-        self.assertTrue(found)
-        for team, wins, blur in found:
-            self.assertTrue(all(e in allowed for e in zip(team["cards"], team["borders"], team["mutations"], team["arts"])))
-            self.assertTrue((team["red"], team["red_tier"]) in self.pool.reds)
-            np.testing.assert_allclose(wins, self.classifier.ally_win([(team, enemy)])[0], atol=1e-5)
-        scores = [sum(wins) for _, wins, _ in found]
-        self.assertEqual(scores, sorted(scores, reverse=True))
+        for column, role in enumerate(generate.ROLES):  # each role on its own: attacking first, or defending
+            found = generate.counters(self.space, enemy, count=3, restarts=4,
+                                      settings=generate.Settings(steps=30, rechecks=1, nearest=2, role=role))
+            self.assertTrue(found)
+            for team, win, blur in found:
+                self.assertTrue(all(e in allowed for e in zip(team["cards"], team["borders"], team["mutations"], team["arts"])))
+                self.assertTrue((team["red"], team["red_tier"]) in self.pool.reds)
+                self.assertAlmostEqual(win, self.classifier.ally_win([(team, enemy)])[0][column], places=5)
+            scores = [win for _, win, _ in found]
+            self.assertEqual(scores, sorted(scores, reverse=True))
 
     def test_own_pool_respects_copy_counts(self):
         deck = {"cards": [{"card": 1, "border": 1, "mutation": "None", "count": 1},

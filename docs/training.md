@@ -71,11 +71,11 @@
 ../.venv/bin/python -m card_engine.training.generate --enemy Odin Kira Set Archer --pool custom
 ```
 - **Slot space:** each of the 4 slots is three vectors, one per factor of a card token. The card factor is description + pack + classes + identity; the others are the border and mutation embeddings. Each side also has a distribution over the pool's supports. Everything starts from noise.
-- **Ascent:** Adam maximises the classifier's log win probability, averaged over attacking first and defending (`--first-only` for one order). Weights never change.
+- **Ascent:** Adam maximises the classifier's log win probability in one role, never both at once (user, 2026-10-04): `--role attack` (default; your team attacks first and loses a mutual wipe) or `--role defend` (the enemy attacks first). Broad enemies are ascended in the other role. Weights never change.
   - **Stats:** a slot's stats are the expected log stats under p(entry) = softmax(-distance / temperature). The distance factorises over the three factors, each in units of its table's typical neighbour gap.
 - **Commitment and entropy check:** the distance to each slot's nearest entry is penalised, more and more during the ascent. While a slot still spreads over more than 1.5 effective entries, the ascent continues with a doubled penalty, up to 3 times. `slot_blur` in the output is the worst slot's effective entry count.
 - **Decoding:** an exact factorised nearest-k match over the pool. Each slot keeps its 3 nearest entries and each colour its 2 most likely supports. The classifier scores every combination exactly, and each candidate keeps its best.
-- **Counters:** 64 candidates per enemy (`--restarts`). The best 32 distinct teams by the model (`--counters`) are verified by the engine in both turn orders and sorted by the engine's result.
+- **Counters:** 64 candidates per enemy (`--restarts`). The best 32 distinct teams by the model (`--counters`) are verified by the engine and sorted by the engine's win chance in that role. `model` and `simulator` are the ally's win chance in the chosen role.
 - **Enemies:** `--enemy` names one. `--enemies N` generates N broad ones: each is ascended against a random pool opponent, then decoded by sampling at temperature 1.
 - **Pools:**
   - `own`: your deck (`python -m card_engine.deck`), with copy counts.

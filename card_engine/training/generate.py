@@ -7,8 +7,9 @@ vector, the three factors a card token is built from:
   - mutation: the mutation embedding.
 Each side also has a distribution over the pool's red and blue supports.
 
-Adam ascends the classifier's log win probability: the ally attacking first and defending, averaged. The
-classifier's weights never change.
+Adam ascends the classifier's log win probability in one role, --role attack (the ally attacks first and loses a
+mutual wipe) or --role defend (the enemy attacks first). The two are separate situations and are never averaged
+(user, 2026-10-04). The classifier's weights never change.
   - Stats: a slot's stats depend on the discrete choice. So the slot gets the expected log stats over the pool's
     entries under p(entry) = softmax(-distance / temperature). The distance factorises over card, border and
     mutation, each measured in units of its table's typical gap between neighbouring options.
@@ -46,6 +47,7 @@ a random pool opponent and decoded by sampling at a high temperature.
 """
 
 import argparse
+import dataclasses
 import itertools
 import json
 import multiprocessing as mp
@@ -129,6 +131,7 @@ def masks(borders, mutations, tiers):
     return pick(borders, _border), pick(mutations, lambda m: MUTATION_NAMES.index(_mutation(m))), pick(tiers, _tier)
 
 
+ROLES = ("attack", "defend")  # the ally's role; also the column of Classifier.ally_win and verify
 ART_KEY = 289  # card_table row of Astraeus's art n is ART_KEY + n
 
 
@@ -221,7 +224,7 @@ class Settings:
     max_blur: float = 1.5  # entropy check: effective entries per slot
     rechecks: int = 3  # extra ascent rounds (doubled penalty) while slots stay blurred
     nearest: int = 3  # decoding: k nearest entries per slot
-    both_orders: bool = True
+    role: str = "attack"  # the ascended side attacks first ("attack") or defends ("defend")
 
 
 def ascend(space, opponents, settings, generator):
@@ -245,9 +248,10 @@ def ascend(space, opponents, settings, generator):
         log_red = torch.einsum("erk,nr->nek", space.log_red, red)
         stats = torch.einsum("nse,ek->nsk", p, space.log_base) + torch.einsum("nse,nek->nsk", p, log_red)
         ally = (vectors[0] + vectors[1] + vectors[2], stats, red @ space.red_vectors, blue @ space.blue_vectors)
-        objective = space.logits(ally, enemy).log_softmax(-1)[:, 0]
-        if settings.both_orders:
-            objective = (objective + space.logits(enemy, ally).log_softmax(-1)[:, 1]) / 2
+        if settings.role == "attack":
+            objective = space.logits(ally, enemy).log_softmax(-1)[:, 0]
+        else:
+            objective = space.logits(enemy, ally).log_softmax(-1)[:, 1]
         entropy = lambda q: -(q * q.clamp_min(1e-12).log()).sum(-1)
         # Commitment: the distance to each slot's nearest entry (an expected distance would settle between entries).
         commit = distance.amin(-1).mean(-1) + entropy(red) + entropy(blue)
@@ -325,7 +329,7 @@ def _key(team):
 
 
 def counters(space, enemy, *, count=32, restarts=64, settings=Settings(), seed=1):
-    """The `count` best distinct ally teams against `enemy` by the classifier: [(team, (first, second), blur)]."""
+    """The `count` best distinct ally teams against `enemy` in settings.role, by the classifier: [(team, win, blur)]."""
     generator = torch.Generator().manual_seed(seed)
     distance, red, blue, blur = ascend(space, [enemy] * restarts, settings, generator)
     best = {}
@@ -333,21 +337,22 @@ def counters(space, enemy, *, count=32, restarts=64, settings=Settings(), seed=1
         if not teams:
             continue
         wins = space.classifier.ally_win([(team, enemy) for team in teams])
-        score = wins.mean(1) if settings.both_orders else wins[:, 0]
+        score = wins[:, ROLES.index(settings.role)]
         top = int(score.argmax())
         key = _key(teams[top])
-        if key not in best or score[top] > best[key][2]:
-            best[key] = (teams[top], tuple(float(w) for w in wins[top]), float(score[top]), float(slot_blur.max()))
-    ranked = sorted(best.values(), key=lambda r: -r[2])[:count]
-    return [(team, wins, blur) for team, wins, _, blur in ranked]
+        if key not in best or score[top] > best[key][1]:
+            best[key] = (teams[top], float(score[top]), float(slot_blur.max()))
+    return sorted(best.values(), key=lambda r: -r[1])[:count]
 
 
 def broad_enemies(space, n, *, settings=Settings(), temperature=1.0, seed=1):
-    """`n` diverse strong teams: each ascended against a random pool opponent, decoded by sampling."""
+    """`n` diverse strong teams: each ascended against a random pool opponent, decoded by sampling. settings.role is
+    the ally's, so the enemies are ascended in the other role."""
     rng = np.random.default_rng(seed)
     opponents = [random_team(space.pool, rng) for _ in range(n)]
     generator = torch.Generator().manual_seed(seed)
-    distance, red, blue, _ = ascend(space, opponents, settings, generator)
+    enemy_role = ROLES[1 - ROLES.index(settings.role)]
+    distance, red, blue, _ = ascend(space, opponents, dataclasses.replace(settings, role=enemy_role), generator)
     return decode_sample(space, distance, red, blue, temperature, generator)
 
 
@@ -381,7 +386,8 @@ def main():
     parser.add_argument("--steps", type=int, default=Settings.steps)
     parser.add_argument("--temperature", type=float, default=Settings.temperature)
     parser.add_argument("--nearest", type=int, default=Settings.nearest)
-    parser.add_argument("--first-only", action="store_true", help="optimise only the ally attacking first")
+    parser.add_argument("--role", choices=ROLES, default="attack",
+                        help="attack: your team attacks first and loses a mutual wipe; defend: the enemy attacks first")
     parser.add_argument("--no-verify", action="store_true", help="skip the engine check")
     parser.add_argument("--workers", type=int, default=max(1, (os.cpu_count() or 2) - 1))
     parser.add_argument("--checkpoint", default=str(RUN_DIR / "model.checkpoint"))
@@ -395,7 +401,7 @@ def main():
     mask = dict(zip(("borders", "mutations", "tiers"), masks(args.borders, args.mutations, args.support_tiers)),
                 min_rarity=parse_rarity(args.min_rarity) if args.min_rarity else None)
     classifier = Classifier(args.checkpoint, args.device)
-    settings = Settings(steps=args.steps, temperature=args.temperature, nearest=args.nearest, both_orders=not args.first_only)
+    settings = Settings(steps=args.steps, temperature=args.temperature, nearest=args.nearest, role=args.role)
     space = SlotSpace(classifier, make_pool(catalog, args.pool, limited=not args.no_limited, **mask))
     if args.enemy:
         enemies = [parse_side(catalog, args.enemy, args.enemy_red, args.enemy_blue)]
@@ -404,7 +410,7 @@ def main():
         enemy_space = space if enemy_pool == args.pool else SlotSpace(
             classifier, make_pool(catalog, enemy_pool, limited=not args.no_limited, **mask))
         enemies = broad_enemies(enemy_space, args.enemies, settings=settings, seed=args.seed)
-    report = {"checkpoint_step": classifier.metadata.get("step"), "pool": args.pool,
+    report = {"checkpoint_step": classifier.metadata.get("step"), "role": args.role, "pool": args.pool,
               "masks": {"borders": args.borders, "mutations": args.mutations, "support_tiers": args.support_tiers,
                         "min_rarity": args.min_rarity},
               "matchups": []}
@@ -412,13 +418,14 @@ def main():
         found = counters(space, enemy, count=args.counters, restarts=args.restarts, settings=settings, seed=args.seed + index)
         checked = verify([team for team, _, _ in found], enemy, args.workers, args.seed) if not args.no_verify else None
         rows = []
-        for i, (team, wins, blur) in enumerate(found):
-            row = {**describe(catalog, team), "model": [round(w, 3) for w in wins], "slot_blur": round(blur, 2)}
+        column = ROLES.index(args.role)
+        for i, (team, win, blur) in enumerate(found):
+            row = {**describe(catalog, team), "model": round(win, 3), "slot_blur": round(blur, 2)}
             if checked:
-                row["simulator"] = [round(w, 3) for w in checked[i]]
+                row["simulator"] = round(checked[i][column], 3)
             rows.append(row)
         if checked:
-            rows.sort(key=lambda r: -sum(r["simulator"]))
+            rows.sort(key=lambda r: -r["simulator"])
         report["matchups"].append({"enemy": describe(catalog, enemy), "counters": rows})
         print(json.dumps(report["matchups"][-1], ensure_ascii=False), flush=True)
     if args.output:

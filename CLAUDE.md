@@ -55,6 +55,7 @@ python -m card_engine.training.train --batch-size 512 --weight-decay 0.05 --drop
 - **Grokking:** probes (fixed training and validation subsets, plus the weight norm) are logged. The dataset keeps growing.
 - **Generator** (`training/generate.py`; built 2026-10-03, its results are only as good as the classifier):
   - It starts from noise in the slot space and runs gradient ascent on the frozen classifier toward a "win = 1" target. Weights never change.
+  - One role per run (user, 2026-10-04): `--role attack` (default) or `--role defend`. Attacking and defending are separate situations, never averaged.
   - Card, border and mutation are decoded by an exact factorised nearest-k match, filtered to a pool: own deck, custom pool, restricted deck, or everything.
   - Masks (user, 2026-10-04): borderless, unmutated and base-tier supports by default, plus an optional minimum card rarity. Each is widened on request. They narrow the open pools only; cards put in a deck override them.
   - A commitment penalty and an entropy check stop slots blurring between several cards.
