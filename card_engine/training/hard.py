@@ -67,7 +67,7 @@ def _init():
     _CATALOG = load_catalog()
 
 
-def hard_shard(classifier, catalog, seed, rounds, pool, spaces, settings):
+def hard_shard(classifier, catalog, seed, rounds, pool, spaces, settings, restarts=32):
     """One shard's rows: `rounds` enemies, 32 generated counters each, engine-labelled."""
     rng = random.Random(f"hard-{seed}")
     battles, stats, model_win, jobs = [], [], [], []
@@ -77,7 +77,7 @@ def hard_shard(classifier, catalog, seed, rounds, pool, spaces, settings):
         if mask not in spaces:
             borders, mutations, tiers = masks(*map(list, mask))
             spaces[mask] = SlotSpace(classifier, make_pool(catalog, "all", borders=borders, mutations=mutations, tiers=tiers))
-        found = counters(spaces[mask], enemy, count=32, restarts=64, settings=settings, seed=seed * 1000 + r,
+        found = counters(spaces[mask], enemy, count=32, restarts=restarts, settings=settings, seed=seed * 1000 + r,
                          enemy_stats=fixed)
         per_card = tower.engine_stats(catalog, enemy["cards"], fixed)
         for team, win, _ in found:
@@ -96,14 +96,15 @@ def hard_shard(classifier, catalog, seed, rounds, pool, spaces, settings):
     return arrays, probs, exact, extra
 
 
-def run(shards, *, rounds=20, workers=None, checkpoint=None, out_dir=STORE, first_seed=None, device=None):
+def run(shards, *, rounds=20, workers=None, checkpoint=None, out_dir=STORE, first_seed=None, device=None, restarts=32,
+        steps=150):
     from .flags import snapshot
     out_dir = Path(out_dir)
     out_dir.mkdir(parents=True, exist_ok=True)
     existing = {int(p.stem.split("_")[1]) for p in out_dir.glob("hard_*.npz")}
     seed = first_seed if first_seed is not None else (max(existing) + 1 if existing else 1)
     catalog = load_catalog()
-    settings = Settings(role="attack")
+    settings = Settings(role="attack", steps=steps)  # lighter than generate's defaults: many enemies, not one
     with mp.get_context("spawn").Pool(workers or max(1, (os.cpu_count() or 2) - 1), initializer=_init) as pool:
         for done in range(1, shards + 1):
             while seed in existing:
@@ -111,7 +112,7 @@ def run(shards, *, rounds=20, workers=None, checkpoint=None, out_dir=STORE, firs
             path = checkpoint or next(p for p in (POD_RUN / "model.checkpoint", RUN_DIR / "model.checkpoint") if p.exists())
             classifier = Classifier(path, device)  # reloaded every shard: the proposals follow training
             started = time.time()
-            arrays, probs, exact, extra = hard_shard(classifier, catalog, seed, rounds, pool, {}, settings)
+            arrays, probs, exact, extra = hard_shard(classifier, catalog, seed, rounds, pool, {}, settings, restarts)
             target = out_dir / f"hard_{seed:08d}.npz"
             tmp = target.with_name(f"partial_{target.name}")
             np.savez_compressed(tmp, probs=probs, exact=exact, snapshot=np.array(snapshot(catalog)), **arrays, **extra)
@@ -131,11 +132,13 @@ def main():
     parser.add_argument("--rounds", type=int, default=20, help="enemies per shard (32 battles each)")
     parser.add_argument("--workers", type=int, help="engine labelling processes")
     parser.add_argument("--checkpoint", help="model (default: data/training_pod's, else data/training's), reloaded per shard")
+    parser.add_argument("--restarts", type=int, default=32, help="candidates ascended per enemy")
+    parser.add_argument("--steps", type=int, default=150, help="ascent steps per candidate")
     parser.add_argument("--first-seed", type=int)
     parser.add_argument("--device")
     args = parser.parse_args()
     run(args.shards, rounds=args.rounds, workers=args.workers, checkpoint=args.checkpoint, first_seed=args.first_seed,
-        device=args.device)
+        device=args.device, restarts=args.restarts, steps=args.steps)
 
 
 if __name__ == "__main__":

@@ -42,7 +42,7 @@ python -m card_engine.training.labels --fixed --shards 1000 --rows 2000 --worker
 
 ## Hard examples (`training/hard.py`)
 The generator proposes teams where the classifier is weakest, and the engine labels them (user, 2026-10-04).
-- **Round:** a fixed-stat enemy, half a tower floor (1-105, random difficulty, its fixed team or random cards), half random cards at HP 10^U(2, 7.5) and ATK half that, moved by 10^U(-0.5, 0.5). The generator ascends the current classifier toward 32 counters (pool: every card; masks drawn per round), and the engine labels each, the counter attacking first.
+- **Round:** a fixed-stat enemy, half a tower floor (1-105, random difficulty, its fixed team or random cards), half random cards at HP 10^U(2, 7.5) and ATK half that, moved by 10^U(-0.5, 0.5). The generator ascends the current classifier toward 32 counters (32 candidates, 150 steps: `--restarts`, `--steps`, lighter than `generate.py`'s defaults; pool: every card; masks drawn per round), and the engine labels each, the counter attacking first.
 - **Storage:** `hard_<seed>.npz` (20 rounds, 640 battles by default), the fixed-stat fields plus `model_win`, the model's win chance at proposal time. Each shard prints `mean_abs_gap`, the mean |model − engine| over its battles: the model's error where it is weakest.
 - **Training:** hard rows are repeated `--hard-repeat` times (20) in training. Validation's hard rows are scored on their own (`val_hard`; `scripts/perf.py`).
 - **Model:** the pod's checkpoint (`data/training_pod/`, as `pod_sync.sh` brings it down), reloaded every shard, so proposals follow training.
