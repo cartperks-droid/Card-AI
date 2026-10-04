@@ -56,3 +56,23 @@ Generator masks (borders, mutations, support tiers, minimum rarity) and the cust
 1. Start the pod in the RunPod console and note the new IP and port.
 2. In tmux on the pod: `cd /workspace/card_engine && tmux new -s train`, then the trainer command above. It resumes from `data/training/`.
 3. On the Mac: restart `pod_sync.sh` with the new IP and port.
+
+## When the stopped pod's GPU is gone
+A stopped pod's volume stays on its machine. If that machine's GPU is taken ("Your Pod's GPUs are no longer available"), the volume is out of reach until it frees up (2026-10-04). Create pods with a **Network Volume** to avoid this: it attaches to any pod.
+
+To move on without the old volume, use the Mac's copy of the model (`data/training_pod/`, at most one sync behind). Only the optimiser state stays behind, and `--init-from` keeps the weights and step and warms a fresh optimiser up over 1,000 steps.
+1. New pod (RTX 4090, PyTorch template, SSH). From the Mac:
+   ```sh
+   bash scripts/pod_sync.sh NEW_IP NEW_PORT code
+   ssh -p NEW_PORT root@NEW_IP 'mkdir -p /workspace/card_engine/data/training'
+   scp -P NEW_PORT data/training_pod/model.checkpoint data/training_pod/best.checkpoint data/training_pod/log.jsonl root@NEW_IP:/workspace/card_engine/data/training/
+   ```
+2. On the pod, build DaddyDrago's engine (the trainer reads his card data; the code sync leaves the engine checkout out):
+   ```sh
+   cd /workspace/card_engine
+   curl -fsSL https://deb.nodesource.com/setup_22.x | bash - && apt-get install -y nodejs build-essential
+   bash sim_js/setup.sh
+   ```
+3. From the Mac: `bash scripts/pod_sync.sh NEW_IP NEW_PORT` (the first pass uploads every shard).
+4. On the pod, in tmux: the trainer command above plus `--init-from data/training/model.checkpoint`.
+5. Terminate the old pod once the new one trains: a stopped pod still bills for its volume.
