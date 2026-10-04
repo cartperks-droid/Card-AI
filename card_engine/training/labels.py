@@ -26,7 +26,7 @@ import numpy as np
 from ..catalog import load_catalog
 from ..mutations import MUTATION_NAMES
 from ..simulator import drago, kernel
-from ..teams import ASTRAEUS, ASTRAEUS_ARTS
+from ..teams import ASTRAEUS, ASTRAEUS_ARTS, SINGLE_COPY
 from .tablebase import Tablebase
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -53,6 +53,8 @@ def random_spec(rng, catalog, cards=None, none_support=0.1, mutation_rate=0.5, m
         row = {name: [] for name in ("cards", "borders", "mutations", "arts")}
         for _slot in range(4):
             card = rng.choice(cards)
+            while card in SINGLE_COPY and card in row["cards"]:  # a team holds one of these at most
+                card = rng.choice(cards)
             mutation = 0
             if catalog.card(card).weather_id == 1 and rng.random() < mutation_rate:
                 mutation = rng.randrange(1, len(MUTATION_NAMES))

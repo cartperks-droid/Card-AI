@@ -65,7 +65,7 @@ from ..deck import BORDERS, CUSTOM_FILE, DECK_FILE, TIERS, _border, _mutation, _
 from ..mutations import MUTATION_NAMES
 from ..ownership import parse_rarity
 from ..restricted import entries as restricted_entries, load as load_restricted
-from ..teams import ASTRAEUS, ASTRAEUS_ARTS, describe, fixed_stats, parse_side, side
+from ..teams import ASTRAEUS, ASTRAEUS_ARTS, SINGLE_COPY, describe, fixed_stats, parse_side, side
 from .predict import Classifier
 from .train import RUN_DIR, card_stats
 
@@ -295,6 +295,10 @@ def _team(space, entry_ids, red, blue):
 
 
 def _allowed(space, entry_ids):
+    """Within the pool's copy counts, and at most one of each single-copy card (teams.SINGLE_COPY)."""
+    cards = [int(space.pool.entries[e][0]) for e in entry_ids]
+    if any(cards.count(card) > 1 for card in SINGLE_COPY):
+        return False
     if space.pool.copies is None:
         return True
     ids, counts = np.unique(entry_ids, return_counts=True)
@@ -330,7 +334,10 @@ def decode_sample(space, distance, red, blue, temperature, generator):
 
 
 def random_team(pool, rng):
-    entry_ids = rng.choice(len(pool.entries), 4, replace=pool.copies is None or len(pool.entries) < 4)
+    for _ in range(100):
+        entry_ids = rng.choice(len(pool.entries), 4, replace=pool.copies is None or len(pool.entries) < 4)
+        if all(list(pool.entries[entry_ids, 0]).count(card) <= 1 for card in SINGLE_COPY):
+            break
     return side([tuple(int(v) for v in pool.entries[e]) for e in entry_ids],
                 pool.reds[rng.integers(len(pool.reds))], pool.blues[rng.integers(len(pool.blues))])
 

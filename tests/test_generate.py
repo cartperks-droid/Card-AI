@@ -71,6 +71,14 @@ class GeneratorTests(unittest.TestCase):
         np.testing.assert_allclose(logits.softmax(-1)[:, 0].numpy(), wins[:, 0], atol=1e-5)
         self.assertFalse(np.allclose(wins, self.classifier.ally_win([(ally, enemy) for ally in allies])))
 
+    def test_single_copy_cards_appear_once(self):
+        pool = generate.make_pool(self.catalog, "all", borders=[1, 2])
+        space = generate.SlotSpace(self.classifier, pool)
+        fate = [i for i, e in enumerate(pool.entries.tolist()) if e[0] == 240]
+        other = [i for i, e in enumerate(pool.entries.tolist()) if e[0] == 3]
+        self.assertFalse(generate._allowed(space, [fate[0], fate[1], other[0], other[1]]))  # two Fate Seamstress
+        self.assertTrue(generate._allowed(space, [fate[0], other[0], other[1], other[0]]))
+
     def test_counters_are_decoded_from_the_pool(self):
         enemy = parse_side(self.catalog, ["Immortal Witch", "Archer", "Good Boy", "Set"])
         allowed = {tuple(e) for e in self.pool.entries.tolist()}
