@@ -103,6 +103,7 @@ class GeneratorTests(unittest.TestCase):
         self.assertEqual((borders, mutations, tiers), ([1], [0], [1]))
         self.assertEqual(generate.masks(["all"], ["All"], ["all"]), (None, None, None))
         self.assertEqual(generate.masks(["Pl", "none"], ["Storm"], ["Platinum", "5"]), ([1, 2], [1], [2, 5]))
+        self.assertEqual(generate.masks(["none,", "Pl,", "Cr"], ["None,Storm"], ["all"]), ([1, 2, 3], [0, 1], None))
         pool = generate.make_pool(self.catalog, "all", borders=[1, 2], mutations=[0, 1], tiers=[1])
         self.assertTrue(set(pool.entries[:, 1]) == {1, 2} and set(pool.entries[:, 2]) == {0, 1})
         self.assertTrue(all(tier == 1 for _, tier in pool.reds + pool.blues))

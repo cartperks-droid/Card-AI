@@ -127,8 +127,11 @@ def make_pool(catalog, kind, borders=None, limited=True, deck_path=None, mutatio
 
 
 def masks(borders, mutations, tiers):
-    """Command-line masks -> (border IDs, mutation indices, tiers); "all" -> None (no mask)."""
-    pick = lambda values, parse: None if [v.casefold() for v in values] == ["all"] else sorted({parse(v) for v in values})
+    """Command-line masks -> (border IDs, mutation indices, tiers); "all" -> None (no mask). Lists may be separated by
+    spaces or commas ("none Pl Cr", "none, Pl, Cr")."""
+    def pick(values, parse):
+        values = [v.strip() for value in values for v in value.split(",") if v.strip()]
+        return None if [v.casefold() for v in values] == ["all"] else sorted({parse(v) for v in values})
     return pick(borders, _border), pick(mutations, lambda m: MUTATION_NAMES.index(_mutation(m))), pick(tiers, _tier)
 
 
