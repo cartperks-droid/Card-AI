@@ -9,8 +9,13 @@
 #include <stdint.h>
 #include "build/tables.h"
 
-#define MAXC 128  // card slots per battle (team members, fallen and every card created in battle)
-#define MAXT 64   // cards per team list
+#ifndef MAXC
+#define MAXC 4096  // card slots per battle (team members, fallen and every card created in battle; Pandora battles
+                   // have reached 836)
+#endif
+#ifndef MAXT
+#define MAXT MAXC  // cards per team list
+#endif
 #define NOCARD (-1)
 #define AO_UNDEFINED (-2)  // abilityOverride never set (his `undefined`)
 #define AO_NULL (-1)       // abilityOverride set to null: no ability
@@ -58,7 +63,6 @@ typedef struct {
   unsigned char weakness, blind;
   unsigned char flag[NFLAG];
   double counter[NCOUNTER];
-  uint64_t hidden[2];         // Hidden Blade: card slots already struck (a target counts as struck when any of them has its id)
 } Card;
 
 typedef struct {
@@ -68,17 +72,24 @@ typedef struct {
   int skillAura;                       // skillAuraName present (Erosion clears it); his debug text only
 } Boosts;
 
+#define MAXSTRUCK MAXC
+typedef struct { int attacker; uint64_t target; } Struck;  // Hidden Blade: his flags['hiddenBlade:' + target id]
+
 typedef struct {
-  int ncard;
-  int team[2][MAXT], nteam[2];
-  int fallen[2][MAXT], nfallen[2];
+  // scalars first: a battle's copy is these, then the used part of each list and of the cards (state_pack)
+  int ncard, nteam[2], nfallen[2], nstruck;
   Boosts boosts[2];
   double turn;
   int moving;
-  Card card[MAXC];  // last, so a copy of the first ncard cards is a copy of the whole battle
+  int team[2][MAXT], fallen[2][MAXT];
+  Struck struck[MAXSTRUCK];
+  Card card[MAXC];
 } State;
 
-#define STATE_BYTES(n) (offsetof(State, card) + sizeof(Card) * (size_t)(n))
+// A battle's compact copy (only the cards and list entries in use), for the search's saved turns.
+size_t state_packed_size(const State *s);
+void state_pack(const State *s, void *out);
+void state_unpack(const void *in, State *s);
 
 // The loop's own counters at the start of a turn (his TurnCounters), saved with the state.
 typedef struct { double turnsWithoutDeaths, lastDeathEpoch, deathEpoch; } Counters;

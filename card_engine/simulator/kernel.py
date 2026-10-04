@@ -11,7 +11,7 @@ import sys
 from . import drago
 
 LIBRARY = drago.ROOT / "sim_c" / "build" / ("libcardsim.dylib" if sys.platform == "darwin" else "libcardsim.so")
-VERSION = b"card-engine-c-2"
+VERSION = b"card-engine-c-3"
 CODES = ["", "Pl", "Cr", "CrPl", "Ru", "RuPl", "RuCr", "RuCrPl", "Ga", "GaPl", "GaCr", "GaCrPl", "GaRu", "GaRuPl", "GaRuCr",
          "GaRuCrPl"]
 ABBREVIATION = {"Galaxy": "Ga", "Ruby": "Ru", "Crystal": "Cr", "Platinum": "Pl"}
@@ -128,7 +128,7 @@ class Battle:
         out = (ctypes.c_double * 7)()
         library().ce_solve(self.state, nodeBudget, sampleBelow, rollouts, rolloutError, maxTurns, seed, out)
         if out[6]:
-            raise RuntimeError("C engine: more cards than it has room for (sim_c/engine.h MAXC, MAXT)")
+            raise RuntimeError("C engine: more cards or deeper recursion than it has room for (sim_c/engine.h MAXC, engine.c MAXDEPTH)")
         return {"a": out[0], "b": out[1], "draw": out[2], "exact": bool(out[3]), "nodes": int(out[4]), "playouts": int(out[5])}
 
     def close(self):

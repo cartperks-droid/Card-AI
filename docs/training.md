@@ -5,7 +5,7 @@
   - **C engine (`sim_c/`, user 2026-10-03: "build it in C ... don't leave out any abilities"):** labels run on a C port of his battle code and of `sim_js/search.ts`. His TypeScript still builds each battle's start (supports, deck passives, Draconian, Astraeus arts, tweaks); `card_engine/simulator/kernel.py` loads it into C, which runs the search. A branch is one `memcpy` of the battle.
   - **Same answers:** the C search gives bit-identical results to the TypeScript search. Checked on 150 sample battles, every supported card (3 battles each) and support (2 each), and every one of his 324 abilities forced onto cards (1,002 battles); together these run 99.8% of the engine's lines (the rest: an unused helper, a branch his own code never calls). `tests/test_kernel.py` keeps checking.
   - **Speed:** about 217 labels/s per core at the design budget (his TypeScript: 20).
-  - **Limits:** 128 cards per battle, 64 per team list, nesting depth 2,000 (where his engine would throw "Maximum call stack size exceeded"). Past them a battle is abandoned and logged like any engine error, never answered wrongly.
+  - **Limits:** 4,096 cards per battle and nesting depth 2,000 (where his engine would throw "Maximum call stack size exceeded"). Past them a battle is abandoned and logged like any engine error, never answered wrongly. Ordinary battles stay under 32 cards, but Pandora's rolls can run away: one label battle created 836. A branch copies only the cards and list entries in use, so the high limit costs nothing in ordinary battles.
 - **Battles:** random 4v4 matchups over all 289 cards. Each Astraeus gets a random art, and the art is its own card (user). Each card also gets:
   - a border;
   - a mutation, for eligible (Base-weather) cards only, 50% of the time;

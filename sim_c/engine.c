@@ -160,7 +160,7 @@ static void clear_statuses(Runtime *rt, int c) {
 }
 static void clear_card_state(Card *k) {
   k->stunned = k->confused = k->burn = k->shield = 0; k->weakness = k->blind = 0;
-  memset(k->flag, 0, sizeof k->flag); memset(k->counter, 0, sizeof k->counter); k->hidden[0] = k->hidden[1] = 0;
+  memset(k->flag, 0, sizeof k->flag); memset(k->counter, 0, sizeof k->counter);
 }
 static int primary_border(int border) {  // 4 Galaxy, 3 Ruby, 2 Crystal, 1 Platinum, 0 none
   const char *code = BORDER_CODES[border];
@@ -192,7 +192,9 @@ static void resolve_deaths(Runtime *rt);
 static void on_entry(Runtime *rt, int c);
 // His engine recurses through these three (deaths trigger entries trigger damage...); where JS would throw "Maximum
 // call stack size exceeded", the C engine abandons the battle before its own stack runs out.
+#ifndef MAXDEPTH
 #define MAXDEPTH 2000
+#endif
 static void enter(Runtime *rt) { if (++rt->depth > MAXDEPTH) engine_overflow(rt); }
 
 // withAbility: run with the card's ability temporarily replaced.
@@ -394,7 +396,7 @@ static void on_entry_(Runtime *rt, int c) {
     case A_GATHERING: card->damage *= pow(1.5, S->nteam[team] + S->nfallen[team]); break;
     case A_REMEMBRANCE: { int count = S->nfallen[team]; if (count) boost_stats(rt, c, pow(1.5, count)); break; }
     case A_FRIENDSHIP: {
-      int seen[2 * MAXT], unique = 0;
+      int seen[S->nteam[team] + S->nfallen[team] + 1], unique = 0;
       for (int pass = 0; pass < 2; pass++) {
         const int *list = pass ? S->fallen[team] : S->team[team];
         int n = pass ? S->nfallen[team] : S->nteam[team];
@@ -533,7 +535,7 @@ static void on_entry_(Runtime *rt, int c) {
     case A_TYRANNOSPIRIT: { double f = or0(S->boosts[team].fossils); if (f > 0) card->damage *= pow(1.5, f); break; }
     case A_TURTLE_SHELL: card->maxHp = 30000; card->hp = 30000; break;
     case A_HAPPY_FAMILY: {
-      int dads[MAXT], n = 0;
+      int dads[S->nteam[team] + 1], n = 0;
       for (int i = 0; i < S->nteam[team]; i++) { int a = S->team[team][i]; if (a != c && CARD(a)->def == D_DAD && alive(rt, a)) dads[n++] = a; }
       for (int i = 0; i < n; i++) { Card *d = CARD(dads[i]); d->damage += card->damage; d->maxHp += card->maxHp; d->hp += jmax(0, card->hp); }
       card->hp = 0;
@@ -558,7 +560,7 @@ static void on_entry_(Runtime *rt, int c) {
     case A_BLOODLUST: card->counter[C_bloodlustBase] = card->damage; card->damage += card->damage; card->flag[F_bloodlustFirstTurn] = 1; break;
     case A_FLUFFY_AGGRESSION:
       if (card->flag[F_awakened]) {
-        int seen[MAXT], toys = 0;
+        int seen[S->nfallen[team] + 1], toys = 0;
         for (int i = 0; i < S->nfallen[team]; i++) {
           int d = CARD(S->fallen[team][i])->def, dup = 0;
           if (!(DEF_SETS[d] & SET_TOY)) continue;
@@ -694,7 +696,7 @@ static void on_entry_(Runtime *rt, int c) {
       if (name == A_HEART_HUNTER && active(rt, enemy_team) != NOCARD) CT(active(rt, enemy_team), bleed) = 100;
       break;
     case A_SACRED_JUDGMENT: {
-      int targets[MAXT], n = S->nteam[enemy_team];
+      int n = S->nteam[enemy_team], targets[n + 1];
       memcpy(targets, S->team[enemy_team], sizeof(int) * n);
       for (int i = 0; i < n; i++) {
         if (!alive(rt, targets[i])) continue;
@@ -750,10 +752,10 @@ static Offense offensive(Runtime *rt, int attacker, int target, double initial) 
     case A_DIVINE_ARROGANCE: if (a->hp > t->hp) o.damage *= 1.75; break;
     case A_HIDDEN_BLADE: {
       int seen = 0;
-      for (int j = 0; j < S->ncard; j++) if ((a->hidden[j >> 6] >> (j & 63) & 1) && CARD(j)->id == t->id) seen = 1;
+      for (int j = 0; j < S->nstruck; j++) if (S->struck[j].attacker == attacker && S->struck[j].target == t->id) seen = 1;
       if (!seen) {
-        int j = (int)(t - CARD(0));
-        a->hidden[j >> 6] |= 1ull << (j & 63);
+        if (S->nstruck >= MAXSTRUCK) engine_overflow(rt);
+        S->struck[S->nstruck++] = (Struck){attacker, t->id};
         o.damage *= 2; o.bypass = 1; o.special = 1;
       }
       break;
@@ -1086,7 +1088,7 @@ static void target_retro(Runtime *rt, int attacker, int target, double damage) {
       break;
     case A_SHELTER_OBSESSION:
       if (damage > 0 && t->flag[F_awakened]) {
-        int seen[2 * MAXT], n = 0, team = t->team;
+        int team = t->team, seen[S->nteam[team] + S->nfallen[team] + 1], n = 0;
         for (int pass = 0; pass < 2; pass++) {
           const int *list = pass ? S->fallen[team] : S->team[team];
           int len = pass ? S->nfallen[team] : S->nteam[team];
@@ -1482,7 +1484,7 @@ static void apply_on_death(Runtime *rt, int dead, int opponent, int skip_opponen
   if (name == A_IMMINENT_DOOM && opponent != NOCARD && alive(rt, opponent) && !status_protected(rt, CARD(opponent)->team))
     CT(opponent, frostbite) = jmax(or0(CT(opponent, frostbite)), 2);
   if (name == A_GEHENNA) {
-    int revive_count = S->nfallen[OTHER(team)], candidates[MAXT], n = 0;
+    int revive_count = S->nfallen[OTHER(team)], candidates[S->nfallen[team] + 1], n = 0;
     for (int i = S->nfallen[team] - 1; i >= 0 && n < revive_count; i--) if (S->fallen[team][i] != dead) candidates[n++] = S->fallen[team][i];
     double sd = orv(d->counter[C_normalDamage], d->damage) * 0.75, sh = orv(d->counter[C_normalMaxHp], d->maxHp) * 0.75;
     for (int i = 0; i < n; i++) {
@@ -1504,7 +1506,7 @@ static void apply_on_death(Runtime *rt, int dead, int opponent, int skip_opponen
   }
   if (name == A_WE_WANT_YOU) { x->damage *= 5; x->flag[F_diesAfterAttack] = 1; }
   if (name == A_BETTER_DAYS) {
-    int revive[MAXT], n = 0;
+    int revive[S->nfallen[team] + 1], n = 0;
     for (int i = 0; i < S->nfallen[team]; i++) if (S->fallen[team][i] != dead) revive[n++] = S->fallen[team][i];
     for (int i = 0; i < n; i++) {
       int ally = revive[i], idx = index_of(S->fallen[team], S->nfallen[team], ally);
@@ -1880,7 +1882,7 @@ static void do_lotus_sutra(Runtime *rt, int attacker) {
 static void do_origin(Runtime *rt, int attacker) {
   int enemy_team = OTHER(CARD(attacker)->team);
   for (int hit = 0; hit < 4; hit++) {
-    int deck[MAXT], n = 0;
+    int deck[S->nteam[enemy_team] + 1], n = 0;
     for (int i = 0; i < S->nteam[enemy_team]; i++) if (alive(rt, S->team[enemy_team][i])) deck[n++] = S->team[enemy_team][i];
     if (!n || !alive(rt, attacker)) break;
     int target = deck[chance_pick(rt, n)];
@@ -1895,7 +1897,7 @@ static void do_laser_gun(Runtime *rt, int attacker) {
   a->flag[F_laserCharged] = 0;
   int enemy_team = OTHER(a->team);
   double targets = jmin(3, or0(S->boosts[a->team].fossils) + 1);
-  int list[MAXT], n = 0;
+  int list[S->nteam[enemy_team] + 1], n = 0;
   for (int i = 0; i < S->nteam[enemy_team] && i < targets; i++) list[n++] = S->team[enemy_team][i];
   for (int i = 0; i < n; i++) {
     if (!alive(rt, attacker) || !alive(rt, list[i])) continue;
@@ -2029,7 +2031,7 @@ static void do_turn(Runtime *rt, int attacker) {
 
   int creep_target = active(rt, enemy_team);
   if (creep_target != NOCARD && alive(rt, attacker)) {
-    int creeps[MAXT], n = 0;  // teams.slice(1): a snapshot of the list
+    int creeps[S->nteam[team] + 1], n = 0;  // teams.slice(1): a snapshot of the list
     for (int i = 1; i < S->nteam[team]; i++) creeps[n++] = S->team[team][i];
     for (int i = 0; i < n; i++) {
       int creep = creeps[i];
@@ -2060,7 +2062,7 @@ static void do_turn(Runtime *rt, int attacker) {
 
   if (has_ability(rt, attacker, A_ETERNAL_VOYAGE) && alive(rt, attacker)) {
     int *deck = S->team[team], n = S->nteam[team], self = index_of(deck, n, attacker);
-    int choices[MAXT], m = 0;
+    int choices[n + 1], m = 0;
     for (int i = 0; i < n; i++) if (i != self) choices[m++] = i;
     if (self >= 0 && m) { int swap = choices[chance_pick(rt, m)]; int t = deck[self]; deck[self] = deck[swap]; deck[swap] = t; }
   }
@@ -2076,7 +2078,7 @@ static void do_turn(Runtime *rt, int attacker) {
 }
 
 static void process_divination(Runtime *rt) {
-  int all[4 * MAXT], n = 0;
+  int all[S->nteam[0] + S->nfallen[0] + S->nteam[1] + S->nfallen[1] + 1], n = 0;
   for (int t = 0; t < 2; t++) {
     for (int i = 0; i < S->nteam[t]; i++) all[n++] = S->team[t][i];
     for (int i = 0; i < S->nfallen[t]; i++) all[n++] = S->fallen[t][i];
@@ -2232,3 +2234,25 @@ int ce_flag_index(const char *key) { return lookup(FLAG_NAMES, NFLAG, key); }
 int ce_counter_index(const char *key) { return lookup(COUNTER_NAMES, NCOUNTER, key); }
 int ce_ability_index(const char *name) { for (int i = 0; i < NABILITY; i++) if (strcmp(ABILITY_NAMES[i], name) == 0) return i; return -1; }
 int ce_def_index(const char *name) { for (int i = 0; i < NDEF; i++) if (strcmp(DEF_NAME[i], name) == 0) return i; return -1; }
+
+// ---- compact copies (search.c's saved turns): the scalars, then the used part of each list, then the cards ----
+size_t state_packed_size(const State *s) {
+  return offsetof(State, team) + sizeof(int) * (size_t)(s->nteam[0] + s->nteam[1] + s->nfallen[0] + s->nfallen[1])
+    + sizeof(Struck) * (size_t)s->nstruck + sizeof(Card) * (size_t)s->ncard;
+}
+#define PUT(src, bytes) do { size_t b_ = (bytes); memcpy(p, (src), b_); p += b_; } while (0)
+#define GET(dst, bytes) do { size_t b_ = (bytes); memcpy((dst), p, b_); p += b_; } while (0)
+void state_pack(const State *s, void *out) {
+  char *p = out;
+  PUT(s, offsetof(State, team));
+  for (int t = 0; t < 2; t++) { PUT(s->team[t], sizeof(int) * (size_t)s->nteam[t]); PUT(s->fallen[t], sizeof(int) * (size_t)s->nfallen[t]); }
+  PUT(s->struck, sizeof(Struck) * (size_t)s->nstruck);
+  PUT(s->card, sizeof(Card) * (size_t)s->ncard);
+}
+void state_unpack(const void *in, State *s) {
+  const char *p = in;
+  GET(s, offsetof(State, team));
+  for (int t = 0; t < 2; t++) { GET(s->team[t], sizeof(int) * (size_t)s->nteam[t]); GET(s->fallen[t], sizeof(int) * (size_t)s->nfallen[t]); }
+  GET(s->struck, sizeof(Struck) * (size_t)s->nstruck);
+  GET(s->card, sizeof(Card) * (size_t)s->ncard);
+}

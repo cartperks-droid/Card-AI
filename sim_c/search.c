@@ -1,6 +1,6 @@
 // Label search over the C engine: sim_js/search.ts in C, with the same node order, tape, playout pool and random
 // generator, so for the same battle and options both give bit-identical answers. A branch is the battle saved at
-// the start of the turn it split in plus the choices since; the engine copies the battle at each turn start into
+// the start of the turn it split in plus the choices since; the engine packs the battle at each turn start into
 // one buffer, and a branch keeps that copy (only the cards in use are copied).
 #include <math.h>
 #include <setjmp.h>
@@ -8,7 +8,7 @@
 #include <string.h>
 #include "engine.h"
 
-typedef struct Saved { int refs; Counters counters; State state; } Saved;  // state holds only state.ncard cards
+typedef struct Saved { int refs; Counters counters; char state[]; } Saved;  // state: the battle, packed (state_pack)
 typedef struct { double p; Saved *saved; int n; int *choices; } Node;
 typedef struct { int nodeBudget, rollouts, maxTurns; double sampleBelow, rolloutError; unsigned seed; } Options;
 typedef struct { double a, b, draw; int exact, nodes, playouts, overflow; } Result;
@@ -20,7 +20,7 @@ typedef struct {
   jmp_buf branch;                           // a new chance point while expanding: back to play()
   double probs[MAXPROBS]; int nprobs;
   Saved *saved; int from;                   // the latest saved turn and the tape position when it was saved
-  State *turn_buffer; Counters turn_counters; int have_turn;
+  char *turn_buffer; size_t turn_size; Counters turn_counters; int have_turn;  // the latest turn start, packed
 } Tape;
 
 static double mulberry(uint32_t *s) {
@@ -80,26 +80,27 @@ _Noreturn void engine_overflow(Runtime *rt) { (void)rt; longjmp(current->branch,
 
 static void on_turn(Runtime *rt, const Counters *counters) {
   Tape *tape = rt->search;
-  memcpy(tape->turn_buffer, &rt->s, STATE_BYTES(rt->s.ncard));
+  state_pack(&rt->s, tape->turn_buffer);
+  tape->turn_size = state_packed_size(&rt->s);
   tape->turn_counters = *counters;
   tape->have_turn = 1;
   tape->from = tape->i;
 }
 
 static Saved *keep_turn(Tape *tape) {  // the turn buffer as a saved battle for a branch's children
-  Saved *s = malloc(offsetof(Saved, state) + STATE_BYTES(tape->turn_buffer->ncard));
+  Saved *s = malloc(sizeof(Saved) + tape->turn_size);
   s->refs = 0;
   s->counters = tape->turn_counters;
-  memcpy(&s->state, tape->turn_buffer, STATE_BYTES(tape->turn_buffer->ncard));
+  memcpy(s->state, tape->turn_buffer, tape->turn_size);
   return s;
 }
 
 // One battle along a node's choices. Returns 0/1/2 (A, B, draw), -1 at a new chance point (tape->probs), -2 on overflow.
-static int play(const State *start, Node *node, uint32_t *random, const Options *o, Runtime *rt, Tape *tape) {
+static int play(const char *start, Node *node, uint32_t *random, const Options *o, Runtime *rt, Tape *tape) {
   tape->choices = node->choices; tape->n = node->n; tape->i = 0; tape->random = random;
   tape->saved = node->saved; tape->from = 0; tape->have_turn = 0;
-  if (node->saved) memcpy(&rt->s, &node->saved->state, STATE_BYTES(node->saved->state.ncard));
-  else memcpy(&rt->s, start, STATE_BYTES(start->ncard));
+  if (node->saved) state_unpack(node->saved->state, &rt->s);
+  else state_unpack(start, &rt->s);
   rt->search = tape;
   rt->depth = 0;
   current = tape;
@@ -116,9 +117,14 @@ Result solve(const State *start, const Options *o) {
   int cap_open = 64, cap_rare = 64, nopen = 1, nrare = 0;
   Node *open = malloc(sizeof(Node) * cap_open), *rare = malloc(sizeof(Node) * cap_rare);
   open[0] = (Node){1, NULL, 0, NULL};
-  Runtime *rt = malloc(sizeof(Runtime));
+  // the battle and its turn buffer hold MAXC cards (megabytes), so one pair is kept per process, not per solve
+  static Runtime *rt;
+  static char *turn_buffer;
+  if (!rt) { rt = malloc(sizeof(Runtime)); turn_buffer = malloc(sizeof(State)); }
   Tape *tape = calloc(1, sizeof(Tape));
-  tape->turn_buffer = malloc(sizeof(State));
+  tape->turn_buffer = turn_buffer;
+  char *packed = malloc(state_packed_size(start));  // the start, packed like a saved turn
+  state_pack(start, packed);
   int nodes = 0;
   while (nopen && nodes < o->nodeBudget) {
     int best = 0;
@@ -127,7 +133,7 @@ Result solve(const State *start, const Options *o) {
     open[best] = open[nopen - 1];
     nopen--;
     nodes++;
-    int r = play(start, &node, NULL, o, rt, tape);
+    int r = play(packed, &node, NULL, o, rt, tape);
     if (r == -2) { out.overflow = 1; release(node.saved); free(node.choices); break; }
     if (r >= 0) win[r] += node.p;
     else {
@@ -177,7 +183,7 @@ Result solve(const State *start, const Options *o) {
         double u = mulberry(&random) * mass;
         int lo = 0, hi = nleft - 1;
         while (lo < hi) { int mid = (lo + hi) >> 1; if (cum[mid] < u) lo = mid + 1; else hi = mid; }
-        int r = play(start, &left[lo], &random, o, rt, tape);
+        int r = play(packed, &left[lo], &random, o, rt, tape);
         if (r < 0) { out.overflow = 1; break; }
         tally[r]++;
       }
@@ -190,12 +196,12 @@ Result solve(const State *start, const Options *o) {
     free(cum);
   }
   for (int i = 0; i < nleft; i++) { release(left[i].saved); free(left[i].choices); }
-  free(left); free(open); free(rare); free(tape->turn_buffer); free(tape); free(rt);
+  free(left); free(open); free(rare); free(tape); free(packed);
   return out;
 }
 
 // ---- Python interface (card_engine/simulator/kernel.py) ----
-const char *ce_version(void) { return "card-engine-c-2"; }
+const char *ce_version(void) { return "card-engine-c-3"; }
 State *ce_state_new(void) { State *s = calloc(1, sizeof(State)); return s; }
 void ce_state_free(State *s) { free(s); }
 void ce_state_set(State *s, double turn, int moving) { s->turn = turn; s->moving = moving; }

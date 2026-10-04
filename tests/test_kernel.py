@@ -47,6 +47,11 @@ class KernelTests(unittest.TestCase):
             spec["cards"][0] = dragons
             self.same(spec, tier)
 
+    def test_a_runaway_battle_with_hundreds_of_created_cards(self):
+        rng = random.Random(22883)  # label shard 22883, row 1219: Pandora's rolls create 836 cards
+        spec = [labels.random_spec(rng, self.catalog) for _ in range(1220)][-1]
+        self.same(spec, 22883 * 1_000_003 + 1219)
+
     def test_unknown_options_are_refused(self):
         spec = labels.random_spec(random.Random(1), self.catalog, cards=self.pool)
         with self.assertRaises(TypeError):
