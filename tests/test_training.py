@@ -127,6 +127,31 @@ class TrainingTests(unittest.TestCase):
         expected = torch.tensor([drago.initial_stats(catalog, spec) for spec in specs], dtype=torch.float64)
         torch.testing.assert_close(stats, expected, rtol=1e-6, atol=0)
 
+    def test_unfreezing_language_starts_its_optimizer_fresh(self):
+        root = Path(self.temp.name) / "unfreeze"
+        directory = root / "store"
+        directory.mkdir(parents=True)
+        for seed in (1, 25):
+            labels._worker((seed, 6, str(directory), snapshot(), False, Path(self.temp.name) / "tb3"))
+        run = Path(self.temp.name) / "unfreeze_run"
+        train(steps=2, batch_size=4, warmup=1, eval_every=100, checkpoint_every=2, device="cpu", run_dir=run,
+              label_root=root, freeze_language_at=0)
+        state = torch.load(run / "trainer.pt", weights_only=True)
+        from card_engine.model.checkpoint import load_checkpoint
+        model = load_checkpoint(run / "model.checkpoint")[0]
+        single = torch.optim.AdamW(model.parameters())  # an optimizer saved before the language group existed
+        for parameter in model.parameters():
+            single.state[parameter] = {"step": torch.tensor(2.0), "exp_avg": torch.ones_like(parameter),
+                                       "exp_avg_sq": torch.ones_like(parameter)}
+        torch.save({**state, "optimizer": single.state_dict()}, run / "trainer.pt")
+        before = {k: v.clone() for k, v in model.description.state_dict().items()}
+        train(steps=4, batch_size=4, warmup=1, eval_every=100, checkpoint_every=2, device="cpu", run_dir=run,
+              label_root=root, freeze_language_at=100, language_lr=1e-3)
+        after = load_checkpoint(run / "model.checkpoint")[0].description.state_dict()
+        self.assertTrue(any(not torch.equal(before[k], after[k]) for k in before))  # unfrozen: it trains again
+        saved = torch.load(run / "trainer.pt", weights_only=True)["optimizer"]
+        self.assertEqual([g["base_lr"] for g in saved["param_groups"]], [3e-4, 1e-3])
+
     def test_impossible_duplicates_are_dropped(self):
         cards = np.ones((3, 2, 4), dtype=np.int16)
         cards[1, 1, :2] = 250  # two Time Lord Stryx on one side

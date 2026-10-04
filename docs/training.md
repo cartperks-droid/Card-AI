@@ -55,6 +55,7 @@ python -m card_engine.training.labels --fixed --shards 1000 --rows 2000 --worker
 - **Resuming:** the model checkpoint, optimiser state and step count live in `data/training/`. The log is `data/training/log.jsonl`.
 - **Moving machines:** `--init-from <model.checkpoint>` starts a run directory that has no optimiser state from that model. It keeps the step count and uses a fresh optimiser that warms up again over 1,000 steps. Use it when only the checkpoint can be copied over, e.g. when the pod's own disk is out of reach.
 - **Tried and dropped (2026-10-03):** amplifying upsets' gradients for the description encoder only (weight 2) made the two encoders chase different losses. Validation KL rose from 0.055 to 0.186 within 15,000 steps, and upsets fell from 78% to 52%. The same resume without it held at 0.0535.
+- **Unfreezing the description transformer for a while** (user, 2026-10-04): restart with `--freeze-language-at` past the current step and a lower `--language-lr` (e.g. 3e-5). It has its own parameter group; its Adam state starts fresh when the saved optimizer predates that group, so momentum from before the freeze is not resumed. Watch validation KL: amplified upset gradients through this encoder once tripled it (above).
 - **Separate runs:** `--run-dir` puts a run elsewhere. A new directory starts from random weights; `predict.py --run-dir` reads that run's model.
 
 ```sh

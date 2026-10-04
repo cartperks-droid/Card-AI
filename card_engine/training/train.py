@@ -218,11 +218,15 @@ def weight_norm(model):
 
 
 def train(*, steps=None, batch_size=512, lr=3e-4, warmup=1000, weight_decay=0.05, dropout=0.1, freeze_language_at=None,
-          eval_every=1000, init_from=None,
+          eval_every=1000, init_from=None, language_lr=None,
           checkpoint_every=1000, reload_every=1000, device=None, run_dir=RUN_DIR, label_root=SHARD_DIR):
     """Train in run_dir, resuming its model and optimizer if both are there. Otherwise init_from (a model checkpoint,
     e.g. one downloaded from another machine) gives the starting weights and step, with a fresh optimizer whose learning
-    rate warms up again; with neither, training starts from random weights."""
+    rate warms up again; with neither, training starts from random weights.
+
+    language_lr: the description transformer's learning rate (default lr), its own parameter group. Its Adam state
+    starts fresh whenever the saved optimizer has no such group, so unfreezing it later (a --freeze-language-at past
+    the current step) does not resume momentum from before the freeze."""
     device = device or ("cuda" if torch.cuda.is_available() else "mps" if torch.backends.mps.is_available() else "cpu")
     run_dir = Path(run_dir)
     run_dir.mkdir(parents=True, exist_ok=True)
@@ -238,12 +242,24 @@ def train(*, steps=None, batch_size=512, lr=3e-4, warmup=1000, weight_decay=0.05
         model, state = BattleModel().to(device), None
     set_dropout(model, dropout)
     model.train()
-    optimizer = torch.optim.AdamW(model.parameters(), lr=lr, weight_decay=weight_decay)
+    language = list(model.description.parameters())
+    ids = {id(p) for p in language}
+    rest = [p for p in model.parameters() if id(p) not in ids]
+    optimizer = torch.optim.AdamW([{"params": rest, "base_lr": lr}, {"params": language, "base_lr": language_lr or lr}],
+                                  lr=lr, weight_decay=weight_decay)
     step, best = warm_from, None
     if state is not None:
-        optimizer.load_state_dict(state["optimizer"])
-        for group in optimizer.param_groups:
-            group["weight_decay"] = weight_decay
+        saved = state["optimizer"]
+        if len(saved["param_groups"]) == 2:
+            optimizer.load_state_dict(saved)
+        else:  # one group from before: keep the rest's moments, start the description transformer's afresh
+            single = torch.optim.AdamW(model.parameters(), lr=lr)
+            single.load_state_dict(saved)
+            for parameter in rest:
+                if parameter in single.state:
+                    optimizer.state[parameter] = single.state[parameter]
+        for group, base in zip(optimizer.param_groups, (lr, language_lr or lr)):
+            group["weight_decay"], group["base_lr"] = weight_decay, base
         step, best, warm_from = state["step"], state.get("best"), state.get("warm_from", 0)
     inputs = Inputs(device)
     tokens = inputs.data.description_tokens
@@ -302,7 +318,7 @@ def train(*, steps=None, batch_size=512, lr=3e-4, warmup=1000, weight_decay=0.05
             picks = torch.randint(count, (batch_size,), generator=generator).to(device)
             batch = {k: v[picks] for k, v in train_rows.items()}
             for group in optimizer.param_groups:
-                group["lr"] = lr * min(1.0, (step - warm_from + 1) / warmup)
+                group["lr"] = group["base_lr"] * min(1.0, (step - warm_from + 1) / warmup)
             logits = model(**inputs(batch, current_table()))
             loss = -(batch["target"] * logits.log_softmax(-1)).sum(-1).mean()
             total = loss + model.strategy.identity_penalty()
@@ -358,7 +374,9 @@ if __name__ == "__main__":
     parser.add_argument("--lr", type=float, default=3e-4)
     parser.add_argument("--weight-decay", type=float, default=0.05)
     parser.add_argument("--dropout", type=float, default=0.1, help="at the GELU upscale only")
-    parser.add_argument("--freeze-language-at", type=int, help="step after which the description transformer is frozen")
+    parser.add_argument("--freeze-language-at", type=int, help="step after which the description transformer is frozen; "
+                        "a step past the current one unfreezes it until then")
+    parser.add_argument("--language-lr", type=float, help="the description transformer's learning rate (default --lr)")
     parser.add_argument("--init-from", help="model checkpoint to start from when the run directory has no trainer state "
                         "(its step is kept; the optimizer starts fresh)")
     parser.add_argument("--device")
@@ -369,5 +387,5 @@ if __name__ == "__main__":
     parsed = parser.parse_args()
     train(steps=parsed.steps, batch_size=parsed.batch_size, lr=parsed.lr, device=parsed.device, reload_every=parsed.reload_every,
           weight_decay=parsed.weight_decay, dropout=parsed.dropout, freeze_language_at=parsed.freeze_language_at,
-          eval_every=parsed.eval_every, init_from=parsed.init_from,
+          eval_every=parsed.eval_every, init_from=parsed.init_from, language_lr=parsed.language_lr,
           run_dir=parsed.run_dir)
