@@ -19,7 +19,7 @@ This project simulates a Roblox "Snap!"-style card game and trains an AI to pred
   - `tablebase.py`: stores exact outcomes.
   - `predict.py`: the classifier's win rate for named teams, both turn orders (`--simulate` adds the engine).
   - `generate.py`: the generator (design below): counters to a named enemy or to broadly generated enemies, verified by the engine.
-  - `hard.py`: hard examples, generator-proposed battles labelled by the engine.
+  - `hard.py`: hard examples, the battles where the model and the engine disagree most.
 - `card_engine/tower.py`: tower floors (DaddyDrago's formula and fixed teams).
 - `card_engine/teams.py`: teams by name: `"Name[@Border][/Mutation]"` cards, `"Name[@Tier]"` supports.
 - `card_engine/model/` has two transformers: a description (language) encoder and a strategic encoder. The head gives **two outcomes, A win and B win. There are no ties**: a draw (both sides wiped out, or his 2,000-turn cap) counts as the attacker A's loss.
@@ -64,7 +64,7 @@ python -m card_engine.training.train --batch-size 512 --weight-decay 0.05 --drop
   - A commitment penalty and an entropy check stop slots blurring between several cards.
   - Enemies are generated broadly (high temperature); 32 counters are generated tightly; the simulator verifies every team.
 - **Fixed-stat battles** (user, 2026-10-04): battle modes where every enemy card has the same stats, borders ignored. `labels.py --fixed` writes `fixed_<seed>.npz`: the general problem (user), one side at one HP/ATK up to 10,000× the other side's, stats stored per row. The trainer reads them alongside, and `predict` and `generate` take `--enemy-stats HP ATK` or `--tower FLOOR DIFFICULTY` (`card_engine/tower.py`: a floor's stats and fixed team, DaddyDrago's formula).
-- **Hard examples** (user, 2026-10-04): `training/hard.py` lets the generator propose counters to fixed-stat enemies (tower floors and random) and labels them with the engine (`hard_<seed>.npz`); training repeats them (`--hard-repeat`) and logs `val_hard`. Fixed-stat labels also put half their battles at big gaps with stat-ignoring cards on the weaker side.
+- **Hard examples** (user, 2026-10-04): `training/hard.py` mines disagreement: against fixed-stat enemies (tower floors and random), 1,024 candidate teams leaning on stat-ignoring cards are scored by the model and the engine, and the 64 with the largest gap are kept (`hard_<seed>.npz`). Generator proposals were tried first and found only teams the model already gets right (gap 0.004); training repeats them (`--hard-repeat`) and logs `val_hard`. Fixed-stat labels also put half their battles at big gaps with stat-ignoring cards on the weaker side.
 - **Label storage:** every shard lives in `data/labels/store/`, stamped with a rules snapshot ID (`training/flags.py`).
   - **Automatic invalidation:** each snapshot records per-entity fingerprints, taken from his data and code: cards, supports at each tier, borders, mutations, aura logic, the random-ability pool, and the engine core. When an entity changes, only the rows involving it drop out.
   - **Core changes:** an engine-code change must be declared with `python -m card_engine.training.flags declare --cards ... | --all | --none --note "..."`. Until then, older labels are held back. Declarations chain, so each engine version is declared once, from the version before it (the default). `flags status` shows the state; the trainer keeps its loaded rows while everything is held back.

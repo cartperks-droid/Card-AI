@@ -41,11 +41,12 @@ python -m card_engine.training.labels --fixed --shards 1000 --rows 2000 --worker
 ```
 
 ## Hard examples (`training/hard.py`)
-The generator proposes teams where the classifier is weakest, and the engine labels them (user, 2026-10-04).
-- **Round:** a fixed-stat enemy, half a tower floor (1-105, random difficulty, its fixed team or random cards), half random cards at HP 10^U(2, 7.5) and ATK half that, moved by 10^U(-0.5, 0.5). The generator ascends the current classifier toward 32 counters (32 candidates, 150 steps: `--restarts`, `--steps`, lighter than `generate.py`'s defaults; pool: every card; masks drawn per round), and the engine labels each, the counter attacking first.
-- **Storage:** `hard_<seed>.npz` (20 rounds, 640 battles by default), the fixed-stat fields plus `model_win`, the model's win chance at proposal time. Each shard prints `mean_abs_gap`, the mean |model − engine| over its battles: the model's error where it is weakest.
+Battles where the classifier and the engine disagree most (user, 2026-10-04).
+- **Why not the generator:** proposing teams by ascending the classifier finds teams the model already gets right. The first such shards had a mean |model − engine| of 0.004, while the cheese decks it underrates were never proposed.
+- **Round:** a fixed-stat enemy, half a tower floor (1-105, random difficulty, its fixed team or random cards), half random cards at HP 10^U(2, 7.5) and ATK half that, moved by 10^U(-0.5, 0.5). 1,024 candidate teams (`--candidates`), each card a stat-ignoring one with probability 1/2 (`labels.STAT_IGNORING`), borders, mutations and support tiers drawn per round. The model scores them all in one batch, the engine labels them all (milliseconds each), the candidate attacking first. The 64 with the largest |model − engine| (`--keep`) and 16 others (`--keep-random`) are kept.
+- **Storage:** `hard_<seed>.npz` (20 rounds, 1,600 battles by default), the fixed-stat fields plus `model_win`, the model's win chance at mining time. Each shard prints `mean_gap_all` (all candidates) and `mean_gap_kept` (the kept 64 per round): the model's error where it is weakest.
 - **Training:** hard rows are repeated `--hard-repeat` times (20) in training. Validation's hard rows are scored on their own (`val_hard`; `scripts/perf.py`).
-- **Model:** the pod's checkpoint (`data/training_pod/`, as `pod_sync.sh` brings it down), reloaded every shard, so proposals follow training.
+- **Model:** the pod's checkpoint (`data/training_pod/`, as `pod_sync.sh` brings it down), reloaded every shard, so the mining follows training.
 
 ```sh
 python -m card_engine.training.hard --shards 100 --rounds 20 --workers 7
