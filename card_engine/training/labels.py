@@ -8,9 +8,12 @@ Each shard records the rules snapshot (training.flags), so rows go stale when th
 
 Fixed-stat battles (--fixed; user, 2026-10-04): battle modes where every enemy card has the same stats, borders
 ignored; the general problem, not one mode (user). One side, A or B at random, is borderless and starts all four
-cards at one (HP, ATK): the opponent's geometric-mean stats times 10^U(-2, 4), with the HP/ATK balance moved by
-10^U(-0.5, 0.5). The level reaches 10,000x, past floor 105 Impossible against a borderless deck (about 2,700x); the
-first fixed shards only spread it 10^U(-1.5, 1.5) and stay valid. Rows store fixed_side, fixed_stats (HP, ATK) and
+cards at one (HP, ATK): the opponent's geometric-mean stats times a level, with the HP/ATK balance moved by
+10^U(-0.5, 0.5). Half the battles draw the level from 10^U(-2, 4); the other half are big gaps, 10^U(1, 4.5), where
+each of the weaker side's cards is, with probability 1/2, one whose ability ignores raw stats (STAT_IGNORING:
+damage scaled to the enemy's HP, kills, revives, shared damage), so that wins against huge stats appear at all (user,
+2026-10-04: floor 105 Impossible is about 2,700x a borderless deck). The first fixed shards spread the level only
+10^U(-1.5, 1.5); they stay valid. Rows store fixed_side, fixed_stats (HP, ATK) and
 fixed_hp_mult (0 here; tower floors set it in predict and generate). They go to fixed_<seed>.npz, never to the
 tablebase (its key has no stats); trainers that predate them only read shard_*.npz.
 """
@@ -19,6 +22,7 @@ import json
 import multiprocessing as mp
 import os
 import random
+import re
 import time
 from pathlib import Path
 
@@ -78,14 +82,46 @@ def random_spec(rng, catalog, cards=None, none_support=0.1, mutation_rate=0.5, m
     return spec
 
 
+# Abilities whose effect does not scale with the holder's stats, by his ability texts (a sampling bias, not a rule).
+STAT_IGNORING = re.compile(
+    r"current HP|of (?:its|their|the enemy's|enemy's|target's|the target's) (?:HP|health|stats)|loses? \d+% of (?:its|their)"
+    r" (?:Max )?HP|loses? \d+% (?:Max )?HP|dies instead|die after|both active cards die|inflicts? death|chance to kill|"
+    r"will kill|steals? \d+% of|revive|Max HP as damage|Max HP damage|infinite damage|HP in half|shared with the other|"
+    r"abilities apply to you instead", re.I)
+_STAT_IGNORING_CARDS = None
+
+
+def stat_ignoring_cards(catalog):
+    """Card IDs whose ability matches STAT_IGNORING."""
+    global _STAT_IGNORING_CARDS
+    if _STAT_IGNORING_CARDS is None:
+        abilities = drago.his_data("abilities")
+        his = {c["name"]: c["ability"] for c in drago.his_data("cards")}
+        _STAT_IGNORING_CARDS = sorted(card for card, name in drago.names(catalog)[0].items()
+                                      if STAT_IGNORING.search(abilities.get(his[name], "") or ""))
+    return _STAT_IGNORING_CARDS
+
+
 def fixed_battle(rng, catalog, spec):
     """Turns a random spec into a fixed-stat battle: (side, (HP, ATK, HP multiplier applies)); that side's borders
-    become none."""
+    become none. Half are big gaps, the weaker side leaning on stat-ignoring abilities (module docstring)."""
     base = _base_stats(catalog)
     side = rng.randrange(2)
     other = 1 - side
+    big = rng.random() < 0.5
+    if big:
+        pool = stat_ignoring_cards(catalog)
+        for slot in range(4):
+            if rng.random() < 0.5:
+                card = rng.choice(pool)
+                while card in SINGLE_COPY and card in spec["cards"][other]:
+                    card = rng.choice(pool)
+                spec["cards"][other][slot] = card
+                spec["mutations"][other][slot] = 0
+                spec["arts"][other][slot] = rng.randint(1, len(ASTRAEUS_ARTS)) if card == ASTRAEUS else 0
     logs = np.log([base[c, b, m] for c, b, m in zip(spec["cards"][other], spec["borders"][other], spec["mutations"][other])])
-    level, balance = 10 ** rng.uniform(-2, 4), 10 ** rng.uniform(-0.5, 0.5)
+    level = 10 ** (rng.uniform(1, 4.5) if big else rng.uniform(-2, 4))
+    balance = 10 ** rng.uniform(-0.5, 0.5)
     hp, attack = np.exp(logs.mean(0)) * level * np.array([balance, 1 / balance])
     spec["borders"][side] = [1] * 4
     return side, (float(hp), float(attack), False)
@@ -224,8 +260,9 @@ def possible_rows(cards):
 
 
 def shard_paths(directory):
-    """Every label shard: random battles (shard_*) and fixed-stat battles (fixed_*); partial files excluded."""
-    return [*Path(directory).glob("shard_*.npz"), *Path(directory).glob("fixed_*.npz")]
+    """Every label shard: random battles (shard_*), fixed-stat battles (fixed_*) and hard examples (hard_*, training.hard);
+    partial files excluded."""
+    return [*Path(directory).glob("shard_*.npz"), *Path(directory).glob("fixed_*.npz"), *Path(directory).glob("hard_*.npz")]
 
 
 def fixed_arrays(shard, rows):

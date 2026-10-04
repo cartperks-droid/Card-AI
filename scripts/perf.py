@@ -21,12 +21,14 @@ for r in [json.loads(l) for l in lines[-200 * count:] if '"val"' in l][-count:]:
     print(f"{r['step']:<10,} {r['train_rows']:<11,} {r.get('val_rows', 0):<9,} {int(v.get('upset_rows', 0)):<7,} "
           f"{v['accuracy']:.3f}  {v['baseline']:.3f}  {v['upset_accuracy']:.3f}  {v['kl']:.3f}  "
           f"{v['decisive_accuracy']:.3f}     {v['probabilistic_error']:.3f}     {t.get('accuracy', float('nan')):.3f}")
-fixed = [json.loads(l) for l in lines[-200 * count:] if '"val_fixed"' in l][-count:]
-if fixed:
-    print("\nfixed-stat battles only")
+for name, title in (("val_fixed", "fixed-stat battles only"), ("val_hard", "hard examples only (generator-proposed)")):
+    subset = [json.loads(l) for l in lines[-200 * count:] if f'"{name}"' in l][-count:]
+    if not subset:
+        continue
+    print(f"\n{title}")
     print("step       val_rows  upsets  acc    base   upset  kl     decisive  prob_err")
-    for r in fixed:
-        v = r["val_fixed"]
-        print(f"{r['step']:<10,} {r['val_fixed_rows']:<9,} {int(v.get('upset_rows', 0)):<7,} {v['accuracy']:.3f}  "
+    for r in subset:
+        v = r[name]
+        print(f"{r['step']:<10,} {r[name + '_rows']:<9,} {int(v.get('upset_rows', 0)):<7,} {v['accuracy']:.3f}  "
               f"{v['baseline']:.3f}  {v['upset_accuracy']:.3f}  {v['kl']:.3f}  {v['decisive_accuracy']:.3f}     "
               f"{v['probabilistic_error']:.3f}")

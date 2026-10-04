@@ -36,9 +36,10 @@ def latest_label_dir(root=SHARD_DIR):
 _SHARD_CACHE = {}  # path -> (mtime, rules, validation, rows): each shard is read and checked once per rules version
 
 
-def load_split(directory, device):
+def load_split(directory, device, hard_repeat=1):
     """(train, validation) tensors of the rows still valid under the current rules (training.flags);
-    validation = shards whose seed is divisible by VALIDATION_EVERY.
+    validation = shards whose seed is divisible by VALIDATION_EVERY. Every row carries `hard` (1 for training.hard's
+    generator-proposed battles); training repeats those rows hard_repeat times, so the few there are weigh in.
 
     Shards are read and checked once, then cached: a reload reads only new shards, and rechecks the others only
     when the rules change. Card fields stay int16 as stored (a quarter of int64's memory); Inputs widens each batch.
@@ -66,13 +67,17 @@ def load_split(directory, device):
             rows = {key: arrays[key][keep].astype(np.int16) for key in FIELDS}
             rows.update({key: arrays[key][keep] for key in FIXED_FIELDS})
             rows["target"] = (arrays["probs"][keep, :2] / finished[keep, None]).astype(np.float32)
+            rows["hard"] = np.full(int(keep.sum()), path.name.startswith("hard_"), dtype=np.int8)
             if validation:
                 rows["favourite"] = stat_favourite({key: torch.as_tensor(value) for key, value in rows.items()
                                                     if key != "target"}).numpy().astype(np.int8)
             cached = (mtime, rules, validation, rows)
         seen[path] = cached
-        if len(cached[3]["target"]):
-            split["val" if cached[2] else "train"].append(cached[3])
+        rows = cached[3]
+        if len(rows["target"]):
+            if not cached[2] and hard_repeat > 1 and rows["hard"].any():
+                rows = {key: np.repeat(value, hard_repeat, axis=0) for key, value in rows.items()}
+            split["val" if cached[2] else "train"].append(rows)
     _SHARD_CACHE.clear()
     _SHARD_CACHE.update(seen)  # shards that disappeared, or old rules' entries, are dropped
     out = {name: {key: torch.as_tensor(np.concatenate([part[key] for part in parts]), device=device) for key in parts[0]}
@@ -218,7 +223,7 @@ def weight_norm(model):
 
 
 def train(*, steps=None, batch_size=512, lr=3e-4, warmup=1000, weight_decay=0.05, dropout=0.1, freeze_language_at=None,
-          eval_every=1000, init_from=None, language_lr=None,
+          eval_every=1000, init_from=None, language_lr=None, hard_repeat=20,
           checkpoint_every=1000, reload_every=1000, device=None, run_dir=RUN_DIR, label_root=SHARD_DIR):
     """Train in run_dir, resuming its model and optimizer if both are there. Otherwise init_from (a model checkpoint,
     e.g. one downloaded from another machine) gives the starting weights and step, with a fresh optimizer whose learning
@@ -265,7 +270,7 @@ def train(*, steps=None, batch_size=512, lr=3e-4, warmup=1000, weight_decay=0.05
     tokens = inputs.data.description_tokens
     from .flags import snapshot
     label_dir = latest_label_dir(label_root)
-    train_rows, val_rows = load_split(label_dir, device)
+    train_rows, val_rows = load_split(label_dir, device, hard_repeat)
     if train_rows is None:
         raise SystemExit("No labels are valid under the current rules: see `python -m card_engine.training.flags status`")
     rules_id = snapshot()  # the current rules; probes and the best checkpoint reset when it changes
@@ -306,7 +311,7 @@ def train(*, steps=None, batch_size=512, lr=3e-4, warmup=1000, weight_decay=0.05
         while steps is None or step < steps:
             if step and step % reload_every == 0:  # new shards, or new rules
                 label_dir = latest_label_dir(label_root)
-                fresh = load_split(label_dir, device)
+                fresh = load_split(label_dir, device, hard_repeat)
                 if fresh[0] is None:  # every row held back (an undeclared engine change): keep the rows already loaded
                     print(json.dumps({"step": step, "labels_held_back": "no rows are valid under the current rules; "
                                       "training continues on the loaded rows until the change is declared (flags status)"}),
@@ -336,11 +341,11 @@ def train(*, steps=None, batch_size=512, lr=3e-4, warmup=1000, weight_decay=0.05
                     table = eval_table()
                     record["val"] = {k: round(v, 4) for k, v in evaluate(model, inputs, table, val_rows).items()}
                     record["val_rows"] = int(val_rows["target"].shape[0])
-                    fixed = val_rows["fixed_side"] >= 0  # fixed-stat battles on their own, apart from the mix
-                    if bool(fixed.any()):
-                        part = {k: v[fixed] for k, v in val_rows.items()}
-                        record["val_fixed"] = {k: round(v, 4) for k, v in evaluate(model, inputs, table, part).items()}
-                        record["val_fixed_rows"] = int(fixed.sum())
+                    for name, subset in (("val_fixed", val_rows["fixed_side"] >= 0), ("val_hard", val_rows["hard"] > 0)):
+                        if bool(subset.any()):  # fixed-stat battles and hard examples on their own, apart from the mix
+                            part = {k: v[subset] for k, v in val_rows.items()}
+                            record[name] = {k: round(v, 4) for k, v in evaluate(model, inputs, table, part).items()}
+                            record[f"{name}_rows"] = int(subset.sum())
                     if rules_id != probe_labels:  # new rules: new probes
                         train_probe, val_probe, probe_labels = probe(train_rows, 8192), probe(val_rows, 8192), rules_id
                     record["grok"] = {"train_probe": {k: round(v, 4) for k, v in evaluate(model, inputs, table, train_probe).items()
@@ -377,6 +382,7 @@ if __name__ == "__main__":
     parser.add_argument("--freeze-language-at", type=int, help="step after which the description transformer is frozen; "
                         "a step past the current one unfreezes it until then")
     parser.add_argument("--language-lr", type=float, help="the description transformer's learning rate (default --lr)")
+    parser.add_argument("--hard-repeat", type=int, default=20, help="times each hard example (training.hard) appears in training")
     parser.add_argument("--init-from", help="model checkpoint to start from when the run directory has no trainer state "
                         "(its step is kept; the optimizer starts fresh)")
     parser.add_argument("--device")
@@ -387,5 +393,5 @@ if __name__ == "__main__":
     parsed = parser.parse_args()
     train(steps=parsed.steps, batch_size=parsed.batch_size, lr=parsed.lr, device=parsed.device, reload_every=parsed.reload_every,
           weight_decay=parsed.weight_decay, dropout=parsed.dropout, freeze_language_at=parsed.freeze_language_at,
-          eval_every=parsed.eval_every, init_from=parsed.init_from, language_lr=parsed.language_lr,
+          eval_every=parsed.eval_every, init_from=parsed.init_from, language_lr=parsed.language_lr, hard_repeat=parsed.hard_repeat,
           run_dir=parsed.run_dir)

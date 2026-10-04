@@ -30,13 +30,25 @@
 
 ## Fixed-stat battles (`labels.py --fixed`)
 Some battle modes give every enemy card the same stats, borders ignored (user, 2026-10-04). The labels cover the general problem, not one mode (user).
-- **Battle:** a random matchup in which one side, A or B at random, is borderless and starts all four cards at one (HP, ATK). The level is the opponent's geometric-mean stats times 10^U(-2, 4); the HP/ATK balance moves by 10^U(-0.5, 0.5).
+- **Battle:** a random matchup in which one side, A or B at random, is borderless and starts all four cards at one (HP, ATK). The level is the opponent's geometric-mean stats times a factor; the HP/ATK balance moves by 10^U(-0.5, 0.5).
+- **Big gaps** (user, 2026-10-04): half the battles take the factor from 10^U(-2, 4); the other half from 10^U(1, 4.5), and each of the weaker side's cards is, with probability 1/2, one whose ability ignores raw stats (`labels.STAT_IGNORING`, read from his ability texts: damage scaled to the enemy's HP, kills, revives, shared damage). Random teams almost never win at such gaps otherwise.
 - **Range:** the level reaches 10,000×. Floor 105 Impossible is about 2,700× a borderless cheese deck. The first fixed shards (2026-10-04) spread it only 10^U(-1.5, 1.5) and never reached such gaps; they stay valid.
 - **Storage:** `fixed_<seed>.npz`, with `fixed_side`, `fixed_stats` (HP, ATK) and `fixed_hp_mult` per row, on their own seed sequence. They are never put in the tablebase, whose key has no stats. Trainers from before fixed shards read only `shard_*.npz`.
 - **Model:** the trainer starts that side's cards at `fixed_stats` (`train.card_stats`). `fixed_hp_mult` multiplies HP by each card's HP multiplier, as tower floors do on Normal and Impossible (`card_engine/tower.py`, used by `--tower`); the labels leave it off.
 
 ```sh
 python -m card_engine.training.labels --fixed --shards 1000 --rows 2000 --workers N
+```
+
+## Hard examples (`training/hard.py`)
+The generator proposes teams where the classifier is weakest, and the engine labels them (user, 2026-10-04).
+- **Round:** a fixed-stat enemy, half a tower floor (1-105, random difficulty, its fixed team or random cards), half random cards at HP 10^U(2, 7.5) and ATK half that, moved by 10^U(-0.5, 0.5). The generator ascends the current classifier toward 32 counters (pool: every card; masks drawn per round), and the engine labels each, the counter attacking first.
+- **Storage:** `hard_<seed>.npz` (20 rounds, 640 battles by default), the fixed-stat fields plus `model_win`, the model's win chance at proposal time. Each shard prints `mean_abs_gap`, the mean |model − engine| over its battles: the model's error where it is weakest.
+- **Training:** hard rows are repeated `--hard-repeat` times (20) in training. Validation's hard rows are scored on their own (`val_hard`; `scripts/perf.py`).
+- **Model:** the pod's checkpoint (`data/training_pod/`, as `pod_sync.sh` brings it down), reloaded every shard, so proposals follow training.
+
+```sh
+python -m card_engine.training.hard --shards 100 --rounds 20 --workers 7
 ```
 
 ## Model inputs
