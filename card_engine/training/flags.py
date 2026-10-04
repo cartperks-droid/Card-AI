@@ -105,17 +105,33 @@ def load_changes():
     return json.loads(CHANGES_FILE.read_text()) if CHANGES_FILE.exists() else []
 
 
+def declared_path(from_core, to_core, changes):
+    """The shortest chain of declared core changes leading from one core to another (declarations chain, so each new
+    engine version is declared once, from the version before it); None if there is none."""
+    paths, frontier = {from_core: []}, [from_core]
+    while frontier and to_core not in paths:
+        nxt = []
+        for core in frontier:
+            for change in changes:
+                if change["from_core"] == core and change["to_core"] not in paths:
+                    paths[change["to_core"]] = paths[core] + [change]
+                    nxt.append(change["to_core"])
+        frontier = nxt
+    return paths.get(to_core)
+
+
 def changed_entities(old, new, changes):
     """Entities whose fingerprint differs between snapshots; None if a core change is undeclared."""
     changed = {key for key in set(old) | set(new) if old.get(key) != new.get(key)}
     if "core" in changed:
-        declared = next((c for c in changes if c["from_core"] == old["core"] and c["to_core"] == new["core"]), None)
-        if declared is None:
+        path = declared_path(old["core"], new["core"], changes)
+        if path is None:
             return None
         changed.discard("core")
-        if declared.get("all"):
+        if any(c.get("all") for c in path):
             return {"*"}
-        changed |= set(declared.get("affects", []))
+        for c in path:
+            changed |= set(c.get("affects", []))
     return changed
 
 
@@ -184,8 +200,11 @@ def main(argv=None):
                      + ", ".join(sorted(changed)[:8]) + (" ..." if len(changed) > 8 else ""))
             print(f"{ident}: {rows} rows, {state}")
         return
-    old_ident = args.from_snapshot or next((i for i in sorted(counts, key=lambda i: -counts[i])
-                                            if load_snapshot(i)["core"] != current["core"]), None)
+    # default: the last engine version declared to (declarations chain), else the stored labels with the most rows
+    changes = load_changes()
+    last = changes[-1]["to_core"] if changes else None
+    candidates = sorted(counts, key=lambda i: (load_snapshot(i)["core"] != last, -counts[i]))
+    old_ident = args.from_snapshot or next((i for i in candidates if load_snapshot(i)["core"] != current["core"]), None)
     if old_ident is None:
         raise SystemExit("No stored labels have a different core; nothing to declare")
     names = [(c.id, c.name) for c in catalog.cards]
@@ -195,7 +214,6 @@ def main(argv=None):
         color = "red" if s.startswith("red") else "blue"
         sid = int(s[len(color):])
         affects += [f"support:{color}{sid}:{t}" for t in range(1, 6)]
-    changes = load_changes()
     changes.append({"from_core": load_snapshot(old_ident)["core"], "to_core": current["core"], "all": bool(args.all),
                     "affects": affects, "note": args.note})
     CHANGES_FILE.parent.mkdir(parents=True, exist_ok=True)

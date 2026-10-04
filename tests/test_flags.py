@@ -56,6 +56,14 @@ class FlagTests(unittest.TestCase):
         self.assertEqual(self.check(old, [dict(declared, affects=[])]), [True, True, True])
         self.assertEqual(self.check(old, [dict(declared, all=True)]), [False, False, False])
 
+    def test_declarations_chain_across_engine_versions(self):
+        old = dict(self.current, core="v1")
+        first = {"from_core": "v1", "to_core": "v2", "all": False, "affects": ["card:10"], "note": "test"}
+        second = {"from_core": "v2", "to_core": self.current["core"], "all": False, "affects": [], "note": "test"}
+        self.assertEqual(self.check(old, [first]), [False, False, False])  # v2 -> current undeclared: held back
+        self.assertEqual(self.check(old, [first, second]), [True, False, True])  # v1 -> v2 -> current
+        self.assertEqual(self.check(old, [dict(first, all=True), second]), [False, False, False])
+
 
 if __name__ == "__main__":
     unittest.main()

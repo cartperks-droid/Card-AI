@@ -232,6 +232,8 @@ def train(*, steps=None, batch_size=512, lr=3e-4, warmup=1000, weight_decay=0.05
     from .flags import snapshot
     label_dir = latest_label_dir(label_root)
     train_rows, val_rows = load_split(label_dir, device)
+    if train_rows is None:
+        raise SystemExit("No labels are valid under the current rules: see `python -m card_engine.training.flags status`")
     rules_id = snapshot()  # the current rules; probes and the best checkpoint reset when it changes
     # Grokking probes: fixed subsets of the training and validation rows, so the curves stay comparable
     # (the full validation set grows with new shards and changes with the rules).
@@ -270,8 +272,14 @@ def train(*, steps=None, batch_size=512, lr=3e-4, warmup=1000, weight_decay=0.05
         while steps is None or step < steps:
             if step and step % reload_every == 0:  # new shards, or new rules
                 label_dir = latest_label_dir(label_root)
-                train_rows, val_rows = load_split(label_dir, device)
-                rules_id = snapshot()
+                fresh = load_split(label_dir, device)
+                if fresh[0] is None:  # every row held back (an undeclared engine change): keep the rows already loaded
+                    print(json.dumps({"step": step, "labels_held_back": "no rows are valid under the current rules; "
+                                      "training continues on the loaded rows until the change is declared (flags status)"}),
+                          flush=True)
+                else:
+                    train_rows, val_rows = fresh
+                    rules_id = snapshot()
             count = train_rows["target"].shape[0]
             picks = torch.randint(count, (batch_size,), generator=generator).to(device)
             batch = {k: v[picks] for k, v in train_rows.items()}

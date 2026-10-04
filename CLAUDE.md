@@ -59,7 +59,7 @@ python -m card_engine.training.train --batch-size 512 --weight-decay 0.05 --drop
   - Enemies are generated broadly (high temperature); 32 counters are generated tightly; the simulator verifies every team.
 - **Label storage:** every shard lives in `data/labels/store/`, stamped with a rules snapshot ID (`training/flags.py`).
   - **Automatic invalidation:** each snapshot records per-entity fingerprints, taken from his data and code: cards, supports at each tier, borders, mutations, aura logic, the random-ability pool, and the engine core. When an entity changes, only the rows involving it drop out.
-  - **Core changes:** an engine-code change must be declared with `python -m card_engine.training.flags declare --cards ... | --all | --none --note "..."`. Until then, older labels are held back. `flags status` shows the state.
+  - **Core changes:** an engine-code change must be declared with `python -m card_engine.training.flags declare --cards ... | --all | --none --note "..."`. Until then, older labels are held back. Declarations chain, so each engine version is declared once, from the version before it (the default). `flags status` shows the state; the trainer keeps its loaded rows while everything is held back.
   - **Storage:** nothing extra is stored per row.
 
 ## Working with the user
