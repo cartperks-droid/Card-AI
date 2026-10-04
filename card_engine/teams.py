@@ -14,8 +14,9 @@ from .mutations import MUTATION_NAMES
 FIELDS = ("cards", "borders", "mutations", "arts", "red", "red_tier", "blue", "blue_tier")
 ASTRAEUS = 56
 # At most one copy per team: Fate Seamstress (user, 2026-10-04: a second copy doesn't work); Parallax (DaddyDrago's
-# tower tool, SINGLE_COPY_CHEESE_CARDS, which also lists Fate Seamstress).
-SINGLE_COPY = {240: "Fate Seamstress", 65: "Parallax"}
+# tower tool, SINGLE_COPY_CHEESE_CARDS, which also lists Fate Seamstress); Time Lord Stryx (user, 2026-10-04: Better
+# Days doesn't work twice; his engine lets two copies revive each other in a loop).
+SINGLE_COPY = {240: "Fate Seamstress", 65: "Parallax", 250: "Time Lord Stryx"}
 # Astraeus's arts (input "arts": index + 1, 0 = not Astraeus). Each is a separate card with one Constellar ability.
 ASTRAEUS_ARTS = ("scorpio", "aquarius", "virgo", "gemini", "sagittarius", "taurus", "cancer")
 
