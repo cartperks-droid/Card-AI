@@ -36,7 +36,7 @@ the masks: a deck pool is used as it is.
   - --mutations: None by default; list some (--mutations None Storm) or allow all.
   - --support-tiers: base by default, for red and blue alike (supports have no index to price them); list some
     (--support-tiers base Platinum) or allow all.
-  - --min-rarity: leaves out cards less rare than this card rarity (1 in N: 5000, 2.5M, 30T).
+  - --max-rarity: leaves out cards rarer than this card rarity (1 in N: 5000, 2.5M, 30T).
 
 Enemies: an explicit team (--enemy), or --enemies N generated broadly. A broad enemy is a team ascended against
 a random pool opponent and decoded by sampling at a high temperature.
@@ -77,8 +77,8 @@ class Pool:
     blues: list
 
 
-def make_pool(catalog, kind, borders=None, limited=True, deck_path=None, mutations=None, tiers=None, min_rarity=None):
-    """The pool's entries and supports. borders (IDs), mutations (indices), tiers (1-5) and min_rarity mask the open
+def make_pool(catalog, kind, borders=None, limited=True, deck_path=None, mutations=None, tiers=None, max_rarity=None):
+    """The pool's entries and supports. borders (IDs), mutations (indices), tiers (1-5) and max_rarity mask the open
     pools (restricted, all); None allows all. A deck pool (own, custom) is used as it is: the deck overrides them."""
     every_support = lambda table: [(s.id, tier) for s in table for tier in range(1, 6)]
     copies = None
@@ -114,15 +114,15 @@ def make_pool(catalog, kind, borders=None, limited=True, deck_path=None, mutatio
             keep &= np.isin(entries[:, 1], borders)
         if mutations is not None:
             keep &= np.isin(entries[:, 2], mutations)
-        if min_rarity is not None:
-            keep &= np.array([catalog.card(int(card)).rarity >= min_rarity for card in entries[:, 0]], dtype=bool)
+        if max_rarity is not None:
+            keep &= np.array([catalog.card(int(card)).rarity <= max_rarity for card in entries[:, 0]], dtype=bool)
         entries = entries[keep]
         if tiers is not None:
             reds = [r for r in reds if r[1] in tiers] or [(0, 0)]
             blues = [b for b in blues if b[1] in tiers] or [(0, 0)]
     if not len(entries):
         raise SystemExit(f"The {kind} pool is empty" + (" under these masks; allow more with --borders, --mutations, "
-                                                         "--min-rarity" if kind in ("restricted", "all") else ""))
+                                                         "--max-rarity" if kind in ("restricted", "all") else ""))
     return Pool(entries, copies, reds, blues)
 
 
@@ -387,7 +387,7 @@ def main():
                         f"{', '.join(MUTATION_NAMES)}, or all")
     parser.add_argument("--support-tiers", nargs="+", default=["base"], help=f"allowed support tiers, red and blue "
                         f"(default base), from {' '.join(TIERS)}, or all")
-    parser.add_argument("--min-rarity", help="leave out cards less rare than this card rarity (1 in N, e.g. 5000, 2.5M)")
+    parser.add_argument("--max-rarity", help="leave out cards rarer than this card rarity (1 in N, e.g. 5000, 2.5M)")
     parser.add_argument("--no-limited", action="store_true", help="restricted pool without its Limited exceptions")
     parser.add_argument("--counters", type=int, default=32)
     parser.add_argument("--restarts", type=int, default=64, help="candidates ascended per enemy")
@@ -410,7 +410,7 @@ def main():
     catalog = load_catalog()
     enemy_stats = fixed_stats(*args.enemy_stats) if args.enemy_stats else None
     mask = dict(zip(("borders", "mutations", "tiers"), masks(args.borders, args.mutations, args.support_tiers)),
-                min_rarity=parse_rarity(args.min_rarity) if args.min_rarity else None)
+                max_rarity=parse_rarity(args.max_rarity) if args.max_rarity else None)
     classifier = Classifier(args.checkpoint, args.device)
     settings = Settings(steps=args.steps, temperature=args.temperature, nearest=args.nearest, role=args.role)
     space = SlotSpace(classifier, make_pool(catalog, args.pool, limited=not args.no_limited, **mask))
@@ -425,7 +425,7 @@ def main():
         enemies = broad_enemies(enemy_space, args.enemies, settings=settings, seed=args.seed)
     report = {"checkpoint_step": classifier.metadata.get("step"), "role": args.role, "pool": args.pool,
               "masks": {"borders": args.borders, "mutations": args.mutations, "support_tiers": args.support_tiers,
-                        "min_rarity": args.min_rarity},
+                        "max_rarity": args.max_rarity},
               "matchups": []}
     for index, enemy in enumerate(enemies):
         found = counters(space, enemy, count=args.counters, restarts=args.restarts, settings=settings,

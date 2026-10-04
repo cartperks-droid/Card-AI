@@ -57,7 +57,7 @@ python -m card_engine.training.train --batch-size 512 --weight-decay 0.05 --drop
   - It starts from noise in the slot space and runs gradient ascent on the frozen classifier toward a "win = 1" target. Weights never change.
   - One role per run (user, 2026-10-04): `--role attack` (default) or `--role defend`. Attacking and defending are separate situations, never averaged.
   - Card, border and mutation are decoded by an exact factorised nearest-k match, filtered to a pool: own deck, custom pool, restricted deck, or everything.
-  - Masks (user, 2026-10-04): borderless, unmutated and base-tier supports by default, plus an optional minimum card rarity. Each is widened on request. They narrow the open pools only; cards put in a deck override them.
+  - Masks (user, 2026-10-04): borderless, unmutated and base-tier supports by default, plus an optional maximum card rarity. Each is widened on request. They narrow the open pools only; cards put in a deck override them.
   - A commitment penalty and an entropy check stop slots blurring between several cards.
   - Enemies are generated broadly (high temperature); 32 counters are generated tightly; the simulator verifies every team.
 - **Fixed-stat battles** (user, 2026-10-04): battle modes where every enemy card has the same arbitrary stats, borders ignored. `labels.py --fixed` writes `fixed_<seed>.npz` (one side's four cards start at one HP/ATK, stored per row), the trainer reads them alongside, and `predict` and `generate` take `--enemy-stats HP ATK`.
