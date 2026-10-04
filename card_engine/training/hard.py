@@ -3,10 +3,13 @@
 Random sampling almost never produces teams that beat huge fixed stats through abilities (the floor-105 cheese
 decks), so the classifier underrates them and its guesses there swing between checkpoints. Proposing teams with the
 generator does not find them: it chases the model's own opinion, so its teams are ones the model already gets right
-(first hard shards, 2026-10-04: mean |model - engine| 0.004). Disagreement mining does. Each round draws a fixed-stat
-enemy and --candidates teams leaning on stat-ignoring cards (labels.STAT_IGNORING), scores all of them with the
-current classifier (one batch) and the engine (milliseconds each), and keeps the --keep teams with the largest
-|model - engine|, plus --keep-random others so the shards are not only extremes.
+(first hard shards, 2026-10-04: mean |model - engine| 0.004). Random candidates do not either: against huge stats
+almost none win (0 of 200 at 10.9M HP), since cheese decks are specific four-card lineups. So each round searches
+with the engine: --candidates evaluations (milliseconds each) of an evolution from 64 random teams leaning on
+stat-ignoring cards (labels.STAT_IGNORING), whose 16 best each get 4 variants per generation (a card, a support, or
+the lineup order changed). Every team evaluated is then scored by the current classifier (one batch), and the
+--keep teams with the largest |model - engine| are kept, plus --keep-random others so the shards are not only
+extremes.
 
 Enemies, half each:
   - a tower floor (card_engine.tower): 1-105 at a random difficulty, its fixed team or random cards;
@@ -16,7 +19,8 @@ else any card; borders, mutations and support tiers drawn per round (borderless,
 mutations none or random; supports base or random tier, none 10% of the time).
 
 Shards (hard_<seed>.npz, their own seed sequence) hold the label fields plus model_win, the model's win chance at
-mining time; each prints the mean gap over all candidates and over the kept ones. The trainer repeats hard rows
+mining time; each prints the mean gap over every team evaluated and over the kept ones, and the mean best engine win
+chance the search reached. The trainer repeats hard rows
 (--hard-repeat) and scores validation's separately (val_hard).
 
     python -m card_engine.training.hard --shards 100 --rounds 20 --workers 7
@@ -89,30 +93,78 @@ def _init():
     _CATALOG = load_catalog()
 
 
+def mutate(rng, catalog, team, borders, mutate_cards, tiered):
+    """One change to a team: a card (stat-ignoring with probability 1/2), a support, or the lineup order."""
+    cards = [list(entry) for entry in zip(team["cards"], team["borders"], team["mutations"], team["arts"])]
+    supports = [(team["red"], team["red_tier"]), (team["blue"], team["blue_tier"])]
+    move = rng.random()
+    if move < 0.6:
+        slot = rng.randrange(4)
+        fresh = draw_candidate(rng, catalog, borders, mutate_cards, tiered)
+        cards[slot] = [fresh["cards"][0], fresh["borders"][0], fresh["mutations"][0], fresh["arts"][0]]
+        if any(c in SINGLE_COPY and [x[0] for x in cards].count(c) > 1 for c in SINGLE_COPY):
+            return team
+    elif move < 0.8:
+        fresh = draw_candidate(rng, catalog, borders, mutate_cards, tiered)
+        color = rng.randrange(2)
+        supports[color] = ((fresh["red"], fresh["red_tier"]), (fresh["blue"], fresh["blue_tier"]))[color]
+    else:
+        a, b = rng.sample(range(4), 2)
+        cards[a], cards[b] = cards[b], cards[a]
+    return side([tuple(c) for c in cards], *supports)
+
+
+def _key(team):
+    return tuple(tuple(v) if isinstance(v, list) else v for v in team.values())
+
+
+def search(rng, catalog, pool, enemy, per_card, seed, candidates, population=64, parents=16, children=4):
+    """Engine-guided evolution toward teams that beat `enemy`; returns every team evaluated as (team, probs, engine
+    win chance, exact)."""
+    borders, mutate_cards, tiered = rng.choice(BORDER_SETS), rng.random() < 0.5, rng.random() < 0.5
+    seen = {}
+
+    def score(teams):
+        fresh = [t for t in dict((_key(t), t) for t in teams).values() if _key(t) not in seen]
+        jobs = [(spec(t, enemy), seed + len(seen) + i, per_card) for i, t in enumerate(fresh)]
+        for team, (probs, exact) in zip(fresh, pool.map(_label, jobs, chunksize=8)):
+            finished = probs[0] + probs[1]
+            seen[_key(team)] = (team, probs, probs[0] / finished if finished > 0 else float("nan"), exact)
+
+    alive = [draw_candidate(rng, catalog, borders, mutate_cards, tiered) for _ in range(population)]
+    score(alive)
+    while len(seen) < candidates:
+        ranked = sorted((seen[_key(t)] for t in alive), key=lambda e: -np.nan_to_num(e[2], nan=-1.0))
+        best = [team for team, *_ in ranked[:parents]]
+        offspring = [mutate(rng, catalog, team, borders, mutate_cards, tiered) for team in best for _ in range(children)]
+        before = len(seen)
+        score(offspring)
+        alive = [e[0] for e in sorted({_key(t): seen[_key(t)] for t in best + offspring}.values(),
+                                      key=lambda e: -np.nan_to_num(e[2], nan=-1.0))[:population]]
+        if len(seen) == before:  # nothing new to try
+            break
+    return list(seen.values())
+
+
 def hard_shard(classifier, catalog, seed, rounds, pool, candidates=1024, keep=64, keep_random=16):
-    """One shard's rows: per round, the `keep` candidates the model gets most wrong plus `keep_random` others."""
+    """One shard's rows: per round, the `keep` searched teams the model gets most wrong plus `keep_random` others."""
     rng = random.Random(f"hard-{seed}")
-    rows, gaps_all, gaps_kept = [], [], []
+    rows, gaps_all, gaps_kept, best_found = [], [], [], []
     for r in range(rounds):
         enemy, fixed = draw_enemy(rng, catalog)
-        borders, mutate, tiered = rng.choice(BORDER_SETS), rng.random() < 0.5, rng.random() < 0.5
-        teams = [draw_candidate(rng, catalog, borders, mutate, tiered) for _ in range(candidates)]
-        model = classifier.ally_win([(team, enemy) for team in teams], fixed)[:, 0]
         per_card = tower.engine_stats(catalog, enemy["cards"], fixed)
-        battles = [spec(team, enemy) for team in teams]
-        results = pool.map(_label, [(b, seed * 1_000_003 + r * candidates + i, per_card) for i, b in enumerate(battles)],
-                           chunksize=16)
-        probs = np.array([p for p, _ in results], dtype=np.float32)
-        finished = probs[:, :2].sum(1)
-        engine = np.where(finished > 0, probs[:, 0] / np.maximum(finished, 1e-12), np.nan)
+        evaluated = search(rng, catalog, pool, enemy, per_card, seed * 1_000_003 + r * 4 * candidates, candidates)
+        teams = [team for team, *_ in evaluated]
+        engine = np.array([e for _, _, e, _ in evaluated])
+        model = classifier.ally_win([(team, enemy) for team in teams], fixed)[:, 0]
         gap = np.abs(engine - model)
-        ranked = [i for i in np.argsort(-np.nan_to_num(gap, nan=-1.0)) if finished[i] > 0]
+        ranked = [i for i in np.argsort(-np.nan_to_num(gap, nan=-1.0)) if not np.isnan(engine[i])]
         chosen = ranked[:keep]
-        rest = ranked[keep:]
-        chosen += rng.sample(rest, min(keep_random, len(rest)))
+        chosen += rng.sample(ranked[keep:], min(keep_random, len(ranked) - keep)) if len(ranked) > keep else []
         gaps_all.append(float(np.nanmean(gap)))
         gaps_kept.append(float(np.mean(gap[chosen[:keep]])) if chosen else float("nan"))
-        rows += [(battles[i], results[i], fixed, float(model[i])) for i in chosen]
+        best_found.append(float(np.nanmax(engine)))
+        rows += [(spec(teams[i], enemy), (evaluated[i][1], evaluated[i][3]), fixed, float(model[i])) for i in chosen]
     arrays = {name: np.array([b[name] for b, *_ in rows], dtype=np.int16) for name in FIELDS}
     probs = np.array([res[0] for _, res, *_ in rows], dtype=np.float32)
     exact = np.array([res[1] for _, res, *_ in rows], dtype=bool)
@@ -120,7 +172,7 @@ def hard_shard(classifier, catalog, seed, rounds, pool, candidates=1024, keep=64
              "fixed_stats": np.array([f[:2] for *_, f, _ in rows], dtype=np.float32),
              "fixed_hp_mult": np.array([f[2] for *_, f, _ in rows], dtype=np.int8),
              "model_win": np.array([m for *_, m in rows], dtype=np.float32)}
-    return arrays, probs, exact, extra, float(np.mean(gaps_all)), float(np.nanmean(gaps_kept))
+    return arrays, probs, exact, extra, float(np.mean(gaps_all)), float(np.nanmean(gaps_kept)), float(np.mean(best_found))
 
 
 def run(shards, *, rounds=20, workers=None, checkpoint=None, out_dir=STORE, first_seed=None, device=None,
@@ -138,15 +190,16 @@ def run(shards, *, rounds=20, workers=None, checkpoint=None, out_dir=STORE, firs
             path = checkpoint or next(p for p in (POD_RUN / "model.checkpoint", RUN_DIR / "model.checkpoint") if p.exists())
             classifier = Classifier(path, device)  # reloaded every shard: the mining follows training
             started = time.time()
-            arrays, probs, exact, extra, gap_all, gap_kept = hard_shard(classifier, catalog, seed, rounds, pool,
-                                                                        candidates, keep, keep_random)
+            arrays, probs, exact, extra, gap_all, gap_kept, best = hard_shard(classifier, catalog, seed, rounds, pool,
+                                                                              candidates, keep, keep_random)
             target = out_dir / f"hard_{seed:08d}.npz"
             tmp = target.with_name(f"partial_{target.name}")
             np.savez_compressed(tmp, probs=probs, exact=exact, snapshot=np.array(snapshot(catalog)), **arrays, **extra)
             os.replace(tmp, target)
             print(json.dumps({"shard": target.name, "done": done, "of": shards, "rows": len(probs),
                               "model_step": classifier.metadata.get("step"), "seconds": round(time.time() - started),
-                              "mean_gap_all": round(gap_all, 3), "mean_gap_kept": round(gap_kept, 3)}), flush=True)
+                              "mean_gap_all": round(gap_all, 3), "mean_gap_kept": round(gap_kept, 3),
+                              "mean_best_engine_win": round(best, 3)}), flush=True)
             seed += 1
 
 

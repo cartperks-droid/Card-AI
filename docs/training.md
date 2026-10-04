@@ -42,11 +42,12 @@ python -m card_engine.training.labels --fixed --shards 1000 --rows 2000 --worker
 
 ## Hard examples (`training/hard.py`)
 Battles where the classifier and the engine disagree most (user, 2026-10-04).
-- **Why not the generator:** proposing teams by ascending the classifier finds teams the model already gets right. The first such shards had a mean |model − engine| of 0.004, while the cheese decks it underrates were never proposed.
-- **Round:** a fixed-stat enemy, half a tower floor (1-105, random difficulty, its fixed team or random cards), half random cards at HP 10^U(2, 7.5) and ATK half that, moved by 10^U(-0.5, 0.5). 1,024 candidate teams (`--candidates`), each card a stat-ignoring one with probability 1/2 (`labels.STAT_IGNORING`), borders, mutations and support tiers drawn per round. The model scores them all in one batch, the engine labels them all (milliseconds each), the candidate attacking first. The 64 with the largest |model − engine| (`--keep`) and 16 others (`--keep-random`) are kept.
-- **Storage:** `hard_<seed>.npz` (20 rounds, 1,600 battles by default), the fixed-stat fields plus `model_win`, the model's win chance at mining time. Each shard prints `mean_gap_all` (all candidates) and `mean_gap_kept` (the kept 64 per round): the model's error where it is weakest.
+- **Not the generator:** proposing teams by ascending the classifier finds teams the model already gets right. The first such shards had a mean |model − engine| of 0.004.
+- **Not random candidates:** against huge stats almost none win (0 of 200 at 10.9M HP). Cheese decks are specific four-card lineups.
+- **Round:** a fixed-stat enemy, half a tower floor (1-105, random difficulty, its fixed team or random cards), half random cards at HP 10^U(2, 7.5) and ATK half that, moved by 10^U(-0.5, 0.5). An engine-guided search spends 1,024 engine evaluations (`--candidates`, milliseconds each): 64 random teams leaning on stat-ignoring cards (`labels.STAT_IGNORING`); each generation the best 16 get 4 variants each (a card, a support, or the lineup order changed), keeping the best 64. Every team evaluated is scored by the model in one batch. The 64 with the largest |model − engine| (`--keep`) and 16 others (`--keep-random`) are kept, the candidate attacking first.
+- **Storage:** `hard_<seed>.npz` (20 rounds, 1,600 battles by default), the fixed-stat fields plus `model_win`, the model's win chance at mining time. Each shard prints `mean_gap_all` (every team evaluated), `mean_gap_kept` (the kept 64 per round) and `mean_best_engine_win` (the best win chance the search reached per enemy).
 - **Training:** hard rows are repeated `--hard-repeat` times (20) in training. Validation's hard rows are scored on their own (`val_hard`; `scripts/perf.py`).
-- **Model:** the pod's checkpoint (`data/training_pod/`, as `pod_sync.sh` brings it down), reloaded every shard, so the mining follows training.
+- **Model:** `--checkpoint`, by default the pod's (`data/training_pod/`, as `pod_sync.sh` brings it down), else `data/training/`; reloaded every shard, so the mining follows training.
 
 ```sh
 python -m card_engine.training.hard --shards 100 --rounds 20 --workers 7
