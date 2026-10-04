@@ -31,6 +31,7 @@ This project simulates a Roblox "Snap!"-style card game and trains an AI to pred
   - `docs/simulator_questions.md`: the rule log.
   - `docs/daily_checks/queue.md`: open in-game checks.
   - `docs/training.md`: the training pipeline.
+  - `docs/runpod.md`: the pod run, Mac labelling and syncing, progress checks, the stop timer. Read it first when resuming the run.
   - `docs/classes.md`: class memberships.
   - `docs/card_forms.md`: card forms.
 
