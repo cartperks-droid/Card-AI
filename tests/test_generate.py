@@ -117,8 +117,9 @@ class GeneratorTests(unittest.TestCase):
                                   max_rarity=10)
         self.assertEqual((pool.entries.tolist(), pool.copies.tolist()), ([[1, 1, 0, 0], [3, 2, 1, 0]], [1, 3]))
         self.assertEqual(pool.reds, [(4, 5)])
-        common = generate.make_pool(self.catalog, "restricted", borders=[1], max_rarity=1e6)
-        self.assertTrue(len(common.entries) and all(self.catalog.card(int(c)).rarity <= 1e6 for c in common.entries[:, 0]))
+        common = generate.make_pool(self.catalog, "restricted", borders=None, max_rarity=1e10)  # card x border rarity
+        total = [self.catalog.card(int(c)).rarity * self.catalog.border(int(b)).rarity for c, b in common.entries[:, :2]]
+        self.assertTrue(len(total) and max(total) <= 1e10 and {1, 2, 3} <= set(common.entries[:, 1].tolist()))
         with self.assertRaises(SystemExit):
             generate.make_pool(self.catalog, "all", max_rarity=1)  # every card is rarer
 

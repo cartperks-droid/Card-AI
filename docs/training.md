@@ -99,7 +99,7 @@ python -m card_engine.training.labels --fixed --shards 1000 --rows 2000 --worker
   - `--borders`: `none` by default; a list (`none Pl Cr`) or `all`.
   - `--mutations`: `None` by default; a list (`None Storm`) or `all`.
   - `--support-tiers`: `base` by default, red and blue alike, since supports have no index to price them; a list or `all`.
-  - `--max-rarity`: leaves out cards rarer than this card rarity (1 in N: `5000`, `2.5M`, `30T`).
+  - `--max-rarity`: leaves out entries rarer than this card × border rarity, the rarity the game shows (1 in N: `2.5M`, `30T`, `10qd`).
   - A deck overrides the masks: `own` and `custom` are used as they are, supports included.
 
 ## Validation metrics

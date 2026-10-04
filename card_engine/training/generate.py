@@ -36,7 +36,8 @@ the masks: a deck pool is used as it is.
   - --mutations: None by default; list some (--mutations None Storm) or allow all.
   - --support-tiers: base by default, for red and blue alike (supports have no index to price them); list some
     (--support-tiers base Platinum) or allow all.
-  - --max-rarity: leaves out cards rarer than this card rarity (1 in N: 5000, 2.5M, 30T).
+  - --max-rarity: leaves out entries rarer than this, card x border rarity as the game shows it (1 in N: 2.5M,
+    30T, 10qd).
 
 Enemies: an explicit team (--enemy), or --enemies N generated broadly. A broad enemy is a team ascended against
 a random pool opponent and decoded by sampling at a high temperature.
@@ -115,7 +116,8 @@ def make_pool(catalog, kind, borders=None, limited=True, deck_path=None, mutatio
         if mutations is not None:
             keep &= np.isin(entries[:, 2], mutations)
         if max_rarity is not None:
-            keep &= np.array([catalog.card(int(card)).rarity <= max_rarity for card in entries[:, 0]], dtype=bool)
+            keep &= np.array([catalog.card(int(card)).rarity * catalog.border(int(border)).rarity <= max_rarity
+                              for card, border in entries[:, :2]], dtype=bool)
         entries = entries[keep]
         if tiers is not None:
             reds = [r for r in reds if r[1] in tiers] or [(0, 0)]
@@ -390,7 +392,7 @@ def main():
                         f"{', '.join(MUTATION_NAMES)}, or all")
     parser.add_argument("--support-tiers", nargs="+", default=["base"], help=f"allowed support tiers, red and blue "
                         f"(default base), from {' '.join(TIERS)}, or all")
-    parser.add_argument("--max-rarity", help="leave out cards rarer than this card rarity (1 in N, e.g. 5000, 2.5M)")
+    parser.add_argument("--max-rarity", help="leave out entries rarer than this card x border rarity (1 in N, e.g. 30T, 10qd)")
     parser.add_argument("--no-limited", action="store_true", help="restricted pool without its Limited exceptions")
     parser.add_argument("--counters", type=int, default=32)
     parser.add_argument("--restarts", type=int, default=64, help="candidates ascended per enemy")
