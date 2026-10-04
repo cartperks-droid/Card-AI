@@ -92,7 +92,8 @@ JURASSIC_WORLD = 13  # blue: Prehistoric cards gain value% stats per Prehistoric
 
 @functools.cache
 def card_stat_tables():
-    """(base, red, prehistoric, jurassic) for the model's card stats, from DaddyDrago's engine (drago.stat_tables).
+    """(base, red, prehistoric, jurassic, hp multiplier) for the model's card stats, from DaddyDrago's engine
+    (drago.stat_tables, drago.hp_multipliers; the last for tower floors).
 
     base [card, border, mutation, 2]: the card's (HP, ATK); red [card, mutation, support, tier, 2]: the red support's
     multiplier on that card (support 0 = none); prehistoric [card]: Prehistoric pack membership; jurassic [tier]:
@@ -100,14 +101,16 @@ def card_stat_tables():
     as General Moon Zoo, awakened Toys) are left to the model, like every other ability.
     """
     from ..catalog import load_catalog
-    from ..simulator.drago import stat_tables
-    return tuple(torch.as_tensor(table, dtype=torch.float64) for table in stat_tables(load_catalog()))
+    from ..simulator.drago import hp_multipliers, stat_tables
+    catalog = load_catalog()
+    return tuple(torch.as_tensor(table, dtype=torch.float64) for table in (*stat_tables(catalog), hp_multipliers(catalog)))
 
 
 def card_stats(rows, tables):
     """[N, 2, 4, 2]: each card's (HP, ATK) as it enters the battle, from label rows and card_stat_tables(). A
-    fixed-stat battle (fixed_side 0 or 1) starts that side's four cards at fixed_stats instead."""
-    base, red, prehistoric, jurassic = tables
+    fixed-stat battle (fixed_side 0 or 1) starts that side's four cards at fixed_stats instead, their HP times each
+    card's HP multiplier where fixed_hp_mult is set (tower floors on Normal and Impossible)."""
+    base, red, prehistoric, jurassic, hp_multiplier = tables
     rows = {key: value.long() if key in FIELDS else value for key, value in rows.items()}
     cards, mutations = rows["cards"], rows["mutations"]
     red = red[cards, mutations, rows["red"][..., None], rows["red_tier"][..., None]]
@@ -117,7 +120,10 @@ def card_stats(rows, tables):
     stats = base[cards, rows["borders"], mutations] * red * blue[..., None]
     if "fixed_side" in rows:
         side = rows["fixed_side"].to(stats.device).long()
-        fixed = rows["fixed_stats"].to(stats)[:, None, None, :]  # [N, 1, 1, 2]
+        fixed = rows["fixed_stats"].to(stats)[:, None, None, :].expand_as(stats)  # [N, 2, 4, 2]
+        if "fixed_hp_mult" in rows:
+            scale = torch.where(rows["fixed_hp_mult"].to(stats.device).bool()[:, None, None], hp_multiplier[cards], 1.0)
+            fixed = torch.stack([fixed[..., 0] * scale, fixed[..., 1]], -1)
         chosen = (side[:, None] == torch.arange(2, device=stats.device))[..., None, None]  # [N, 2, 1, 1]
         stats = torch.where(chosen, fixed, stats)
     return stats

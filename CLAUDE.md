@@ -19,6 +19,7 @@ This project simulates a Roblox "Snap!"-style card game and trains an AI to pred
   - `tablebase.py`: stores exact outcomes.
   - `predict.py`: the classifier's win rate for named teams, both turn orders (`--simulate` adds the engine).
   - `generate.py`: the generator (design below): counters to a named enemy or to broadly generated enemies, verified by the engine.
+- `card_engine/tower.py`: tower floors (DaddyDrago's formula and fixed teams).
 - `card_engine/teams.py`: teams by name: `"Name[@Border][/Mutation]"` cards, `"Name[@Tier]"` supports.
 - `card_engine/model/` has two transformers: a description (language) encoder and a strategic encoder. The head gives **two outcomes, A win and B win. There are no ties**: a draw (both sides wiped out, or his 2,000-turn cap) counts as the attacker A's loss.
 - Player tools:
@@ -60,7 +61,7 @@ python -m card_engine.training.train --batch-size 512 --weight-decay 0.05 --drop
   - Masks (user, 2026-10-04): borderless, unmutated and base-tier supports by default, plus an optional maximum card × border rarity. Each is widened on request. They narrow the open pools only; cards put in a deck override them.
   - A commitment penalty and an entropy check stop slots blurring between several cards.
   - Enemies are generated broadly (high temperature); 32 counters are generated tightly; the simulator verifies every team.
-- **Fixed-stat battles** (user, 2026-10-04): battle modes where every enemy card has the same arbitrary stats, borders ignored. `labels.py --fixed` writes `fixed_<seed>.npz` (one side's four cards start at one HP/ATK, stored per row), the trainer reads them alongside, and `predict` and `generate` take `--enemy-stats HP ATK`.
+- **Fixed-stat battles** (user, 2026-10-04): battle modes where every enemy card has the same stats, borders ignored. `labels.py --fixed` writes `fixed_<seed>.npz`: tower battles by DaddyDrago's formula (`card_engine/tower.py`, floors 1-105, every difficulty, fixed teams every fifth floor), stats stored per row. The trainer reads them alongside, and `predict` and `generate` take `--enemy-stats HP ATK` or `--tower FLOOR DIFFICULTY`.
 - **Label storage:** every shard lives in `data/labels/store/`, stamped with a rules snapshot ID (`training/flags.py`).
   - **Automatic invalidation:** each snapshot records per-entity fingerprints, taken from his data and code: cards, supports at each tier, borders, mutations, aura logic, the random-ability pool, and the engine core. When an entity changes, only the rows involving it drop out.
   - **Core changes:** an engine-code change must be declared with `python -m card_engine.training.flags declare --cards ... | --all | --none --note "..."`. Until then, older labels are held back. Declarations chain, so each engine version is declared once, from the version before it (the default). `flags status` shows the state; the trainer keeps its loaded rows while everything is held back.

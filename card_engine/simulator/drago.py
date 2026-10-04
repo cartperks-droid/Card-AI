@@ -171,6 +171,17 @@ def initial_stats(catalog, spec, **tweaks):
     return [[card[:2] for card in side] for side in initial_cards(catalog, spec, **tweaks)]
 
 
+def hp_multipliers(catalog):
+    """[card id] -> his HP multiplier (1 for most cards), which tower floors apply on Normal and Impossible."""
+    import numpy as np
+    by_name = {c["name"]: c.get("hpMultiplier") or 1 for c in his_data("cards")}
+    cards = names(catalog)[0]
+    table = np.ones(max(cards) + 1)
+    for card, his in cards.items():
+        table[card] = by_name[his]
+    return table
+
+
 def stat_tables(catalog):
     """(base, red, prehistoric, jurassic) from his engine: base[card id, border id, mutation] = (HP, ATK); red[card id,
     mutation, red support, tier] = (HP, ATK) multiplier of the side's red (stat) support; prehistoric[card id] = Prehistoric

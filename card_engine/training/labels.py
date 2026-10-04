@@ -6,12 +6,13 @@ budget); small or leftover branches are resolved by pooled playouts, as many as 
 recomputed whenever they are labelled again. Side A always initiates; a draw counts as A's loss (user).
 Each shard records the rules snapshot (training.flags), so rows go stale when the rules behind them change.
 
-Fixed-stat battles (--fixed; user, 2026-10-04): some battle modes give every enemy card the same arbitrary starting
-HP and ATK, borders ignored. Such a battle has one side, A or B at random, borderless and set to one (HP, ATK) for
-all four cards: the opponent's geometric-mean stats times 10^U(-1.5, 1.5), with the HP/ATK balance moved by
-10^U(-0.5, 0.5) (a provisional spread until real modes' values are known). They go to fixed_<seed>.npz with
-fixed_side and fixed_stats, never to the tablebase (its key has no stats); trainers that predate them only read
-shard_*.npz, so they never see these rows without their stats.
+Fixed-stat battles (--fixed; user, 2026-10-04): battle modes where every enemy card has the same stats, borders
+ignored. Each is a tower battle (card_engine.tower, DaddyDrago's formula): a floor 1-105 and a difficulty at random;
+side B, the enemy, is the floor's fixed team or random cards, borderless, unmutated and without supports, every card
+at the floor's power (HP times the card's HP multiplier on Normal and Impossible, ATK half the power); side A, the
+player, is a random team and attacks first. Rows store fixed_side, fixed_stats (HP, ATK) and fixed_hp_mult. They
+go to fixed_<seed>.npz, never to the tablebase (its key has no stats); trainers that predate them only read
+shard_*.npz. Older fixed shards (a spread around the opponent's stats, either side) stay valid.
 """
 
 import json
@@ -26,13 +27,15 @@ import numpy as np
 from ..catalog import load_catalog
 from ..mutations import MUTATION_NAMES
 from ..simulator import drago, kernel
+from .. import tower
 from ..teams import ASTRAEUS, ASTRAEUS_ARTS, SINGLE_COPY
 from .tablebase import Tablebase
 
 ROOT = Path(__file__).resolve().parents[2]
 SHARD_DIR = ROOT / "data" / "labels"
 FIELDS = ("cards", "borders", "mutations", "arts", "red", "red_tier", "blue", "blue_tier")
-FIXED_FIELDS = ("fixed_side", "fixed_stats")  # -1 or the side whose cards all start at fixed_stats (HP, ATK)
+# fixed_side: -1, or the side whose cards start at fixed_stats (HP, ATK); fixed_hp_mult: HP times each card's multiplier
+FIXED_FIELDS = ("fixed_side", "fixed_stats", "fixed_hp_mult")
 
 
 AURA_TIERS = tuple(drago.AURA_BORDERS)  # support cards: Base, Platinum, Crystal, Ruby, Galaxy
@@ -75,26 +78,18 @@ def random_spec(rng, catalog, cards=None, none_support=0.1, mutation_rate=0.5, m
     return spec
 
 
-def fixed_battle(rng, catalog, spec):
-    """Turns a random spec into a fixed-stat battle: (side, (HP, ATK)); that side's borders become none."""
-    base = _base_stats(catalog)
-    side = rng.randrange(2)
-    other = 1 - side
-    logs = np.log([base[c, b, m] for c, b, m in zip(spec["cards"][other], spec["borders"][other], spec["mutations"][other])])
-    level, balance = 10 ** rng.uniform(-1.5, 1.5), 10 ** rng.uniform(-0.5, 0.5)
-    hp, attack = np.exp(logs.mean(0)) * level * np.array([balance, 1 / balance])
-    spec["borders"][side] = [1] * 4
-    return side, (float(hp), float(attack))
-
-
-_BASE = None
-
-
-def _base_stats(catalog):
-    global _BASE
-    if _BASE is None:
-        _BASE = np.asarray(drago.stat_tables(catalog)[0])
-    return _BASE
+def tower_battle(rng, catalog, spec):
+    """Turns a random spec into a tower battle: side B becomes a random floor's enemies. Returns (HP, ATK, HP
+    multiplier applies) for side B."""
+    floor, level = rng.randint(1, tower.FLOORS), rng.choice(list(tower.DIFFICULTIES))
+    fixed = tower.fixed_team(catalog, floor)
+    for key in ("cards", "arts"):
+        if fixed is not None:
+            spec[key][1] = fixed[key]
+    spec["borders"][1], spec["mutations"][1] = [1] * 4, [0] * 4
+    for key in ("red", "red_tier", "blue", "blue_tier"):
+        spec[key][1] = 0
+    return tower.stats(floor, level)
 
 
 ENGINE_ERRORS = SHARD_DIR / "engine_errors.jsonl"  # battles the engine could not finish, for investigation
@@ -150,13 +145,15 @@ def _worker(args):
     specs = [random_spec(rng, catalog) for _ in range(rows)]
     extra = {}
     if fixed:
-        battles = [fixed_battle(rng, catalog, spec) for spec in specs]
+        battles = [tower_battle(rng, catalog, spec) for spec in specs]
         probs = np.zeros((rows, 4), dtype=np.float32)
         exact = np.zeros(rows, dtype=bool)
-        for index, (spec, (side, stats)) in enumerate(zip(specs, battles)):
-            probs[index], exact[index] = evaluate(catalog, spec, shard_seed * 1_000_003 + index, fixed=(side, [stats] * 4))
-        extra = {"fixed_side": np.array([side for side, _ in battles], dtype=np.int8),
-                 "fixed_stats": np.array([stats for _, stats in battles], dtype=np.float32)}
+        for index, (spec, stats) in enumerate(zip(specs, battles)):
+            per_card = tower.engine_stats(catalog, spec["cards"][1], stats)
+            probs[index], exact[index] = evaluate(catalog, spec, shard_seed * 1_000_003 + index, fixed=(1, per_card))
+        extra = {"fixed_side": np.ones(rows, dtype=np.int8),
+                 "fixed_stats": np.array([stats[:2] for stats in battles], dtype=np.float32),
+                 "fixed_hp_mult": np.array([stats[2] for stats in battles], dtype=np.int8)}
     else:
         probs, exact = label_specs(catalog, specs, seed=shard_seed, tablebase=Tablebase(fingerprint, *tablebase_root))
     arrays = {name: np.array([spec[name] for spec in specs], dtype=np.int16) for name in FIELDS}
@@ -223,10 +220,12 @@ def shard_paths(directory):
 
 
 def fixed_arrays(shard, rows):
-    """A shard's fixed_side and fixed_stats; a random-battle shard has none (side -1)."""
-    if "fixed_side" in shard:
-        return {"fixed_side": shard["fixed_side"], "fixed_stats": shard["fixed_stats"]}
-    return {"fixed_side": np.full(rows, -1, dtype=np.int8), "fixed_stats": np.zeros((rows, 2), dtype=np.float32)}
+    """A shard's fixed-stat fields; a random-battle shard has none (side -1), an older fixed shard no HP multiplier."""
+    if "fixed_side" not in shard:
+        return {"fixed_side": np.full(rows, -1, dtype=np.int8), "fixed_stats": np.zeros((rows, 2), dtype=np.float32),
+                "fixed_hp_mult": np.zeros(rows, dtype=np.int8)}
+    return {"fixed_side": shard["fixed_side"], "fixed_stats": shard["fixed_stats"],
+            "fixed_hp_mult": shard["fixed_hp_mult"] if "fixed_hp_mult" in shard else np.zeros(rows, dtype=np.int8)}
 
 
 if __name__ == "__main__":
@@ -236,8 +235,8 @@ if __name__ == "__main__":
     parser.add_argument("--rows", type=int, default=2000)
     parser.add_argument("--workers", type=int)
     parser.add_argument("--first-seed", type=int, help="number shards from here (a second machine uses its own range)")
-    parser.add_argument("--fixed", action="store_true", help="fixed-stat battles (battle modes where every enemy card "
-                        "has the same stats), written as fixed_<seed>.npz")
+    parser.add_argument("--fixed", action="store_true", help="fixed-stat battles: tower floors 1-105 at every difficulty "
+                        "(card_engine.tower), written as fixed_<seed>.npz")
     parsed = parser.parse_args()
     print(generate(parsed.shards, rows=parsed.rows, workers=parsed.workers, first_seed=parsed.first_seed,
                    fixed=parsed.fixed))

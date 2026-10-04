@@ -64,7 +64,7 @@ class GeneratorTests(unittest.TestCase):
         rng = np.random.default_rng(5)
         allies = [generate.random_team(self.pool, rng) for _ in range(3)]
         enemy = generate.random_team(self.pool, rng)
-        stats = [(2.5e6, 4e5)] * 4
+        stats = (2.5e6, 4e5, True)  # HP times each card's multiplier, as on tower floors
         with torch.no_grad():
             logits = self.space.logits(self.space.fixed(allies), self.space.fixed([enemy] * 3, stats))
         wins = self.classifier.ally_win([(ally, enemy) for ally in allies], stats)

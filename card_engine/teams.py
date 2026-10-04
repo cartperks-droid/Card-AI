@@ -82,8 +82,8 @@ def spec(first, second):
 
 
 def fixed_stats(hp, attack):
-    """Every card's starting (HP, ATK) for battle modes with fixed enemy stats; "2.5M" style numbers allowed."""
-    return [(parse_rarity(hp), parse_rarity(attack))] * 4
+    """Fixed enemy stats (HP, ATK, HP multiplier applies) for battle modes that set them; "2.5M" style numbers."""
+    return parse_rarity(hp), parse_rarity(attack), False
 
 
 def describe(catalog, team, stats=None):
@@ -98,4 +98,6 @@ def describe(catalog, team, stats=None):
         if team[color]:
             name = next(s.name for s in table if s.id == team[color])
             supports[color] = f"{name}@{TIERS[team[color + '_tier'] - 1]}"
-    return {"cards": cards, **supports, **({"stats": {"hp": stats[0][0], "attack": stats[0][1]}} if stats else {})}
+    if stats:
+        supports["stats"] = {"hp": stats[0], "attack": stats[1], **({"hp_times_card_multiplier": True} if stats[2] else {})}
+    return {"cards": cards, **supports}

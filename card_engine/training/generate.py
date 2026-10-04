@@ -65,7 +65,8 @@ from ..deck import BORDERS, CUSTOM_FILE, DECK_FILE, TIERS, _border, _mutation, _
 from ..mutations import MUTATION_NAMES
 from ..ownership import parse_rarity
 from ..restricted import entries as restricted_entries, load as load_restricted
-from ..teams import ASTRAEUS, ASTRAEUS_ARTS, SINGLE_COPY, describe, fixed_stats, parse_side, side
+from .. import tower
+from ..teams import ASTRAEUS, ASTRAEUS_ARTS, SINGLE_COPY, describe, parse_side, side
 from .predict import Classifier
 from .train import RUN_DIR, card_stats
 
@@ -182,7 +183,7 @@ class SlotSpace:
                 std = options.std(0, unbiased=False)
                 gaps = _sqdist(options, options).fill_diagonal_(float("inf")).amin(-1) if len(options) > 1 else std.new_ones(1)
                 self.factors.append((options, inverse, options.mean(0), std, float(gaps.median().clamp_min(1e-12))))
-            base, red, _, _ = classifier.inputs.stat_tables
+            base, red, *_ = classifier.inputs.stat_tables
             card, border, mutation, _ = entries.unbind(1)
             self.log_base = base[card, border, mutation].log()  # [E, 2]
             self.reds = torch.as_tensor(pool.reds, device=device)
@@ -201,12 +202,13 @@ class SlotSpace:
 
     def fixed(self, sides, stats=None):
         """Exact tokens of discrete sides: card tokens without stats [N, 4, W], log stats [N, 4, 2], red, blue [N, W].
-        stats: [(HP, ATK)] x 4, every side's fixed starting stats (None: from its cards)."""
+        stats: (HP, ATK, HP multiplier applies), every side's fixed stats (None: from its cards)."""
         rows = {key: torch.tensor([[s[key], s[key]] for s in sides], device=self.device)
                 for key in ("cards", "borders", "mutations", "arts", "red", "red_tier", "blue", "blue_tier")}
         if stats is not None:
             rows["fixed_side"] = torch.zeros(len(sides), dtype=torch.long, device=self.device)
-            rows["fixed_stats"] = torch.tensor([stats[0]] * len(sides), device=self.device)
+            rows["fixed_stats"] = torch.tensor([stats[:2]] * len(sides), device=self.device)
+            rows["fixed_hp_mult"] = torch.full((len(sides),), int(stats[2]), device=self.device)
         tokens = (self.card_table[card_keys(rows["cards"][:, 0], rows["arts"][:, 0])] + self.border_table[rows["borders"][:, 0] - 1]
                   + self.mutation_table[rows["mutations"][:, 0]])
         stats = card_stats(rows, self.classifier.inputs.stat_tables)[:, 0].log()
@@ -239,7 +241,7 @@ class Settings:
 
 def ascend(space, opponents, settings, generator, enemy_stats=None):
     """Relaxed ally slots ascended against one discrete opponent each; returns (distances [N,4,E], red, blue probs).
-    enemy_stats: the opponents' fixed starting stats, [(HP, ATK)] x 4, if the battle mode sets them."""
+    enemy_stats: the opponents' fixed stats (HP, ATK, HP multiplier applies), if the battle mode sets them."""
     n = len(opponents)
     enemy = space.fixed(opponents, enemy_stats)
     width = space.card_table.shape[1]
@@ -374,10 +376,11 @@ def broad_enemies(space, n, *, settings=Settings(), temperature=1.0, seed=1):
     return decode_sample(space, distance, red, blue, temperature, generator)
 
 
-def verify(teams, enemy, workers, seed=1, enemy_stats=None):
+def verify(teams, enemy, workers, seed=1, enemy_stats=None, catalog=None):
     """The engine's ally win chance attacking first and defending, per team."""
     from .counter import _evaluate, _init
-    jobs = [(team, enemy, seed + 2 * i, enemy_stats, 1, None) for i, team in enumerate(teams)]
+    per_card = None if enemy_stats is None else tower.engine_stats(catalog or load_catalog(), enemy["cards"], enemy_stats)
+    jobs = [(team, enemy, seed + 2 * i, per_card, 1, None) for i, team in enumerate(teams)]
     with mp.get_context("spawn").Pool(workers, initializer=_init) as pool:
         return pool.map(_evaluate, jobs)
 
@@ -387,8 +390,7 @@ def main():
     parser.add_argument("--enemy", nargs=4, metavar="CARD", help="the enemy's four cards, Name[@Border][/Mutation]")
     parser.add_argument("--enemy-red")
     parser.add_argument("--enemy-blue")
-    parser.add_argument("--enemy-stats", nargs=2, metavar=("HP", "ATK"),
-                        help="every enemy card's starting HP and ATK (battle modes with fixed enemy stats; --enemy only)")
+    tower.add_arguments(parser)
     parser.add_argument("--enemies", type=int, help="generate this many broad enemies instead of --enemy")
     pools = ("own", "custom", "restricted", "all")
     parser.add_argument("--enemy-pool", choices=pools, help="pool for --enemies (default: --pool)")
@@ -415,21 +417,19 @@ def main():
     parser.add_argument("--seed", type=int, default=1)
     parser.add_argument("--output", help="also write the report here (JSON)")
     args = parser.parse_args(shell_words(sys.argv[1:]))
-    if (args.enemy is None) == (args.enemies is None):
-        parser.error("give either --enemy or --enemies")
-    if args.enemy_stats and not args.enemy:
-        parser.error("--enemy-stats goes with --enemy")
     catalog = load_catalog()
-    enemy_stats = fixed_stats(*args.enemy_stats) if args.enemy_stats else None
+    enemy, enemy_stats = tower.enemy(catalog, args, parser)
+    if (enemy is None) == (args.enemies is None):
+        parser.error("give either --enemy (or --tower with a fixed floor) or --enemies")
+    if enemy_stats is not None and enemy is None:
+        parser.error("--enemy-stats and --tower go with one enemy, not --enemies")
     mask = dict(zip(("borders", "mutations", "tiers"), masks(args.borders, args.mutations, args.support_tiers)),
                 max_rarity=parse_rarity(args.max_rarity) if args.max_rarity else None)
     classifier = Classifier(args.checkpoint, args.device)
     settings = Settings(steps=args.steps, temperature=args.temperature, nearest=args.nearest, role=args.role)
     space = SlotSpace(classifier, make_pool(catalog, args.pool, limited=not args.no_limited, **mask))
-    if args.enemy:
-        enemies = [parse_side(catalog, args.enemy, args.enemy_red, args.enemy_blue)]
-        if enemy_stats:
-            enemies[0]["borders"] = [1] * 4  # the mode sets the stats; borders only set stats
+    if enemy is not None:
+        enemies = [enemy]
     else:
         enemy_pool = args.enemy_pool or args.pool
         enemy_space = space if enemy_pool == args.pool else SlotSpace(
@@ -443,7 +443,7 @@ def main():
         found = counters(space, enemy, count=args.counters, restarts=args.restarts, settings=settings,
                          seed=args.seed + index, enemy_stats=enemy_stats)
         checked = None if args.no_verify else verify([team for team, _, _ in found], enemy, args.workers, args.seed,
-                                                     enemy_stats)
+                                                     enemy_stats, catalog)
         rows = []
         column = ROLES.index(args.role)
         for i, (team, win, blur) in enumerate(found):

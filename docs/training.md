@@ -28,12 +28,12 @@
 ../.venv/bin/python -m card_engine.training.labels --shards 1000 --rows 2000 --workers 12
 ```
 
-## Fixed-stat battles (`labels.py --fixed`)
-Some battle modes give every enemy card the same arbitrary HP and ATK, often above normal, with borders ignored (user, 2026-10-04).
-- **Battles:** a random matchup in which one side, A or B at random, is borderless and starts all four cards at one (HP, ATK). The level is the opponent's geometric-mean stats times 10^U(-1.5, 1.5); the HP/ATK balance moves by 10^U(-0.5, 0.5). This spread is provisional until real modes' values are known.
-- **Storage:** `fixed_<seed>.npz`, with `fixed_side` and `fixed_stats` per row, on their own seed sequence. They are never put in the tablebase, whose key has no stats. Trainers from before this change read only `shard_*.npz`, so they never see these rows without their stats.
-- **Model:** the trainer starts that side's cards at `fixed_stats` (`train.card_stats`). Stats enter as explicit inputs, so nothing else changes. Validation holds out seeds divisible by 25, as for random battles.
-- **Speed:** about 0.6× the random battles' rate (no tablebase hits).
+## Fixed-stat battles: tower floors (`labels.py --fixed`)
+Some battle modes give every enemy card the same stats, borders ignored (user, 2026-10-04). The labels use DaddyDrago's tower formula (`card_engine/tower.py`).
+- **Battle:** a floor from 1 to 105 and a difficulty (Normal, Hard, Extreme, Hell, Impossible) at random. Side B, the enemy, is the floor's fixed team (every fifth floor) or random cards. It is borderless, unmutated and has no supports. Every card has the floor's power: HP = power (times the card's HP multiplier on Normal and Impossible), ATK = power / 2. Side A, the player, is a random team and attacks first.
+- **Range:** power runs from 110 (floor 1, Normal) to 11.0M (floor 105, Impossible), so the model sees ability wins at real tower stat gaps. The first fixed shards (2026-10-04) spread the level only 1/30 to 30 times the opponent's stats; floor 105 Impossible is about 2,700 times a borderless cheese deck, which they never reached. They stay valid.
+- **Storage:** `fixed_<seed>.npz`, with `fixed_side`, `fixed_stats` (HP, ATK) and `fixed_hp_mult` per row, on their own seed sequence. They are never put in the tablebase, whose key has no stats. Trainers from before fixed shards read only `shard_*.npz`.
+- **Model:** the trainer starts that side's cards at `fixed_stats`, HP times each card's multiplier where `fixed_hp_mult` is set (`train.card_stats`).
 
 ```sh
 python -m card_engine.training.labels --fixed --shards 1000 --rows 2000 --workers N
@@ -74,7 +74,7 @@ python -m card_engine.training.labels --fixed --shards 1000 --rows 2000 --worker
 ```
 - **Teams:** cards are `Name[@Border][/Mutation]` and supports `Name[@Tier]` (`card_engine/teams.py`). A name can be an ID, the exact name, or a unique part of it.
 - **Output:** the classifier's ally win chance when the ally attacks first and when the enemy does. `--simulate` adds the engine's answers and whether each is exact. `--checkpoint` picks the model (default `data/training/model.checkpoint`).
-- **Fixed enemy stats:** `--enemy-stats HP ATK` (e.g. `2.5M 400k`) starts every enemy card at those stats and drops the enemy's borders, for the classifier and the engine alike. The generator takes the same option with `--enemy`.
+- **Fixed enemy stats:** `--enemy-stats HP ATK` (e.g. `2.5M 400k`) starts every enemy card at those stats and drops the enemy's borders, for the classifier and the engine alike. `--tower FLOOR DIFFICULTY` (e.g. `--tower 105 Impossible`) uses a tower floor's stats, and its enemy team on fixed floors when `--enemy` is left out. The generator takes both.
 
 ## Generator (`card_engine/training/generate.py`)
 ```sh
