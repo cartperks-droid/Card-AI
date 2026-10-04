@@ -320,6 +320,11 @@ def train(*, steps=None, batch_size=512, lr=3e-4, warmup=1000, weight_decay=0.05
                     table = eval_table()
                     record["val"] = {k: round(v, 4) for k, v in evaluate(model, inputs, table, val_rows).items()}
                     record["val_rows"] = int(val_rows["target"].shape[0])
+                    fixed = val_rows["fixed_side"] >= 0  # fixed-stat battles on their own, apart from the mix
+                    if bool(fixed.any()):
+                        part = {k: v[fixed] for k, v in val_rows.items()}
+                        record["val_fixed"] = {k: round(v, 4) for k, v in evaluate(model, inputs, table, part).items()}
+                        record["val_fixed_rows"] = int(fixed.sum())
                     if rules_id != probe_labels:  # new rules: new probes
                         train_probe, val_probe, probe_labels = probe(train_rows, 8192), probe(val_rows, 8192), rules_id
                     record["grok"] = {"train_probe": {k: round(v, 4) for k, v in evaluate(model, inputs, table, train_probe).items()

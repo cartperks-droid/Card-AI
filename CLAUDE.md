@@ -53,6 +53,7 @@ python -m card_engine.training.train --batch-size 512 --weight-decay 0.05 --drop
   - error on random battles' win chance;
   - accuracy on "upsets", where abilities overturn the stat favourite.
 - **Regularisation:** dropout only at the GELU upscale. The language transformer freezes at a set step.
+- **A fresh run** (user, 2026-10-04; not built yet): if the model is ever initialised again, its first data should be upsets and fixed-stat battles, before the general mix. The run from 2026-10-02 learned "bigger stats win" first and resisted ability wins at large stat gaps (Drago's floor-105 cheese decks: engine 0.31-0.56, model 0.01-0.09).
 - **Grokking:** probes (fixed training and validation subsets, plus the weight norm) are logged. The dataset keeps growing.
 - **Generator** (`training/generate.py`; built 2026-10-03, its results are only as good as the classifier):
   - It starts from noise in the slot space and runs gradient ascent on the frozen classifier toward a "win = 1" target. Weights never change.

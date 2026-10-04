@@ -50,7 +50,7 @@ python -m card_engine.training.labels --fixed --shards 1000 --rows 2000 --worker
 - **Loss:** soft cross-entropy on the outcome frequencies, plus the identity L2 penalty.
 - **Optimiser:** AdamW at 3e-4 with 1,000 warm-up steps, on the GPU (MPS).
 - **Description encoder:** each step encodes all 289 descriptions once, so it trains end to end.
-- **Validation:** shards whose seed is divisible by 25 are held out.
+- **Validation:** shards whose seed is divisible by 25 are held out. Fixed-stat validation battles are also scored on their own (`val_fixed` in the log; `scripts/perf.py` prints them).
 - **Data refresh:** every 1,000 steps the newest label directory is reloaded, which picks up new shards or new rules.
 - **Resuming:** the model checkpoint, optimiser state and step count live in `data/training/`. The log is `data/training/log.jsonl`.
 - **Moving machines:** `--init-from <model.checkpoint>` starts a run directory that has no optimiser state from that model. It keeps the step count and uses a fresh optimiser that warms up again over 1,000 steps. Use it when only the checkpoint can be copied over, e.g. when the pod's own disk is out of reach.
