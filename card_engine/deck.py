@@ -79,6 +79,25 @@ def render(deck, catalog, title="My deck"):
     return "\n".join(lines) + "\n"
 
 
+def shell_words(argv):
+    """The command line with curly-quoted names joined back up. A shell only groups straight quotes, so a command
+    copied through Notes or Messages ("Smart Quotes") arrives as “Judgement, Day” in two words."""
+    words, group = [], None
+    for word in argv:
+        if group is None and word.startswith("“"):
+            group = []
+        if group is None:
+            words.append(word)
+            continue
+        group.append(word)
+        if word.endswith("”"):
+            words.append(" ".join(group).removeprefix("“").removesuffix("”"))
+            group = None
+    if group is not None:
+        raise SystemExit(f"Unclosed quote: {' '.join(group)}")
+    return words
+
+
 def _fold(text):
     """Case, punctuation and spacing ignored: "Sable, The Envious" reads as "sable the envious"."""
     return " ".join(re.sub(r"[^\w\s]", " ", text.casefold()).split())
@@ -224,7 +243,7 @@ def main(argv=None):
     commands.add_parser("list", help="print the deck")
     commands.add_parser("reset", help="empty the custom pool (--custom only)")
     commands.add_parser("copy-deck", help="replace the custom pool with your deck (--custom only)")
-    args = parser.parse_args(argv)
+    args = parser.parse_args(shell_words(sys.argv[1:] if argv is None else argv))
     path, doc, title = (CUSTOM_FILE, CUSTOM_DOC, "Custom pool") if args.custom else (DECK_FILE, DECK_DOC, "My deck")
     if args.command in ("reset", "copy-deck") and not args.custom:
         parser.error(f"{args.command} only applies to the custom pool: add --custom")

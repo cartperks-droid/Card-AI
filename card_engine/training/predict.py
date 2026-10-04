@@ -11,12 +11,14 @@ ally's win chance when the ally attacks first and when the enemy does; --simulat
 
 import argparse
 import json
+import sys
 
 import numpy as np
 import torch
 
 from ..catalog import load_catalog
 from ..model.checkpoint import load_checkpoint
+from ..deck import shell_words
 from ..teams import FIELDS, describe, parse_side, spec
 from .train import RUN_DIR, Inputs, card_table
 
@@ -70,7 +72,7 @@ def main():
     parser.add_argument("--simulate", action="store_true", help="also run DaddyDrago's engine")
     parser.add_argument("--checkpoint", default=str(RUN_DIR / "model.checkpoint"))
     parser.add_argument("--device")
-    args = parser.parse_args()
+    args = parser.parse_args(shell_words(sys.argv[1:]))
     catalog = load_catalog()
     ally = parse_side(catalog, args.ally, args.ally_red, args.ally_blue)
     enemy = parse_side(catalog, args.enemy, args.enemy_red, args.enemy_blue)

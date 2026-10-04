@@ -42,6 +42,7 @@ progression, and the shared progression is what couples them, so it lands inside
 import argparse
 import itertools
 import json
+import sys
 import math
 import re
 from pathlib import Path
@@ -51,7 +52,7 @@ import numpy as np
 from .availability import roll_rarity
 
 from .catalog import load_catalog
-from .deck import BORDERS, _border, _match
+from .deck import BORDERS, _border, _match, shell_words
 
 ROOT = Path(__file__).resolve().parents[1]
 OWNERSHIP_FILE = ROOT / "data" / "ownership.json"
@@ -282,7 +283,7 @@ def main(argv=None):
     commands.add_parser("team", help="likelihood that a random player owns these cards (Card@Border: at that border "
                                      "or rarer)").add_argument("cards", nargs="+")
     commands.add_parser("show", help="print the data")
-    args = parser.parse_args(argv)
+    args = parser.parse_args(shell_words(sys.argv[1:] if argv is None else argv))
     catalog = load_catalog()
     data = load()
     card_id = lambda query: _match(query, [(c.id, c.name) for c in catalog.cards], "Card")[0]

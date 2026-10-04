@@ -50,6 +50,7 @@ import argparse
 import dataclasses
 import itertools
 import json
+import sys
 import multiprocessing as mp
 import os
 from dataclasses import dataclass
@@ -59,7 +60,7 @@ import numpy as np
 import torch
 
 from ..catalog import load_catalog
-from ..deck import BORDERS, CUSTOM_FILE, DECK_FILE, TIERS, _border, _mutation, _tier, load as load_deck
+from ..deck import BORDERS, CUSTOM_FILE, DECK_FILE, TIERS, _border, _mutation, _tier, load as load_deck, shell_words
 from ..mutations import MUTATION_NAMES
 from ..ownership import parse_rarity
 from ..restricted import entries as restricted_entries, load as load_restricted
@@ -394,7 +395,7 @@ def main():
     parser.add_argument("--device")
     parser.add_argument("--seed", type=int, default=1)
     parser.add_argument("--output", help="also write the report here (JSON)")
-    args = parser.parse_args()
+    args = parser.parse_args(shell_words(sys.argv[1:]))
     if (args.enemy is None) == (args.enemies is None):
         parser.error("give either --enemy or --enemies")
     catalog = load_catalog()

@@ -76,6 +76,12 @@ class DeckTests(unittest.TestCase):
                     deckmod.main(["reset"])  # only the custom pool can be reset
                 self.assertEqual(deckmod.owned_entries(deckmod.load(files["deck.json"])), [(206, 8, "None")])
 
+    def test_curly_quotes_group_names(self):
+        argv = ["--enemy", "“Judgement", "Day”", "“Sable,", "The", "Envious”", "Archer", "“Set”"]
+        self.assertEqual(deckmod.shell_words(argv), ["--enemy", "Judgement Day", "Sable, The Envious", "Archer", "Set"])
+        with self.assertRaises(SystemExit):
+            deckmod.shell_words(["“Judgement", "Day"])
+
 
 if __name__ == "__main__":
     unittest.main()

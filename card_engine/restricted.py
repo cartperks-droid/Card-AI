@@ -15,10 +15,11 @@ data/restricted_deck.json and docs/restricted_deck.md.
 
 import argparse
 import json
+import sys
 from pathlib import Path
 
 from .catalog import load_catalog
-from .deck import BORDERS, _border, _match
+from .deck import BORDERS, _border, _match, shell_words
 
 ROOT = Path(__file__).resolve().parents[1]
 RESTRICTED_FILE = ROOT / "data" / "restricted_deck.json"
@@ -103,7 +104,7 @@ def main(argv=None):
         p = commands.add_parser(name, help=text)
         p.add_argument("card")
         p.add_argument("--border", required=True)
-    args = parser.parse_args(argv)
+    args = parser.parse_args(shell_words(sys.argv[1:] if argv is None else argv))
     catalog = load_catalog()
     rules = load()
     if args.command == "show":
