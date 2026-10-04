@@ -5,6 +5,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
+import numpy as np
 import torch
 
 from card_engine.catalog import load_catalog
@@ -125,6 +126,12 @@ class TrainingTests(unittest.TestCase):
         stats = inputs(rows, torch.zeros(289, 768))["card_stats"].double()
         expected = torch.tensor([drago.initial_stats(catalog, spec) for spec in specs], dtype=torch.float64)
         torch.testing.assert_close(stats, expected, rtol=1e-6, atol=0)
+
+    def test_impossible_duplicates_are_dropped(self):
+        cards = np.ones((3, 2, 4), dtype=np.int16)
+        cards[1, 1, :2] = 250  # two Time Lord Stryx on one side
+        cards[2, 0, 0] = cards[2, 1, 0] = 240  # one Fate Seamstress on each side: fine
+        self.assertEqual(labels.possible_rows(cards).tolist(), [True, False, True])
 
     def test_fixed_stats_match_the_engine_at_battle_start(self):
         catalog, inputs, rng = load_catalog(), Inputs("cpu"), random.Random(11)

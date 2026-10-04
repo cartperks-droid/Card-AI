@@ -203,11 +203,18 @@ def load_shards(directory=STORE):
         with np.load(path) as shard:
             arrays = {name: shard[name] for name in (*FIELDS, "probs", "exact")}
             arrays.update(fixed_arrays(shard, len(arrays["probs"])))
-            mask = valid_rows(arrays, str(shard["snapshot"]), current)
+            mask = valid_rows(arrays, str(shard["snapshot"]), current) & possible_rows(arrays["cards"])
         parts.append({k: v[mask] for k, v in arrays.items()})
     if not parts:
         raise FileNotFoundError(f"No label shards in {directory}")
     return {name: np.concatenate([part[name] for part in parts]) for name in (*FIELDS, *FIXED_FIELDS, "probs", "exact")}
+
+
+def possible_rows(cards):
+    """Rows whose sides hold at most one of each single-copy card (teams.SINGLE_COPY). cards: [N, 2, 4]. Older shards
+    have such battles, scored by his engine, where the copies work twice; the game doesn't allow that (user)."""
+    cards = np.asarray(cards)
+    return ~np.any([(cards == card).sum(-1).max(-1) > 1 for card in SINGLE_COPY], axis=0)
 
 
 def shard_paths(directory):

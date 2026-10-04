@@ -19,7 +19,7 @@ import torch
 
 from ..model import BattleModel, load_model_data
 from ..model.checkpoint import load_checkpoint, save_checkpoint
-from .labels import FIELDS, FIXED_FIELDS, SHARD_DIR, fixed_arrays, shard_paths
+from .labels import FIELDS, FIXED_FIELDS, SHARD_DIR, fixed_arrays, possible_rows, shard_paths
 
 RUN_DIR = Path(__file__).resolve().parents[2] / "data" / "training"
 VALIDATION_EVERY = 25  # shard seeds divisible by this are held out
@@ -62,7 +62,7 @@ def load_split(directory, device):
             pool_cards = _pool_cards(catalog) if pool_cards is None else pool_cards
             mask = valid_rows(arrays, snapshot_id, current, catalog=catalog, changes=changes, pool_cards=pool_cards)
             finished = arrays["probs"][:, :2].sum(1)  # A win, B win (ties cannot happen; unfinished mass is dropped)
-            keep = mask & (finished > 0)
+            keep = mask & (finished > 0) & possible_rows(arrays["cards"])
             rows = {key: arrays[key][keep].astype(np.int16) for key in FIELDS}
             rows.update({key: arrays[key][keep] for key in FIXED_FIELDS})
             rows["target"] = (arrays["probs"][keep, :2] / finished[keep, None]).astype(np.float32)
