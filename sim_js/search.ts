@@ -133,7 +133,12 @@ export function startState(a: any, b: any, tweaks: Tweaks = {}) {
     card.counters.normalDamage = attack
     card.counters.normalMaxHp = hp
   }
-  if (tweaks.fixed) tweaks.fixed[1].forEach(([hp, attack], i) => { const card = team(tweaks.fixed![0])[i]; if (card) set(card, hp, attack) })
+  // A fixed card's power follows his enemies' rule, ATK = power / 2 (tower.ts buildTowerEnemies): Beyond The Grave and
+  // Creation and Restoration rebuild cards from power (crosscheck 2026-10-04: Anubis at 19M HP revived at his normal power).
+  if (tweaks.fixed) tweaks.fixed[1].forEach(([hp, attack], i) => {
+    const card = team(tweaks.fixed![0])[i]
+    if (card) { set(card, hp, attack); card.power = 2 * attack }
+  })
   if (tweaks.scale) for (const card of team(tweaks.scale[0])) set(card, card.maxHp * tweaks.scale[1], card.damage * tweaks.scale[1])
   if (tweaks.strip) {
     const card = team(tweaks.strip[0])[tweaks.strip[1]]

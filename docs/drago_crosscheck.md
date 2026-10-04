@@ -83,3 +83,4 @@ His unmodified `simulateBattleV2` (`sim_js/drago_check.ts`) plays a team against
 ```sh
 python -m card_engine.training.crosscheck --battles 400 --runs 1000
 ```
+- **First run, 400 battles (2026-10-04):** mean gap 0.003, uncertain battles within 0.034, one full disagreement: ours 1.0, his 0.0, against an enemy team with Anubis at 19M HP. Our fixed-stat tweak set HP and ATK but left a card's power at its normal value; Beyond The Grave (Anubis) and Creation and Restoration (Nüwa) rebuild cards from power. `sim_js/search.ts` now gives fixed cards power = 2 × ATK, his enemies' rule (`tower.ts`), and that battle agrees (0.0). Declared as a core change affecting cards 76 (Anubis) and 130 (Nüwa).
