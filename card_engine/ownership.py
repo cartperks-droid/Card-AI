@@ -42,9 +42,9 @@ progression, and the shared progression is what couples them, so it lands inside
 import argparse
 import itertools
 import json
-import sys
 import math
 import re
+import sys
 from pathlib import Path
 
 import numpy as np

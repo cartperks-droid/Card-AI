@@ -13,6 +13,7 @@ State on 2026-10-04 and how the pieces fit. Read this first when picking the run
     ```sh
     caffeinate -i bash -c 'while true; do python3 -m card_engine.training.labels --shards 10000 --rows 2000 --workers 14; done' >> labels.out 2>&1 &
     ```
+    Fixed-stat battles (`--fixed`, see `docs/training.md`) run as their own loop, since they number their shards separately. The pod's trainer reads them only once it runs code from 2026-10-04 or later.
     Before starting it, check no older run is left: `pgrep -fl card_engine.training.labels`. On 2026-10-04 three runs were found at once (two orphans from earlier tabs).
   - Sync: `bash scripts/pod_sync.sh <ip> <port>` loops by itself every 5 minutes. It sends finished shards up (`data/labels/store`, snapshots, rule declarations) and brings the pod's `log.jsonl` and `*.checkpoint` down to `data/training_pod/`. So the latest model is always on the Mac; nothing else needs extracting.
   - After a code change: `bash scripts/pod_sync.sh <ip> <port> code`. The running trainer keeps its loaded code until restarted.

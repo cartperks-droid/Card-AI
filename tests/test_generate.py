@@ -60,6 +60,17 @@ class GeneratorTests(unittest.TestCase):
         expected = self.classifier.win_a([spec(a, b) for a, b in zip(teams[:3], teams[3:])])
         np.testing.assert_allclose(logits.softmax(-1)[:, 0].numpy(), expected, atol=1e-5)
 
+    def test_fixed_enemy_stats_reach_the_classifier(self):
+        rng = np.random.default_rng(5)
+        allies = [generate.random_team(self.pool, rng) for _ in range(3)]
+        enemy = generate.random_team(self.pool, rng)
+        stats = [(2.5e6, 4e5)] * 4
+        with torch.no_grad():
+            logits = self.space.logits(self.space.fixed(allies), self.space.fixed([enemy] * 3, stats))
+        wins = self.classifier.ally_win([(ally, enemy) for ally in allies], stats)
+        np.testing.assert_allclose(logits.softmax(-1)[:, 0].numpy(), wins[:, 0], atol=1e-5)
+        self.assertFalse(np.allclose(wins, self.classifier.ally_win([(ally, enemy) for ally in allies])))
+
     def test_counters_are_decoded_from_the_pool(self):
         enemy = parse_side(self.catalog, ["Immortal Witch", "Archer", "Good Boy", "Set"])
         allowed = {tuple(e) for e in self.pool.entries.tolist()}

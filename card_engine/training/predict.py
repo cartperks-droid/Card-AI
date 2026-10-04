@@ -7,6 +7,10 @@
 Cards are "Name[@Border][/Mutation]" and supports "Name[@Tier]" (see card_engine.teams). The classifier gives the
 ally's win chance when the ally attacks first and when the enemy does; --simulate adds DaddyDrago's engine for both
 (exact when the battle is decided by few chance points, else estimated with playouts).
+
+Battle modes that give every enemy card the same stats: --enemy-stats HP ATK (e.g. 2.5M 400k) sets each enemy
+card's starting stats and drops the enemy's borders (they only set stats). Stats enter the classifier as explicit
+inputs, and labels.py --fixed shards train it on such battles.
 """
 
 import argparse
@@ -19,7 +23,7 @@ import torch
 from ..catalog import load_catalog
 from ..model.checkpoint import load_checkpoint
 from ..deck import shell_words
-from ..teams import FIELDS, describe, parse_side, spec
+from ..teams import FIELDS, describe, fixed_stats, parse_side, spec
 from .train import RUN_DIR, Inputs, card_table
 
 
@@ -38,28 +42,33 @@ class Classifier:
         with torch.no_grad():
             self.table = card_table(self.model, self.inputs.data.description_tokens)
 
-    def win_a(self, specs, batch=2048):
-        """P(side A wins) per spec."""
+    def win_a(self, specs, batch=2048, fixed=None):
+        """P(side A wins) per spec. fixed: (side, [(HP, ATK)] x 4) sets that side's starting stats in every spec."""
         out = []
         with torch.no_grad():
             for start in range(0, len(specs), batch):
                 part = specs[start:start + batch]
                 rows = {key: torch.tensor([s[key] for s in part], device=self.device) for key in FIELDS}
+                if fixed is not None:  # every card on that side starts at one (HP, ATK), as in fixed-stat labels
+                    rows["fixed_side"] = torch.full((len(part),), fixed[0], device=self.device)
+                    rows["fixed_stats"] = torch.tensor([fixed[1][0]] * len(part), device=self.device)
                 out.append(self.model(**self.inputs(rows, self.table)).softmax(-1)[:, 0].float().cpu().numpy())
         return np.concatenate(out) if out else np.zeros(0)
 
-    def ally_win(self, pairs):
-        """[(ally, enemy)] -> [N, 2]: the ally's win chance attacking first, and defending (enemy attacks first)."""
-        first = self.win_a([spec(ally, enemy) for ally, enemy in pairs])
-        second = 1 - self.win_a([spec(enemy, ally) for ally, enemy in pairs])
+    def ally_win(self, pairs, enemy_stats=None):
+        """[(ally, enemy)] -> [N, 2]: the ally's win chance attacking first, and defending (enemy attacks first).
+        enemy_stats: [(HP, ATK)] x 4, the enemy's fixed starting stats (None: from its cards)."""
+        first = self.win_a([spec(ally, enemy) for ally, enemy in pairs], fixed=enemy_stats and (1, enemy_stats))
+        second = 1 - self.win_a([spec(enemy, ally) for ally, enemy in pairs], fixed=enemy_stats and (0, enemy_stats))
         return np.stack([first, second], 1)
 
 
-def simulate(catalog, ally, enemy, seed=12345):
+def simulate(catalog, ally, enemy, seed=12345, enemy_stats=None):
     """The engine's ally win chance attacking first and defending, and whether each is exact."""
     from .labels import evaluate
-    first, first_exact = evaluate(catalog, spec(ally, enemy), seed)
-    second, second_exact = evaluate(catalog, spec(enemy, ally), seed + 1)
+    fixed = lambda side: None if enemy_stats is None else dict(fixed=(side, enemy_stats))
+    first, first_exact = evaluate(catalog, spec(ally, enemy), seed, **(fixed(1) or {}))
+    second, second_exact = evaluate(catalog, spec(enemy, ally), seed + 1, **(fixed(0) or {}))
     return (first[0], second[1]), (first_exact, second_exact)
 
 
@@ -69,6 +78,8 @@ def main():
         parser.add_argument(f"--{side}", nargs=4, required=True, metavar="CARD", help="four cards, Name[@Border][/Mutation]")
         parser.add_argument(f"--{side}-red", help="red support, Name[@Tier]")
         parser.add_argument(f"--{side}-blue", help="blue support, Name[@Tier]")
+    parser.add_argument("--enemy-stats", nargs=2, metavar=("HP", "ATK"),
+                        help="every enemy card's starting HP and ATK (battle modes with fixed enemy stats)")
     parser.add_argument("--simulate", action="store_true", help="also run DaddyDrago's engine")
     parser.add_argument("--checkpoint", default=str(RUN_DIR / "model.checkpoint"))
     parser.add_argument("--device")
@@ -76,13 +87,16 @@ def main():
     catalog = load_catalog()
     ally = parse_side(catalog, args.ally, args.ally_red, args.ally_blue)
     enemy = parse_side(catalog, args.enemy, args.enemy_red, args.enemy_blue)
+    enemy_stats = fixed_stats(*args.enemy_stats) if args.enemy_stats else None
+    if enemy_stats:
+        enemy["borders"] = [1] * 4
     classifier = Classifier(args.checkpoint, args.device)
-    model = classifier.ally_win([(ally, enemy)])[0]
-    report = {"ally": describe(catalog, ally), "enemy": describe(catalog, enemy),
+    model = classifier.ally_win([(ally, enemy)], enemy_stats)[0]
+    report = {"ally": describe(catalog, ally), "enemy": describe(catalog, enemy, enemy_stats),
               "model": {"ally_attacks_first": round(float(model[0]), 3), "enemy_attacks_first": round(float(model[1]), 3)},
               "checkpoint_step": classifier.metadata.get("step")}
     if args.simulate:
-        (first, second), (first_exact, second_exact) = simulate(catalog, ally, enemy)
+        (first, second), (first_exact, second_exact) = simulate(catalog, ally, enemy, enemy_stats=enemy_stats)
         report["simulator"] = {"ally_attacks_first": round(first, 3), "enemy_attacks_first": round(second, 3),
                                "exact": [first_exact, second_exact]}
     print(json.dumps(report, indent=2, ensure_ascii=False))

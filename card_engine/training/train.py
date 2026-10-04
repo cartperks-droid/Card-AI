@@ -19,7 +19,7 @@ import torch
 
 from ..model import BattleModel, load_model_data
 from ..model.checkpoint import load_checkpoint, save_checkpoint
-from .labels import FIELDS, SHARD_DIR
+from .labels import FIELDS, FIXED_FIELDS, SHARD_DIR, fixed_arrays, shard_paths
 
 RUN_DIR = Path(__file__).resolve().parents[2] / "data" / "training"
 VALIDATION_EVERY = 25  # shard seeds divisible by this are held out
@@ -50,22 +50,25 @@ def load_split(directory, device):
     rules = json.dumps([sorted(current.items()), changes])
     pool_cards = None
     split, seen = {"train": [], "val": []}, {}
-    for path in sorted(Path(directory).glob("shard_*.npz")):
+    for path in sorted(shard_paths(directory)):
         mtime = path.stat().st_mtime
         cached = _SHARD_CACHE.get(path)
         if cached is None or cached[:2] != (mtime, rules):
             validation = int(path.stem.split("_")[1]) % VALIDATION_EVERY == 0
             with np.load(path) as shard:
                 arrays = {key: shard[key] for key in (*FIELDS, "probs")}
+                arrays.update(fixed_arrays(shard, len(arrays["probs"])))
                 snapshot_id = str(shard["snapshot"])
             pool_cards = _pool_cards(catalog) if pool_cards is None else pool_cards
             mask = valid_rows(arrays, snapshot_id, current, catalog=catalog, changes=changes, pool_cards=pool_cards)
             finished = arrays["probs"][:, :2].sum(1)  # A win, B win (ties cannot happen; unfinished mass is dropped)
             keep = mask & (finished > 0)
             rows = {key: arrays[key][keep].astype(np.int16) for key in FIELDS}
+            rows.update({key: arrays[key][keep] for key in FIXED_FIELDS})
             rows["target"] = (arrays["probs"][keep, :2] / finished[keep, None]).astype(np.float32)
             if validation:
-                rows["favourite"] = stat_favourite({key: torch.as_tensor(rows[key].astype(np.int64)) for key in FIELDS}).numpy().astype(np.int8)
+                rows["favourite"] = stat_favourite({key: torch.as_tensor(value) for key, value in rows.items()
+                                                    if key != "target"}).numpy().astype(np.int8)
             cached = (mtime, rules, validation, rows)
         seen[path] = cached
         if len(cached[3]["target"]):
@@ -102,14 +105,22 @@ def card_stat_tables():
 
 
 def card_stats(rows, tables):
-    """[N, 2, 4, 2]: each card's (HP, ATK) as it enters the battle, from label rows and card_stat_tables()."""
+    """[N, 2, 4, 2]: each card's (HP, ATK) as it enters the battle, from label rows and card_stat_tables(). A
+    fixed-stat battle (fixed_side 0 or 1) starts that side's four cards at fixed_stats instead."""
     base, red, prehistoric, jurassic = tables
+    rows = {key: value.long() if key in FIELDS else value for key, value in rows.items()}
     cards, mutations = rows["cards"], rows["mutations"]
     red = red[cards, mutations, rows["red"][..., None], rows["red_tier"][..., None]]
     member = prehistoric[cards]
     bonus = torch.where(rows["blue"] == JURASSIC_WORLD, jurassic[rows["blue_tier"]], 0.0)
     blue = 1 + member * (bonus * member.sum(-1))[..., None]
-    return base[cards, rows["borders"], mutations] * red * blue[..., None]
+    stats = base[cards, rows["borders"], mutations] * red * blue[..., None]
+    if "fixed_side" in rows:
+        side = rows["fixed_side"].to(stats.device).long()
+        fixed = rows["fixed_stats"].to(stats)[:, None, None, :]  # [N, 1, 1, 2]
+        chosen = (side[:, None] == torch.arange(2, device=stats.device))[..., None, None]  # [N, 2, 1, 1]
+        stats = torch.where(chosen, fixed, stats)
+    return stats
 
 
 class Inputs:
@@ -121,7 +132,8 @@ class Inputs:
         self.stat_tables = tuple(table.to(device=device, dtype=torch.float32) for table in card_stat_tables())
 
     def __call__(self, rows, card_table):
-        rows = {key: rows[key].long() for key in FIELDS}  # stored as int16
+        rows = {**{key: rows[key].long() for key in FIELDS},  # stored as int16
+                **{key: rows[key] for key in FIXED_FIELDS if key in rows}}
         cards = rows["cards"]
         index = cards - 1
         identity = self.data.identity_keys[index]

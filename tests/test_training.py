@@ -126,6 +126,24 @@ class TrainingTests(unittest.TestCase):
         expected = torch.tensor([drago.initial_stats(catalog, spec) for spec in specs], dtype=torch.float64)
         torch.testing.assert_close(stats, expected, rtol=1e-6, atol=0)
 
+    def test_fixed_stats_match_the_engine_at_battle_start(self):
+        catalog, inputs, rng = load_catalog(), Inputs("cpu"), random.Random(11)
+        passives = {card.id for card in catalog.cards if card.name in DECK_PASSIVES}
+        specs, battles = [], []
+        while len(specs) < 40:
+            spec = labels.random_spec(rng, catalog)
+            if passives.isdisjoint(spec["cards"][0] + spec["cards"][1]):
+                battles.append(labels.fixed_battle(rng, catalog, spec))
+                specs.append(spec)
+        self.assertTrue(all(spec["borders"][side] == [1] * 4 for spec, (side, _) in zip(specs, battles)))
+        rows = {name: torch.tensor([spec[name] for spec in specs]) for name in labels.FIELDS}
+        rows["fixed_side"] = torch.tensor([side for side, _ in battles], dtype=torch.int8)
+        rows["fixed_stats"] = torch.tensor([stats for _, stats in battles], dtype=torch.float32)
+        stats = inputs(rows, torch.zeros(289, 768))["card_stats"].double()
+        expected = torch.tensor([drago.initial_stats(catalog, spec, fixed=(side, [s] * 4))
+                                 for spec, (side, s) in zip(specs, battles)], dtype=torch.float64)
+        torch.testing.assert_close(stats, expected, rtol=1e-6, atol=0)
+
     def test_stat_mlp_sees_only_ratios_and_starts_silent(self):
         model = BattleModel().eval()
         torch.manual_seed(0)
@@ -149,8 +167,11 @@ class TrainingTests(unittest.TestCase):
         directory = root / "store"
         directory.mkdir(parents=True)
         for seed in (1, 25):  # 25 is a validation shard
-            labels._worker((seed, 6, str(directory), snapshot(), Path(self.temp.name) / "tb2"))
+            labels._worker((seed, 6, str(directory), snapshot(), False, Path(self.temp.name) / "tb2"))
+        labels._worker((25, 6, str(directory), snapshot(), True))  # fixed-stat battles, read alongside
         train_rows, val_rows = load_split(directory, "cpu")
+        self.assertTrue((val_rows["fixed_side"] >= 0).any())
+        self.assertEqual(set(train_rows["fixed_side"].tolist()), {-1})
         import json as _json
         self.assertEqual((train_rows["target"].shape[1], val_rows["cards"].shape[1:]), (2, (2, 4)))  # A win, B win (no ties)
         model, inputs = BattleModel().eval(), Inputs("cpu")

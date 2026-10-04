@@ -28,6 +28,17 @@
 ../.venv/bin/python -m card_engine.training.labels --shards 1000 --rows 2000 --workers 12
 ```
 
+## Fixed-stat battles (`labels.py --fixed`)
+Some battle modes give every enemy card the same arbitrary HP and ATK, often above normal, with borders ignored (user, 2026-10-04).
+- **Battles:** a random matchup in which one side, A or B at random, is borderless and starts all four cards at one (HP, ATK). The level is the opponent's geometric-mean stats times 10^U(-1.5, 1.5); the HP/ATK balance moves by 10^U(-0.5, 0.5). This spread is provisional until real modes' values are known.
+- **Storage:** `fixed_<seed>.npz`, with `fixed_side` and `fixed_stats` per row, on their own seed sequence. They are never put in the tablebase, whose key has no stats. Trainers from before this change read only `shard_*.npz`, so they never see these rows without their stats.
+- **Model:** the trainer starts that side's cards at `fixed_stats` (`train.card_stats`). Stats enter as explicit inputs, so nothing else changes. Validation holds out seeds divisible by 25, as for random battles.
+- **Speed:** about 0.6× the random battles' rate (no tablebase hits).
+
+```sh
+python -m card_engine.training.labels --fixed --shards 1000 --rows 2000 --workers N
+```
+
 ## Model inputs
 - **Supports:** tiers get their own embedding (`support_tiers [B,2,2]`, 1 base .. 5 Galaxy).
 - **Astraeus:** each art has its own permanent identity key (`data/annotations/card_keys.json`, keys 290-296).
@@ -63,6 +74,7 @@
 ```
 - **Teams:** cards are `Name[@Border][/Mutation]` and supports `Name[@Tier]` (`card_engine/teams.py`). A name can be an ID, the exact name, or a unique part of it.
 - **Output:** the classifier's ally win chance when the ally attacks first and when the enemy does. `--simulate` adds the engine's answers and whether each is exact. `--checkpoint` picks the model (default `data/training/model.checkpoint`).
+- **Fixed enemy stats:** `--enemy-stats HP ATK` (e.g. `2.5M 400k`) starts every enemy card at those stats and drops the enemy's borders, for the classifier and the engine alike. The generator takes the same option with `--enemy`.
 
 ## Generator (`card_engine/training/generate.py`)
 ```sh

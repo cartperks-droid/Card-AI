@@ -8,6 +8,7 @@ Platinum, Crystal, Ruby, Galaxy (or 1-5). Mutations: Storm, Snow, ..., Manga; we
 """
 
 from .deck import BORDERS, TIERS, _match
+from .ownership import parse_rarity
 from .mutations import MUTATION_NAMES
 
 FIELDS = ("cards", "borders", "mutations", "arts", "red", "red_tier", "blue", "blue_tier")
@@ -76,8 +77,13 @@ def spec(first, second):
     return {key: [first[key], second[key]] for key in FIELDS}
 
 
-def describe(catalog, team):
-    """Readable lineup and supports of one side."""
+def fixed_stats(hp, attack):
+    """Every card's starting (HP, ATK) for battle modes with fixed enemy stats; "2.5M" style numbers allowed."""
+    return [(parse_rarity(hp), parse_rarity(attack))] * 4
+
+
+def describe(catalog, team, stats=None):
+    """Readable lineup and supports of one side; stats: its fixed starting stats, if any."""
     cards = []
     for card, border, mutation, art in zip(team["cards"], team["borders"], team["mutations"], team["arts"]):
         text = catalog.card(card).name + (f"+{ASTRAEUS_ARTS[art - 1].title()}" if art else "")
@@ -88,4 +94,4 @@ def describe(catalog, team):
         if team[color]:
             name = next(s.name for s in table if s.id == team[color])
             supports[color] = f"{name}@{TIERS[team[color + '_tier'] - 1]}"
-    return {"cards": cards, **supports}
+    return {"cards": cards, **supports, **({"stats": {"hp": stats[0][0], "attack": stats[0][1]}} if stats else {})}
