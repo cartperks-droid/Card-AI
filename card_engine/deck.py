@@ -26,6 +26,7 @@ Meteor Shower, Time Storm, Eclipse, Virus, Blood Rain, Armageddon, Manga.
 
 import argparse
 import json
+import re
 import sys
 from pathlib import Path
 
@@ -78,13 +79,18 @@ def render(deck, catalog, title="My deck"):
     return "\n".join(lines) + "\n"
 
 
+def _fold(text):
+    """Case, punctuation and spacing ignored: "Sable, The Envious" reads as "sable the envious"."""
+    return " ".join(re.sub(r"[^\w\s]", " ", text.casefold()).split())
+
+
 def _match(query, items, kind):
-    """items: [(id, name)]. An ID, an exact name, or a unique case-insensitive substring."""
+    """items: [(id, name)]. An ID, an exact name, or a unique substring; case and punctuation are ignored."""
     if query.isdigit():
         hits = [item for item in items if item[0] == int(query)]
     else:
-        q = query.casefold()
-        hits = [item for item in items if item[1].casefold() == q] or [item for item in items if q in item[1].casefold()]
+        q = _fold(query)
+        hits = [item for item in items if _fold(item[1]) == q] or [item for item in items if q in _fold(item[1])]
     if len(hits) != 1:
         options = ", ".join(f"{name} ({i})" for i, name in hits[:12]) or "none"
         raise SystemExit(f"{kind} '{query}' matches {len(hits)}: {options}")

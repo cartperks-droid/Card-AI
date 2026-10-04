@@ -21,6 +21,8 @@ class DeckTests(unittest.TestCase):
         deckmod.add_card(deck, self.catalog, "206", deckmod._border("RuCrPl"))  # same entry: count 2
         deckmod.add_card(deck, self.catalog, "Sekhmet", deckmod._border("GaPl"), count=4)
         self.assertEqual([(e["card"], e["border"], e["count"]) for e in deck["cards"]], [(206, 8, 2), (70, 10, 4)])
+        self.assertEqual(deckmod._match("Sable, the  envious", [(c.id, c.name) for c in self.catalog.cards], "Card"),
+                         (211, "Sable The Envious"))  # the wiki's punctuation
         with self.assertRaises(SystemExit):
             deckmod.add_card(deck, self.catalog, "spirit", 1)  # ambiguous: Forest, Wind, Mist, Volcano Spirit...
         with self.assertRaises(SystemExit):
