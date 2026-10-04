@@ -88,6 +88,7 @@ python -m card_engine.training.labels --fixed --shards 1000 --rows 2000 --worker
 - **Commitment and entropy check:** the distance to each slot's nearest entry is penalised, more and more during the ascent. While a slot still spreads over more than 1.5 effective entries, the ascent continues with a doubled penalty, up to 3 times. `slot_blur` in the output is the worst slot's effective entry count.
 - **Decoding:** an exact factorised nearest-k match over the pool. Each slot keeps its 3 nearest entries and each colour its 2 most likely supports. The classifier scores every combination exactly, and each candidate keeps its best.
 - **Counters:** 64 candidates per enemy (`--restarts`). The best 32 distinct teams by the model (`--counters`) are verified by the engine and sorted by the engine's win chance in that role. `model` and `simulator` are the ally's win chance in the chosen role.
+- **Verdict:** when the best team's win chance (the engine's, else the model's) is below `--min-win` (0.05), the matchup reads `no counter in this pool`. Against a hopeless enemy every team scores about 0, and the ranking among them is noise, not a weaker suggestion.
 - **Enemies:** `--enemy` names one. `--enemies N` generates N broad ones: each is ascended against a random pool opponent, then decoded by sampling at temperature 1.
 - **Pools:**
   - `own`: your deck (`python -m card_engine.deck`), with copy counts.

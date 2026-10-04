@@ -390,6 +390,8 @@ def main():
     parser.add_argument("--min-rarity", help="leave out cards less rare than this card rarity (1 in N, e.g. 5000, 2.5M)")
     parser.add_argument("--no-limited", action="store_true", help="restricted pool without its Limited exceptions")
     parser.add_argument("--counters", type=int, default=32)
+    parser.add_argument("--min-win", type=float, default=0.05,
+                        help="below this best win chance (the engine's, else the model's) a matchup reads 'no counter'")
     parser.add_argument("--restarts", type=int, default=64, help="candidates ascended per enemy")
     parser.add_argument("--steps", type=int, default=Settings.steps)
     parser.add_argument("--temperature", type=float, default=Settings.temperature)
@@ -441,7 +443,9 @@ def main():
             rows.append(row)
         if checked:
             rows.sort(key=lambda r: -r["simulator"])
-        report["matchups"].append({"enemy": describe(catalog, enemy, enemy_stats), "counters": rows})
+        best = max((r.get("simulator", r["model"]) for r in rows), default=0.0)
+        verdict = "counters found" if best >= args.min_win else f"no counter in this pool (best {best:.3f} < {args.min_win})"
+        report["matchups"].append({"enemy": describe(catalog, enemy, enemy_stats), "verdict": verdict, "counters": rows})
         print(json.dumps(report["matchups"][-1], ensure_ascii=False), flush=True)
     if args.output:
         Path(args.output).write_text(json.dumps(report, indent=1, ensure_ascii=False) + "\n")
