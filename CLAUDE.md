@@ -20,6 +20,7 @@ This project simulates a Roblox "Snap!"-style card game and trains an AI to pred
   - `predict.py`: the classifier's win rate for named teams, both turn orders (`--simulate` adds the engine).
   - `generate.py`: the generator (design below): counters to a named enemy or to broadly generated enemies, verified by the engine.
   - `hard.py`: hard examples, the battles where the model and the engine disagree most.
+  - `crosscheck.py`: our engine against DaddyDrago's own unmodified battle code, on fixed-stat battles (`docs/drago_crosscheck.md`).
 - `card_engine/tower.py`: tower floors (DaddyDrago's formula and fixed teams).
 - `card_engine/teams.py`: teams by name: `"Name[@Border][/Mutation]"` cards, `"Name[@Tier]"` supports.
 - `card_engine/model/` has two transformers: a description (language) encoder and a strategic encoder. The head gives **two outcomes, A win and B win. There are no ties**: a draw (both sides wiped out, or his 2,000-turn cap) counts as the attacker A's loss.

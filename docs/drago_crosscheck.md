@@ -74,3 +74,12 @@ Adopted 2026-10-03. His data folds weather into each card's one stat multiplier:
 Probably a newer update. Confirm each exists in game before adding it to the catalogue.
 
 Accuser, Armin The Humble, Baba Yaga, Cave Goblin, Chronal, Epitome, Lyra, Mutant, Ouroboros, Sea Turtle, Something Funny, Supreme Frank, The Circus, The Huntsman, Three Wise Men, True Incarnation
+
+## Automated check against his own engine (`training/crosscheck.py`, 2026-10-04)
+His unmodified `simulateBattleV2` (`sim_js/drago_check.ts`) plays a team against fixed-power enemies only (tower and depths battles); he has no two-team mode. So the check compares that case: random teams against fixed-stat enemies drawn like `labels.fixed_battle`, scored by our engine (codemodded copy, chance-tree search, C port) and by his battles with his seeded RNG. Gaps beyond `--sigma` standard errors (his sampling error plus ours, 3% when estimated) are listed.
+- Excluded by design: Astraeus (we preset each art's ability, he draws one) and Ruby supports (his tables lack Ruby).
+- Floor-105 cheese decks, 2026-10-04: ours 56.2 / 52.1 / 31.6% against his 56.6 / 52.2 / 31.4% (10,000 battles each).
+
+```sh
+python -m card_engine.training.crosscheck --battles 400 --runs 1000
+```
