@@ -6,6 +6,7 @@ Searches read it instead of guessing the collection from screenshots. Every chan
     python -m card_engine.deck add "Malik The Sovereign" --border RuCrPl
     python -m card_engine.deck add 70 --border GaPl --count 4 --mutation Storm
     python -m card_engine.deck remove Malik --border RuCr
+    python -m card_engine.deck remove 70 --border GaPl --mutation Storm --count 1
     python -m card_engine.deck add-support "Desmond Of Despair" --tier Platinum
     python -m card_engine.deck remove-support Desmond --tier Platinum
     python -m card_engine.deck list
@@ -117,13 +118,16 @@ def add_card(deck, catalog, query, border, mutation="None", count=1):
     return entry
 
 
-def remove_card(deck, catalog, query, border=None, count=None):
+def remove_card(deck, catalog, query, border=None, count=None, mutation=None):
     card_id, name = _match(query, [(c.id, c.name) for c in catalog.cards], "Card")
-    hits = [e for e in deck["cards"] if e["card"] == card_id and (border is None or e["border"] == border)]
+    hits = [e for e in deck["cards"] if e["card"] == card_id and (border is None or e["border"] == border)
+            and (mutation is None or e["mutation"] == mutation)]
     if not hits:
-        raise SystemExit(f"{name} ({'any border' if border is None else BORDERS[border - 1]}) is not in the deck")
+        raise SystemExit(f"{name} ({'any border' if border is None else BORDERS[border - 1]}, "
+                         f"{'any mutation' if mutation is None else mutation}) is not in the deck")
     if len(hits) > 1:
-        raise SystemExit(f"{name} is in the deck at several borders; give --border")
+        options = ", ".join(f"--border {BORDERS[e['border'] - 1]} --mutation {e['mutation']!r}" for e in hits)
+        raise SystemExit(f"{name} is in the deck {len(hits)} ways; give one: {options}")
     entry = hits[0]
     entry["count"] -= entry["count"] if count is None else count
     if entry["count"] <= 0:
@@ -151,14 +155,17 @@ def add_support(deck, catalog, query, tier, count=1):
     return entry
 
 
-def remove_support(deck, catalog, query, tier=None):
+def remove_support(deck, catalog, query, tier=None, count=None):
     items = _supports(catalog)
     index, _ = _match(query, [(i, n) for i, (_, _, n) in enumerate(items)], "Support")
     color, support_id, name = items[index]
     hits = [e for e in deck["supports"] if (e["color"], e["support"]) == (color, support_id) and (tier is None or e["tier"] == tier)]
     if len(hits) != 1:
         raise SystemExit(f"{name}: {len(hits)} matching entries; give --tier" if hits else f"{name} is not in the deck")
-    deck["supports"].remove(hits[0])
+    entry = hits[0]
+    entry["count"] -= entry["count"] if count is None else count
+    if entry["count"] <= 0:
+        deck["supports"].remove(entry)
     return name
 
 
@@ -186,6 +193,7 @@ def main(argv=None):
     p = commands.add_parser("remove", help="remove a card (all copies unless --count)")
     p.add_argument("card")
     p.add_argument("--border")
+    p.add_argument("--mutation")
     p.add_argument("--count", type=int)
     p = commands.add_parser("add-support", help="add a support card")
     p.add_argument("support")
@@ -194,6 +202,7 @@ def main(argv=None):
     p = commands.add_parser("remove-support", help="remove a support card")
     p.add_argument("support")
     p.add_argument("--tier")
+    p.add_argument("--count", type=int)
     commands.add_parser("list", help="print the deck")
     args = parser.parse_args(argv)
     catalog = load_catalog()
@@ -202,13 +211,14 @@ def main(argv=None):
         e = add_card(deck, catalog, args.card, _border(args.border), _mutation(args.mutation), args.count)
         message = f"Added {args.count} x {e['name']} ({BORDERS[e['border'] - 1]}, {e['mutation']}); now {e['count']}"
     elif args.command == "remove":
-        name = remove_card(deck, catalog, args.card, _border(args.border) if args.border else None, args.count)
+        name = remove_card(deck, catalog, args.card, _border(args.border) if args.border else None, args.count,
+                           _mutation(args.mutation) if args.mutation else None)
         message = f"Removed {name}"
     elif args.command == "add-support":
         e = add_support(deck, catalog, args.support, _tier(args.tier), args.count)
         message = f"Added {e['name']} ({TIERS[e['tier'] - 1]}); now {e['count']}"
     elif args.command == "remove-support":
-        name = remove_support(deck, catalog, args.support, _tier(args.tier) if args.tier else None)
+        name = remove_support(deck, catalog, args.support, _tier(args.tier) if args.tier else None, args.count)
         message = f"Removed {name}"
     else:
         sys.stdout.write(render(deck, catalog))

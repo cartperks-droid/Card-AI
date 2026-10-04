@@ -38,6 +38,23 @@ class DeckTests(unittest.TestCase):
             self.assertIn("| red | Desmond Of Despair | 27 | Platinum | 1 |", text)
         self.assertEqual(deckmod.owned_entries(deck), [(70, 10, "None"), (206, 8, "None")])  # saved sorted by ID
 
+    def test_remove_one_mutation_and_some_supports(self):
+        deck = {"cards": [], "supports": []}
+        deckmod.add_card(deck, self.catalog, "Good Boy", 2, "Storm", count=2)
+        deckmod.add_card(deck, self.catalog, "Good Boy", 2)
+        with self.assertRaises(SystemExit):
+            deckmod.remove_card(deck, self.catalog, "Good Boy", 2)  # two mutations at that border: say which
+        deckmod.remove_card(deck, self.catalog, "Good Boy", 2, count=1, mutation="Storm")
+        self.assertEqual(deckmod.owned_entries(deck), [(3, 2, "Storm"), (3, 2, "None")])
+        self.assertEqual(deck["cards"][0]["count"], 1)
+        deckmod.remove_card(deck, self.catalog, "Good Boy", mutation="None")
+        self.assertEqual(deckmod.owned_entries(deck), [(3, 2, "Storm")])
+        deckmod.add_support(deck, self.catalog, "Fate", 5, count=3)
+        deckmod.remove_support(deck, self.catalog, "Fate", count=2)
+        self.assertEqual(deck["supports"][0]["count"], 1)
+        deckmod.remove_support(deck, self.catalog, "Fate")
+        self.assertEqual(deck["supports"], [])
+
 
 if __name__ == "__main__":
     unittest.main()
