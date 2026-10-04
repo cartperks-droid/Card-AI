@@ -3,6 +3,7 @@
 import json
 import tempfile
 import unittest
+import unittest.mock
 from pathlib import Path
 
 from card_engine import deck as deckmod
@@ -54,6 +55,24 @@ class DeckTests(unittest.TestCase):
         self.assertEqual(deck["supports"][0]["count"], 1)
         deckmod.remove_support(deck, self.catalog, "Fate")
         self.assertEqual(deck["supports"], [])
+
+    def test_custom_pool_commands(self):
+        with tempfile.TemporaryDirectory() as temp:
+            files = {name: Path(temp) / name for name in ("deck.json", "deck.md", "custom.json", "custom.md")}
+            deckmod.save({"cards": [], "supports": []}, self.catalog, files["deck.json"], files["deck.md"])
+            with unittest.mock.patch.multiple(deckmod, DECK_FILE=files["deck.json"], DECK_DOC=files["deck.md"],
+                                              CUSTOM_FILE=files["custom.json"], CUSTOM_DOC=files["custom.md"]):
+                deckmod.main(["add", "Malik", "--border", "RuCrPl"])
+                deckmod.main(["--custom", "add", "Sekhmet", "--count", "2"])
+                self.assertEqual(deckmod.owned_entries(deckmod.load(files["custom.json"])), [(70, 1, "None")])
+                deckmod.main(["--custom", "copy-deck"])
+                self.assertEqual(deckmod.owned_entries(deckmod.load(files["custom.json"])), [(206, 8, "None")])
+                self.assertIn("# Custom pool", files["custom.md"].read_text())
+                deckmod.main(["--custom", "reset"])
+                self.assertEqual(deckmod.load(files["custom.json"]), {"cards": [], "supports": []})
+                with self.assertRaises(SystemExit):
+                    deckmod.main(["reset"])  # only the custom pool can be reset
+                self.assertEqual(deckmod.owned_entries(deckmod.load(files["deck.json"])), [(206, 8, "None")])
 
 
 if __name__ == "__main__":

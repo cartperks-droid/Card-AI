@@ -24,15 +24,25 @@ verifies the best --counters of them.
 
 Pools:
   - own: data/my_deck.json, with copy counts.
+  - custom: data/custom_pool.json, with copy counts: a collection to tailor suggestions to, edited on the fly
+    with python -m card_engine.deck --custom (reset, copy-deck, add, remove).
   - restricted: the player base's cards and borders, no mutations.
   - all: every card, border and eligible mutation.
---borders limits the borders (e.g. --borders none).
+Masks narrow the restricted and all pools, ours and the enemies' (user, 2026-10-04). The pools keep everything; the
+generator leaves rare options out unless asked for them. Cards and supports put in a deck (own, custom) override
+the masks: a deck pool is used as it is.
+  - --borders: none by default; list some (--borders none Pl Cr) or allow all.
+  - --mutations: None by default; list some (--mutations None Storm) or allow all.
+  - --support-tiers: base by default, for red and blue alike (supports have no index to price them); list some
+    (--support-tiers base Platinum) or allow all.
+  - --min-rarity: leaves out cards less rare than this card rarity (1 in N: 5000, 2.5M, 30T).
 
 Enemies: an explicit team (--enemy), or --enemies N generated broadly. A broad enemy is a team ascended against
 a random pool opponent and decoded by sampling at a high temperature.
 
-    python -m card_engine.training.generate --enemy "Immortal Witch" Archer "Good Boy" Set --pool restricted --borders none
-    python -m card_engine.training.generate --enemies 4 --pool restricted --borders none
+    python -m card_engine.training.generate --enemy "Immortal Witch" Archer "Good Boy" Set --pool restricted
+    python -m card_engine.training.generate --enemies 4 --pool own --borders all --support-tiers all
+    python -m card_engine.training.generate --enemy Odin Kira Set Archer --pool custom --borders none Pl Cr --mutations all
 """
 
 import argparse
@@ -47,8 +57,9 @@ import numpy as np
 import torch
 
 from ..catalog import load_catalog
-from ..deck import BORDERS, DECK_FILE, load as load_deck
+from ..deck import BORDERS, CUSTOM_FILE, DECK_FILE, TIERS, _border, _mutation, _tier, load as load_deck
 from ..mutations import MUTATION_NAMES
+from ..ownership import parse_rarity
 from ..restricted import entries as restricted_entries, load as load_restricted
 from ..teams import ASTRAEUS, ASTRAEUS_ARTS, describe, parse_side, side
 from .predict import Classifier
@@ -63,12 +74,16 @@ class Pool:
     blues: list
 
 
-def make_pool(catalog, kind, borders=None, limited=True, deck_path=DECK_FILE):
+def make_pool(catalog, kind, borders=None, limited=True, deck_path=None, mutations=None, tiers=None, min_rarity=None):
+    """The pool's entries and supports. borders (IDs), mutations (indices), tiers (1-5) and min_rarity mask the open
+    pools (restricted, all); None allows all. A deck pool (own, custom) is used as it is: the deck overrides them."""
     every_support = lambda table: [(s.id, tier) for s in table for tier in range(1, 6)]
     copies = None
-    if kind == "own":
+    if kind in ("own", "custom"):
+        deck_path = deck_path or (DECK_FILE if kind == "own" else CUSTOM_FILE)
         if not Path(deck_path).exists():
-            raise SystemExit(f"No deck at {deck_path}; add cards with python -m card_engine.deck add ...")
+            flag = "" if kind == "own" else " --custom"
+            raise SystemExit(f"No {kind} pool at {deck_path}; add cards with python -m card_engine.deck{flag} add ...")
         deck = load_deck(deck_path)
         owned = {}
         for e in deck["cards"]:
@@ -90,12 +105,28 @@ def make_pool(catalog, kind, borders=None, limited=True, deck_path=DECK_FILE):
         copies = np.array([count for row, count in zip(sorted(owned), copies)
                            for _ in (ASTRAEUS_ARTS if row[0] == ASTRAEUS else (0,))])
     entries = np.array(rows, dtype=np.int64).reshape(-1, 4)
-    if borders:
-        keep = np.isin(entries[:, 1], borders)
-        entries, copies = entries[keep], None if copies is None else copies[keep]
+    if kind in ("restricted", "all"):
+        keep = np.ones(len(entries), dtype=bool)
+        if borders is not None:
+            keep &= np.isin(entries[:, 1], borders)
+        if mutations is not None:
+            keep &= np.isin(entries[:, 2], mutations)
+        if min_rarity is not None:
+            keep &= np.array([catalog.card(int(card)).rarity >= min_rarity for card in entries[:, 0]], dtype=bool)
+        entries = entries[keep]
+        if tiers is not None:
+            reds = [r for r in reds if r[1] in tiers] or [(0, 0)]
+            blues = [b for b in blues if b[1] in tiers] or [(0, 0)]
     if not len(entries):
-        raise SystemExit("The pool is empty")
+        raise SystemExit(f"The {kind} pool is empty" + (" under these masks; allow more with --borders, --mutations, "
+                                                         "--min-rarity" if kind in ("restricted", "all") else ""))
     return Pool(entries, copies, reds, blues)
+
+
+def masks(borders, mutations, tiers):
+    """Command-line masks -> (border IDs, mutation indices, tiers); "all" -> None (no mask)."""
+    pick = lambda values, parse: None if [v.casefold() for v in values] == ["all"] else sorted({parse(v) for v in values})
+    return pick(borders, _border), pick(mutations, lambda m: MUTATION_NAMES.index(_mutation(m))), pick(tiers, _tier)
 
 
 ART_KEY = 289  # card_table row of Astraeus's art n is ART_KEY + n
@@ -334,9 +365,16 @@ def main():
     parser.add_argument("--enemy-red")
     parser.add_argument("--enemy-blue")
     parser.add_argument("--enemies", type=int, help="generate this many broad enemies instead of --enemy")
-    parser.add_argument("--enemy-pool", choices=("own", "restricted", "all"), help="pool for --enemies (default: --pool)")
-    parser.add_argument("--pool", choices=("own", "restricted", "all"), default="restricted")
-    parser.add_argument("--borders", nargs="+", help=f"allowed borders, from {' '.join(BORDERS)}")
+    pools = ("own", "custom", "restricted", "all")
+    parser.add_argument("--enemy-pool", choices=pools, help="pool for --enemies (default: --pool)")
+    parser.add_argument("--pool", choices=pools, default="restricted")
+    parser.add_argument("--borders", nargs="+", default=["none"], help=f"allowed borders (default none), from "
+                        f"{' '.join(BORDERS)}, or all")
+    parser.add_argument("--mutations", nargs="+", default=["None"], help=f"allowed mutations (default None), from "
+                        f"{', '.join(MUTATION_NAMES)}, or all")
+    parser.add_argument("--support-tiers", nargs="+", default=["base"], help=f"allowed support tiers, red and blue "
+                        f"(default base), from {' '.join(TIERS)}, or all")
+    parser.add_argument("--min-rarity", help="leave out cards less rare than this card rarity (1 in N, e.g. 5000, 2.5M)")
     parser.add_argument("--no-limited", action="store_true", help="restricted pool without its Limited exceptions")
     parser.add_argument("--counters", type=int, default=32)
     parser.add_argument("--restarts", type=int, default=64, help="candidates ascended per enemy")
@@ -354,18 +392,22 @@ def main():
     if (args.enemy is None) == (args.enemies is None):
         parser.error("give either --enemy or --enemies")
     catalog = load_catalog()
-    borders = [BORDERS.index(b) + 1 if b in BORDERS else int(b) for b in args.borders] if args.borders else None
+    mask = dict(zip(("borders", "mutations", "tiers"), masks(args.borders, args.mutations, args.support_tiers)),
+                min_rarity=parse_rarity(args.min_rarity) if args.min_rarity else None)
     classifier = Classifier(args.checkpoint, args.device)
     settings = Settings(steps=args.steps, temperature=args.temperature, nearest=args.nearest, both_orders=not args.first_only)
-    space = SlotSpace(classifier, make_pool(catalog, args.pool, borders, limited=not args.no_limited))
+    space = SlotSpace(classifier, make_pool(catalog, args.pool, limited=not args.no_limited, **mask))
     if args.enemy:
         enemies = [parse_side(catalog, args.enemy, args.enemy_red, args.enemy_blue)]
     else:
         enemy_pool = args.enemy_pool or args.pool
         enemy_space = space if enemy_pool == args.pool else SlotSpace(
-            classifier, make_pool(catalog, enemy_pool, borders, limited=not args.no_limited))
+            classifier, make_pool(catalog, enemy_pool, limited=not args.no_limited, **mask))
         enemies = broad_enemies(enemy_space, args.enemies, settings=settings, seed=args.seed)
-    report = {"checkpoint_step": classifier.metadata.get("step"), "pool": args.pool, "matchups": []}
+    report = {"checkpoint_step": classifier.metadata.get("step"), "pool": args.pool,
+              "masks": {"borders": args.borders, "mutations": args.mutations, "support_tiers": args.support_tiers,
+                        "min_rarity": args.min_rarity},
+              "matchups": []}
     for index, enemy in enumerate(enemies):
         found = counters(space, enemy, count=args.counters, restarts=args.restarts, settings=settings, seed=args.seed + index)
         checked = verify([team for team, _, _ in found], enemy, args.workers, args.seed) if not args.no_verify else None

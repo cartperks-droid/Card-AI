@@ -11,6 +11,13 @@ Searches read it instead of guessing the collection from screenshots. Every chan
     python -m card_engine.deck remove-support Desmond --tier Platinum
     python -m card_engine.deck list
 
+The custom pool is a second list in the same format, for suggestions tailored to someone else's collection (the
+generator's --pool custom). Put --custom before the command; reset empties it, copy-deck starts it from your deck:
+
+    python -m card_engine.deck --custom reset
+    python -m card_engine.deck --custom copy-deck
+    python -m card_engine.deck --custom add "Vampire Lord" --border GaPl
+
 Cards and supports can be named (any unambiguous part of the name, case-insensitive) or given by ID.
 Borders: none, Pl, Cr, CrPl, Ru, RuPl, RuCr, RuCrPl, Ga, GaPl, GaCr, GaCrPl, GaRu, GaRuPl, GaRuCr, GaRuCrPl.
 Support tiers: base, Platinum, Crystal, Ruby, Galaxy (or 1-5). Mutations: None, Storm, Snow, Aurora, Shroud,
@@ -28,6 +35,8 @@ from .mutations import MUTATION_NAMES
 ROOT = Path(__file__).resolve().parents[1]
 DECK_FILE = ROOT / "data" / "my_deck.json"
 DECK_DOC = ROOT / "docs" / "my_deck.md"
+CUSTOM_FILE = ROOT / "data" / "custom_pool.json"
+CUSTOM_DOC = ROOT / "docs" / "custom_pool.md"
 BORDERS = ("none", "Pl", "Cr", "CrPl", "Ru", "RuPl", "RuCr", "RuCrPl", "Ga", "GaPl", "GaCr", "GaCrPl",
            "GaRu", "GaRuPl", "GaRuCr", "GaRuCrPl")  # border ID = index + 1
 TIERS = ("base", "Platinum", "Crystal", "Ruby", "Galaxy")  # tier = index + 1
@@ -38,19 +47,21 @@ def load(path=DECK_FILE):
     return json.loads(path.read_text()) if path.exists() else {"cards": [], "supports": []}
 
 
-def save(deck, catalog, path=DECK_FILE, doc=DECK_DOC):
+def save(deck, catalog, path=DECK_FILE, doc=DECK_DOC, title="My deck"):
     deck["cards"].sort(key=lambda e: (e["card"], e["border"], e["mutation"]))
     deck["supports"].sort(key=lambda e: (e["color"], e["support"], e["tier"]))
     Path(path).parent.mkdir(parents=True, exist_ok=True)
     Path(path).write_text(json.dumps(deck, indent=1, ensure_ascii=False) + "\n")
-    Path(doc).write_text(render(deck, catalog))
+    Path(doc).write_text(render(deck, catalog, title))
 
 
-def render(deck, catalog):
-    lines = ["# My deck", "",
-             "These are the cards and supports you own. Searches use them as your collection. "
-             "Edit with `python -m card_engine.deck` (see `python -m card_engine.deck --help`); this page is regenerated "
-             "after every change.", "",
+def render(deck, catalog, title="My deck"):
+    intro = ("These are the cards and supports you own. Searches use them as your collection. "
+             "Edit with `python -m card_engine.deck`" if title == "My deck" else
+             "A custom pool for suggestions tailored to one collection (`generate --pool custom`). "
+             "Edit with `python -m card_engine.deck --custom`")
+    lines = [f"# {title}", "",
+             intro + " (see `python -m card_engine.deck --help`); this page is regenerated after every change.", "",
              f"## Cards ({sum(e['count'] for e in deck['cards'])})", "",
              "| Pack | Card | ID | Border | Mutation | Count |", "|---|---|---|---|---|---|"]
     pack_order = {name: i for i, name in enumerate(
@@ -184,6 +195,7 @@ def owned_supports(deck):
 def main(argv=None):
     parser = argparse.ArgumentParser(prog="python -m card_engine.deck", description=__doc__,
                                      formatter_class=argparse.RawDescriptionHelpFormatter)
+    parser.add_argument("--custom", action="store_true", help="edit the custom pool instead of your deck")
     commands = parser.add_subparsers(dest="command", required=True)
     p = commands.add_parser("add", help="add a card")
     p.add_argument("card")
@@ -204,9 +216,14 @@ def main(argv=None):
     p.add_argument("--tier")
     p.add_argument("--count", type=int)
     commands.add_parser("list", help="print the deck")
+    commands.add_parser("reset", help="empty the custom pool (--custom only)")
+    commands.add_parser("copy-deck", help="replace the custom pool with your deck (--custom only)")
     args = parser.parse_args(argv)
+    path, doc, title = (CUSTOM_FILE, CUSTOM_DOC, "Custom pool") if args.custom else (DECK_FILE, DECK_DOC, "My deck")
+    if args.command in ("reset", "copy-deck") and not args.custom:
+        parser.error(f"{args.command} only applies to the custom pool: add --custom")
     catalog = load_catalog()
-    deck = load()
+    deck = load(path)
     if args.command == "add":
         e = add_card(deck, catalog, args.card, _border(args.border), _mutation(args.mutation), args.count)
         message = f"Added {args.count} x {e['name']} ({BORDERS[e['border'] - 1]}, {e['mutation']}); now {e['count']}"
@@ -220,10 +237,16 @@ def main(argv=None):
     elif args.command == "remove-support":
         name = remove_support(deck, catalog, args.support, _tier(args.tier) if args.tier else None, args.count)
         message = f"Removed {name}"
+    elif args.command == "reset":
+        deck = {"cards": [], "supports": []}
+        message = "Custom pool emptied"
+    elif args.command == "copy-deck":
+        deck = load(DECK_FILE)
+        message = f"Custom pool set to your deck ({sum(e['count'] for e in deck['cards'])} cards)"
     else:
-        sys.stdout.write(render(deck, catalog))
+        sys.stdout.write(render(deck, catalog, title))
         return
-    save(deck, catalog)
+    save(deck, catalog, path, doc, title)
     print(message)
 
 

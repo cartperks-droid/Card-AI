@@ -86,6 +86,29 @@ class GeneratorTests(unittest.TestCase):
         self.assertFalse(generate._allowed(space, [0, 0, 1, 1]))
         self.assertTrue(generate._allowed(space, [0, 1, 1, 1]))
 
+    def test_masks_apply_to_every_pool(self):
+        borders, mutations, tiers = generate.masks(["none"], ["None"], ["base"])  # the defaults: rare options off
+        self.assertEqual((borders, mutations, tiers), ([1], [0], [1]))
+        self.assertEqual(generate.masks(["all"], ["All"], ["all"]), (None, None, None))
+        self.assertEqual(generate.masks(["Pl", "none"], ["Storm"], ["Platinum", "5"]), ([1, 2], [1], [2, 5]))
+        pool = generate.make_pool(self.catalog, "all", borders=[1, 2], mutations=[0, 1], tiers=[1])
+        self.assertTrue(set(pool.entries[:, 1]) == {1, 2} and set(pool.entries[:, 2]) == {0, 1})
+        self.assertTrue(all(tier == 1 for _, tier in pool.reds + pool.blues))
+        deck = {"cards": [{"card": 1, "border": 1, "mutation": "None", "count": 1},
+                          {"card": 3, "border": 2, "mutation": "Storm", "count": 3}],
+                "supports": [{"color": "red", "support": 4, "tier": 5, "count": 1, "name": "Stormcaller"}]}
+        path = Path(self.temp.name) / "custom.json"
+        path.write_text(__import__("json").dumps(deck))
+        # a deck overrides the masks: the custom pool is used as it is
+        pool = generate.make_pool(self.catalog, "custom", deck_path=path, borders=[1], mutations=[0], tiers=[1],
+                                  min_rarity=1e12)
+        self.assertEqual((pool.entries.tolist(), pool.copies.tolist()), ([[1, 1, 0, 0], [3, 2, 1, 0]], [1, 3]))
+        self.assertEqual(pool.reds, [(4, 5)])
+        rare = generate.make_pool(self.catalog, "restricted", borders=[1], min_rarity=1e9)
+        self.assertTrue(len(rare.entries) and all(self.catalog.card(int(c)).rarity >= 1e9 for c in rare.entries[:, 0]))
+        with self.assertRaises(SystemExit):
+            generate.make_pool(self.catalog, "all", min_rarity=1e15)  # rarer than every card
+
 
 if __name__ == "__main__":
     unittest.main()

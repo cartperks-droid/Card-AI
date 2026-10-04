@@ -22,7 +22,7 @@ This project simulates a Roblox "Snap!"-style card game and trains an AI to pred
 - `card_engine/teams.py`: teams by name: `"Name[@Border][/Mutation]"` cards, `"Name[@Tier]"` supports.
 - `card_engine/model/` has two transformers: a description (language) encoder and a strategic encoder. The head gives **two outcomes, A win and B win. There are no ties**: a draw (both sides wiped out, or his 2,000-turn cap) counts as the attacker A's loss.
 - Player tools:
-  - `card_engine/deck.py`: the user's own collection (`data/my_deck.json`).
+  - `card_engine/deck.py`: the user's own collection (`data/my_deck.json`), and with `--custom` the custom pool (`data/custom_pool.json`) for suggestions tailored to one collection.
   - `card_engine/restricted.py`: player-base availability (`data/restricted_deck.json`).
   - `card_engine/ownership.py`: team-ownership likelihood (copy counts, a 2-D independence parameter, a progression mixture).
   - `card_engine/availability.py`: weather-availability rules.
@@ -55,7 +55,8 @@ python -m card_engine.training.train --batch-size 512 --weight-decay 0.05 --drop
 - **Grokking:** probes (fixed training and validation subsets, plus the weight norm) are logged. The dataset keeps growing.
 - **Generator** (`training/generate.py`; built 2026-10-03, its results are only as good as the classifier):
   - It starts from noise in the slot space and runs gradient ascent on the frozen classifier toward a "win = 1" target. Weights never change.
-  - Card, border and mutation are decoded by an exact factorised nearest-k match, filtered to a pool: own deck, restricted deck, or everything.
+  - Card, border and mutation are decoded by an exact factorised nearest-k match, filtered to a pool: own deck, custom pool, restricted deck, or everything.
+  - Masks (user, 2026-10-04): borderless, unmutated and base-tier supports by default, plus an optional minimum card rarity. Each is widened on request. They narrow the open pools only; cards put in a deck override them.
   - A commitment penalty and an entropy check stop slots blurring between several cards.
   - Enemies are generated broadly (high temperature); 32 counters are generated tightly; the simulator verifies every team.
 - **Label storage:** every shard lives in `data/labels/store/`, stamped with a rules snapshot ID (`training/flags.py`).

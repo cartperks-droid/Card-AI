@@ -66,8 +66,9 @@
 
 ## Generator (`card_engine/training/generate.py`)
 ```sh
-../.venv/bin/python -m card_engine.training.generate --enemy "Immortal Witch" Archer "Good Boy" Set --pool restricted --borders none
-../.venv/bin/python -m card_engine.training.generate --enemies 4 --pool restricted --borders none --output counters.json
+../.venv/bin/python -m card_engine.training.generate --enemy "Immortal Witch" Archer "Good Boy" Set --pool restricted
+../.venv/bin/python -m card_engine.training.generate --enemies 4 --pool restricted --borders all --support-tiers all --output counters.json
+../.venv/bin/python -m card_engine.training.generate --enemy Odin Kira Set Archer --pool custom
 ```
 - **Slot space:** each of the 4 slots is three vectors, one per factor of a card token. The card factor is description + pack + classes + identity; the others are the border and mutation embeddings. Each side also has a distribution over the pool's supports. Everything starts from noise.
 - **Ascent:** Adam maximises the classifier's log win probability, averaged over attacking first and defending (`--first-only` for one order). Weights never change.
@@ -76,7 +77,17 @@
 - **Decoding:** an exact factorised nearest-k match over the pool. Each slot keeps its 3 nearest entries and each colour its 2 most likely supports. The classifier scores every combination exactly, and each candidate keeps its best.
 - **Counters:** 64 candidates per enemy (`--restarts`). The best 32 distinct teams by the model (`--counters`) are verified by the engine in both turn orders and sorted by the engine's result.
 - **Enemies:** `--enemy` names one. `--enemies N` generates N broad ones: each is ascended against a random pool opponent, then decoded by sampling at temperature 1.
-- **Pools:** `own` uses your deck with copy counts. `restricted` uses the player base's cards and borders, without mutations. `all` uses everything. `--borders none` keeps tests borderless (user).
+- **Pools:**
+  - `own`: your deck (`python -m card_engine.deck`), with copy counts.
+  - `custom`: a second deck-format list for suggestions tailored to one collection, changed on the fly with `python -m card_engine.deck --custom ...`. `reset` empties it and `copy-deck` starts it from your deck.
+  - `restricted`: the player base's cards and borders, without mutations.
+  - `all`: everything.
+- **Masks** (user, 2026-10-04): the pools keep everything, but the generator leaves rare options out unless asked. They narrow `restricted` and `all`, for the counters and for `--enemies`:
+  - `--borders`: `none` by default; a list (`none Pl Cr`) or `all`.
+  - `--mutations`: `None` by default; a list (`None Storm`) or `all`.
+  - `--support-tiers`: `base` by default, red and blue alike, since supports have no index to price them; a list or `all`.
+  - `--min-rarity`: leaves out cards less rare than this card rarity (1 in N: `5000`, `2.5M`, `30T`).
+  - A deck overrides the masks: `own` and `custom` are used as they are, supports included.
 
 ## Validation metrics
 - `accuracy`: how often the model picks the most frequent outcome.

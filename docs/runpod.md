@@ -48,6 +48,7 @@ python3 -m card_engine.training.predict --checkpoint data/training_pod/model.che
 python3 -m card_engine.training.generate --checkpoint data/training_pod/model.checkpoint \
     --enemy "Immortal Witch" Archer "Good Boy" Set --pool own
 ```
+Generator masks (borders, mutations, support tiers, minimum rarity) and the custom pool are described in `docs/training.md`.
 `best.checkpoint` is the lowest validation KL so far; `model.checkpoint` is the latest. Team syntax is in `card_engine/teams.py`; both tools are described in `docs/training.md`.
 
 ## Restarting after the pod was stopped
