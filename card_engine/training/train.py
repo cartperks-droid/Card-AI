@@ -123,8 +123,8 @@ def load_split(directory, device, release=None, pack=False):
     hard-example battles); training draws a set share of each batch from them (train's hard_fraction).
 
     Every row also carries `favourite`, the stat favourite (stat_favourite): upsets are rows it did not win.
-    Shards are read and checked once, then cached: a reload reads only new shards, and rechecks the others only
-    when the rules change. Card fields stay int16 as stored (a quarter of int64's memory); Inputs widens each batch.
+    Shards are read and checked once, then cached: a reload reads only new shards (by name: a shard file is never
+    rewritten), and rechecks the others only when the rules change. Card fields stay int16 as stored (a quarter of int64's memory); Inputs widens each batch.
     `release` runs just before the tensors are built, once rows are known to exist: the trainer drops its old tensors
     there, so a reload never holds two copies of the store at once.
 
@@ -141,8 +141,11 @@ def load_split(directory, device, release=None, pack=False):
     if pack and not _SHARD_CACHE:
         _read_packs(directory, rules)
     paths, started = sorted(shard_paths(directory)), time.time()
-    stale = [(path, path.stat().st_mtime) for path in paths]
-    stale = [(path, mtime) for path, mtime in stale if (_SHARD_CACHE.get(path) or (None, None))[:2] != (mtime, rules)]
+    # A shard is written once under a new name (labels, hard: atomic renames, seeds never reused), so a cached shard
+    # under the current rules is not opened or even dated again; on the pod's slow disk dating 76k files every
+    # reload left the GPU idle.
+    stale = [path for path in paths if (_SHARD_CACHE.get(path) or (None, None))[1] != rules]
+    stale = [(path, path.stat().st_mtime) for path in stale]
     # A first load reads tens of thousands of shards: worker processes share it (pod, 2026-10-05: 75,727 shards took
     # about 40 minutes in one process, torch spreading each shard's small calculation over every core). A reload's
     # few new shards are read here. Either way torch uses one thread per shard.
@@ -349,6 +352,10 @@ def train(*, steps=None, batch_size=512, lr=3e-4, warmup=1000, weight_decay=0.05
     cheese decks moved by 0.35 in 1,000 steps); the average moves slowly, so predict, generate and hard should read
     it. Each evaluation scores it on the validation probe and the hard examples ("ema" in the log)."""
     device = device or ("cuda" if torch.cuda.is_available() else "mps" if torch.backends.mps.is_available() else "cpu")
+    if str(device).startswith("cuda"):
+        # TF32 tensor cores for float32 matrix products (PyTorch keeps them off by default): the pod's 8-layer run
+        # did about 5,100 battles/s without them, two-thirds of what the 4090's 4-layer speed predicted.
+        torch.set_float32_matmul_precision("high")
     run_dir = Path(run_dir)
     run_dir.mkdir(parents=True, exist_ok=True)
     model_path, state_path, log_path = run_dir / "model.checkpoint", run_dir / "trainer.pt", run_dir / "log.jsonl"
