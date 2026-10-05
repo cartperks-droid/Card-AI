@@ -205,7 +205,10 @@ static void count_op(Runtime *rt) { if (++rt->ops > MAXOPS) engine_overflow(rt);
 static void enter(Runtime *rt) { count_op(rt); if (++rt->depth > MAXDEPTH) engine_overflow(rt); }
 
 // withAbility: run with the card's ability temporarily replaced.
-#define WITH_ABILITY(c, name, stmt) do { int prev_ = CARD(c)->abilityOverride; CARD(c)->abilityOverride = (name); stmt; CARD(c)->abilityOverride = prev_; } while (0)
+// Each borrowed ability counts toward MAXDEPTH: a Pandora's Box or Heroes card that gained its own ability re-enters
+// itself forever (his engine ends in "Maximum call stack size exceeded"; here it overflowed the C stack, 2026-10-05,
+// Pandora with Legends), so the battle is abandoned like any overflow.
+#define WITH_ABILITY(c, name, stmt) do { int prev_ = CARD(c)->abilityOverride; enter(rt); CARD(c)->abilityOverride = (name); stmt; CARD(c)->abilityOverride = prev_; rt->depth--; } while (0)
 
 static int random_battle_card(Runtime *rt) { return RANDOM_CARD_POOL[chance_pick(rt, NRANDOM_CARD_POOL)]; }
 static int random_constellar(Runtime *rt) { return CONSTELLAR_POOL[chance_pick(rt, NCONSTELLAR_POOL)]; }
