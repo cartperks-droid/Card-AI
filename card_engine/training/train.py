@@ -36,13 +36,15 @@ def latest_label_dir(root=SHARD_DIR):
 _SHARD_CACHE = {}  # path -> (mtime, rules, validation, rows): each shard is read and checked once per rules version
 
 
-def load_split(directory, device):
+def load_split(directory, device, release=None):
     """(train, validation) tensors of the rows still valid under the current rules (training.flags);
     validation = shards whose seed is divisible by VALIDATION_EVERY. Every row carries `hard` (1 for training.hard's
     hard-example battles); training draws a set share of each batch from them (train's hard_fraction).
 
     Shards are read and checked once, then cached: a reload reads only new shards, and rechecks the others only
     when the rules change. Card fields stay int16 as stored (a quarter of int64's memory); Inputs widens each batch.
+    `release` runs just before the tensors are built, once rows are known to exist: the trainer drops its old tensors
+    there, so a reload never holds two copies of the store at once.
     """
     from ..catalog import load_catalog
     from .flags import _pool_cards, entity_hashes, load_changes, valid_rows
@@ -77,6 +79,8 @@ def load_split(directory, device):
             split["val" if cached[2] else "train"].append(cached[3])
     _SHARD_CACHE.clear()
     _SHARD_CACHE.update(seen)  # shards that disappeared, or old rules' entries, are dropped
+    if release is not None and split["train"]:
+        release()
     out = {name: {key: torch.as_tensor(np.concatenate([part[key] for part in parts]), device=device) for key in parts[0]}
            if parts else None for name, parts in split.items()}
     return out["train"], out["val"]
@@ -303,13 +307,20 @@ def train(*, steps=None, batch_size=512, lr=3e-4, warmup=1000, weight_decay=0.05
             table = card_table(model, tokens)
         model.train()
         return table
+    def release():
+        """Drop the loaded tensors in place (a reload's new rows are about to be built), and hand the memory back."""
+        for rows in (train_rows, val_rows):
+            if rows:
+                rows.clear()
+        if device == "mps":
+            torch.mps.empty_cache()
     generator = torch.Generator(device="cpu").manual_seed(step)
     started, last = time.time(), time.time()
     try:
         while steps is None or step < steps:
             if step and step % reload_every == 0:  # new shards, or new rules
                 label_dir = latest_label_dir(label_root)
-                fresh = load_split(label_dir, device)
+                fresh = load_split(label_dir, device, release=release)
                 if fresh[0] is None:  # every row held back (an undeclared engine change): keep the rows already loaded
                     print(json.dumps({"step": step, "labels_held_back": "no rows are valid under the current rules; "
                                       "training continues on the loaded rows until the change is declared (flags status)"}),

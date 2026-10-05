@@ -226,7 +226,9 @@ class TrainingTests(unittest.TestCase):
         for seed in (1, 25):  # 25 is a validation shard
             labels._worker((seed, 6, str(directory), snapshot(), False, Path(self.temp.name) / "tb2"))
         labels._worker((25, 6, str(directory), snapshot(), True))  # tower battles, read alongside
-        train_rows, val_rows = load_split(directory, "cpu")
+        released = []
+        train_rows, val_rows = load_split(directory, "cpu", release=lambda: released.append(True))
+        self.assertEqual(released, [True])  # a reload drops the old tensors before building new ones
         self.assertTrue((val_rows["fixed_side"] >= 0).any())
         self.assertEqual(set(train_rows["fixed_side"].tolist()), {-1})
         import json as _json
