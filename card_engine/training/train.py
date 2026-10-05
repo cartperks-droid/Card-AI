@@ -501,6 +501,8 @@ def train(*, steps=None, batch_size=512, lr=3e-4, warmup=1000, weight_decay=0.05
         for group, base in zip(optimizer.param_groups, (lr, language_lr or lr)):
             group["weight_decay"], group["base_lr"] = weight_decay, base
         step, best, warm_from = state["step"], state.get("best"), state.get("warm_from", 0)
+        if freeze_language_at is None:  # a restart keeps the run's freeze unless told otherwise (2026-10-05: one
+            freeze_language_at = state.get("freeze_language_at")  # that left it out unfroze the deep run's encoder)
     inputs = Inputs(device)
     tokens = inputs.data.description_tokens
     from .flags import snapshot
@@ -648,7 +650,8 @@ def train(*, steps=None, batch_size=512, lr=3e-4, warmup=1000, weight_decay=0.05
                 save_checkpoint(ema, ema_path, metadata={"step": step, "labels": rules_id, "ema_decay": ema_decay,
                                                          "objective": "A initiates; outcome frequencies"})
                 tmp = state_path.with_suffix(".tmp")
-                torch.save({"optimizer": optimizer.state_dict(), "step": step, "best": best, "warm_from": warm_from}, tmp)
+                torch.save({"optimizer": optimizer.state_dict(), "step": step, "best": best, "warm_from": warm_from,
+                            "freeze_language_at": freeze_language_at}, tmp)
                 tmp.replace(state_path)
     finally:
         log.close()
