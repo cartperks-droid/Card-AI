@@ -76,7 +76,48 @@ def _read_shard(item):
     return path, (mtime, rules, int(path.stem.split("_")[1]) % VALIDATION_EVERY == 0, rows)
 
 
-def load_split(directory, device, release=None):
+ROW_KEYS = (*FIELDS, *FIXED_FIELDS, "target", "hard", "favourite")
+
+
+def _packs(directory):
+    return Path(directory).parent / "packs"
+
+
+def _read_packs(directory, rules):
+    """Restore cache entries from packs written under these rules (see load_split's pack); packs written under other
+    rules are deleted."""
+    for pack in sorted(_packs(directory).glob("pack_*.npz")):
+        with np.load(pack) as data:  # uncompressed: large sequential reads
+            if str(data["rules"]) != rules:
+                pack.unlink()
+                continue
+            names, mtimes, validation, counts = data["names"], data["mtimes"], data["validation"], data["counts"]
+            arrays = {key: data[key] for key in ROW_KEYS}
+        offsets = np.cumsum(counts)[:-1]
+        parts = {key: np.split(value, offsets) for key, value in arrays.items()}
+        for i, name in enumerate(names):
+            path = Path(directory) / str(name)
+            if path not in _SHARD_CACHE:
+                _SHARD_CACHE[path] = (float(mtimes[i]), rules, bool(validation[i]), {key: parts[key][i] for key in ROW_KEYS})
+
+
+def _write_pack(directory, rules, entries):
+    """One uncompressed file holding these shards' checked rows, read back by _read_packs."""
+    folder = _packs(directory)
+    folder.mkdir(parents=True, exist_ok=True)
+    items = sorted(entries.items())
+    target = folder / f"pack_{time.strftime('%Y%m%d_%H%M%S')}.npz"
+    tmp = target.with_name("partial_" + target.name)
+    with open(tmp, "wb") as handle:
+        np.savez(handle, rules=np.array(rules), names=np.array([path.name for path, _ in items]),
+                 mtimes=np.array([entry[0] for _, entry in items], dtype=np.float64),
+                 validation=np.array([entry[2] for _, entry in items], dtype=bool),
+                 counts=np.array([len(entry[3]["target"]) for _, entry in items], dtype=np.int64),
+                 **{key: np.concatenate([entry[3][key] for _, entry in items]) for key in ROW_KEYS})
+    os.replace(tmp, target)
+
+
+def load_split(directory, device, release=None, pack=False):
     """(train, validation) tensors of the rows still valid under the current rules (training.flags);
     validation = shards whose seed is divisible by VALIDATION_EVERY. Every row carries `hard` (1 for training.hard's
     hard-example battles); training draws a set share of each batch from them (train's hard_fraction).
@@ -86,12 +127,19 @@ def load_split(directory, device, release=None):
     when the rules change. Card fields stay int16 as stored (a quarter of int64's memory); Inputs widens each batch.
     `release` runs just before the tensors are built, once rows are known to exist: the trainer drops its old tensors
     there, so a reload never holds two copies of the store at once.
+
+    pack: a load that reads at least PARALLEL_LOAD shards also writes them, checked, into one uncompressed file in
+    the label root's packs/ folder, and later loads (a restart) start from the packs written under the current rules,
+    reading only newer shards. On the pod, reading 76,657 small shard files took about 38 minutes whatever the CPU
+    did (2026-10-05): its disk is slow per file, fast for large files.
     """
     from ..catalog import load_catalog
     from .flags import entity_hashes, load_changes
     catalog = load_catalog()
     current, changes = entity_hashes(catalog), load_changes()
     rules = json.dumps([sorted(current.items()), changes])
+    if pack and not _SHARD_CACHE:
+        _read_packs(directory, rules)
     paths, started = sorted(shard_paths(directory)), time.time()
     stale = [(path, path.stat().st_mtime) for path in paths]
     stale = [(path, mtime) for path, mtime in stale if (_SHARD_CACHE.get(path) or (None, None))[:2] != (mtime, rules)]
@@ -117,6 +165,9 @@ def load_split(directory, device, release=None):
             fresh = dict(map(_read_shard, stale))
     finally:
         torch.set_num_threads(threads)
+    if pack and len(fresh) >= PARALLEL_LOAD:
+        _write_pack(directory, rules, fresh)
+        print(json.dumps({"packed_shards": len(fresh), "seconds": round(time.time() - started)}), flush=True)
     split, seen = {"train": [], "val": []}, {}
     for path in paths:
         cached = fresh.get(path) or _SHARD_CACHE[path]
@@ -278,7 +329,7 @@ def focus_rows(rows):
 
 def train(*, steps=None, batch_size=512, lr=3e-4, warmup=1000, weight_decay=0.05, dropout=0.1, freeze_language_at=None,
           eval_every=1000, init_from=None, language_lr=None, hard_fraction=0.05, layers=None, language_from=None,
-          focus_until=None, ema_decay=0.999,
+          focus_until=None, ema_decay=0.999, pack_labels=False,
           checkpoint_every=1000, reload_every=1000, device=None, run_dir=RUN_DIR, label_root=SHARD_DIR):
     """Train in run_dir, resuming its model and optimizer if both are there. Otherwise init_from (a model checkpoint,
     e.g. one downloaded from another machine) gives the starting weights and step, with a fresh optimizer whose learning
@@ -346,7 +397,7 @@ def train(*, steps=None, batch_size=512, lr=3e-4, warmup=1000, weight_decay=0.05
     tokens = inputs.data.description_tokens
     from .flags import snapshot
     label_dir = latest_label_dir(label_root)
-    train_rows, val_rows = load_split(label_dir, device)
+    train_rows, val_rows = load_split(label_dir, device, pack=pack_labels)
     if train_rows is None:
         raise SystemExit("No labels are valid under the current rules: see `python -m card_engine.training.flags status`")
     hard_rows, focus = train_rows["hard"].nonzero()[:, 0], focus_rows(train_rows)  # recomputed on each reload
@@ -395,7 +446,7 @@ def train(*, steps=None, batch_size=512, lr=3e-4, warmup=1000, weight_decay=0.05
         while steps is None or step < steps:
             if step and step % reload_every == 0:  # new shards, or new rules
                 label_dir = latest_label_dir(label_root)
-                fresh = load_split(label_dir, device, release=release)
+                fresh = load_split(label_dir, device, release=release, pack=pack_labels)
                 if fresh[0] is None:  # every row held back (an undeclared engine change): keep the rows already loaded
                     print(json.dumps({"step": step, "labels_held_back": "no rows are valid under the current rules; "
                                       "training continues on the loaded rows until the change is declared (flags status)"}),
@@ -498,6 +549,9 @@ if __name__ == "__main__":
                         "from, frozen (default --freeze-language-at 0)")
     parser.add_argument("--focus-until", type=int, help="step until which batches hold only upsets, fixed-stat "
                         "battles and hard examples (a new model's first data)")
+    parser.add_argument("--pack-labels", action="store_true",
+                        help="keep the checked labels in large pack files too, so a restart reads few files (for disks "
+                        "slow per file, like the pod's)")
     parser.add_argument("--ema-decay", type=float, default=0.999,
                         help="decay of the weight average saved as ema.checkpoint (about 1 / (1 - decay) steps)")
     parser.add_argument("--init-from", help="model checkpoint to start from when the run directory has no trainer state "
@@ -511,4 +565,5 @@ if __name__ == "__main__":
     train(steps=parsed.steps, batch_size=parsed.batch_size, lr=parsed.lr, device=parsed.device, reload_every=parsed.reload_every,
           weight_decay=parsed.weight_decay, dropout=parsed.dropout, freeze_language_at=parsed.freeze_language_at,
           eval_every=parsed.eval_every, init_from=parsed.init_from, language_lr=parsed.language_lr, hard_fraction=parsed.hard_fraction,
-          layers=parsed.layers, language_from=parsed.language_from, focus_until=parsed.focus_until, ema_decay=parsed.ema_decay, run_dir=parsed.run_dir)
+          layers=parsed.layers, language_from=parsed.language_from, focus_until=parsed.focus_until, ema_decay=parsed.ema_decay, pack_labels=parsed.pack_labels,
+          run_dir=parsed.run_dir)

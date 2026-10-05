@@ -19,6 +19,9 @@ State on 2026-10-04 and how the pieces fit. Read this first when picking the run
   - After a code change: `bash scripts/pod_sync.sh <ip> <port> code`. The running trainer keeps its loaded code until restarted.
 - The pod reloads the label store every 1,000 steps (about 40 s), so synced shards reach training within about 6 minutes.
 
+## Loading labels on the pod
+The pod's `/workspace` disk is slow per file: reading 76,657 shard files took about 38 minutes (2026-10-05) whatever the CPU did, against 5 minutes on the Mac. Start the pod's trainer with `--pack-labels`: the first load also writes the checked rows into one large file in `data/labels/packs/`, and every later restart reads that file plus only the shards that are newer. Packs written under older rules are deleted automatically.
+
 ## Connecting
 `ssh root@<ip> -p <port> -i ~/.ssh/id_ed25519`. The IP and port change whenever the pod restarts: copy them from the RunPod Connect tab. Claude's cloud sessions cannot reach the pod (their network blocks raw SSH), so commands run from the Mac.
 
