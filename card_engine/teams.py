@@ -15,8 +15,8 @@ FIELDS = ("cards", "borders", "mutations", "arts", "red", "red_tier", "blue", "b
 ASTRAEUS = 56
 # At most one copy per team (user, 2026-10-04): Fate Seamstress and Parallax (a second copy doesn't work; DaddyDrago's
 # tower tool limits both too), Time Lord Stryx (Better Days doesn't work twice; his engine lets two copies revive
-# each other in a loop), Hades (user, 2026-10-05: two copies don't work).
-SINGLE_COPY = {240: "Fate Seamstress", 65: "Parallax", 250: "Time Lord Stryx", 49: "Hades"}
+# each other in a loop).
+SINGLE_COPY = {240: "Fate Seamstress", 65: "Parallax", 250: "Time Lord Stryx"}
 # Astraeus's arts (input "arts": index + 1, 0 = not Astraeus). Each is a separate card with one Constellar ability.
 ASTRAEUS_ARTS = ("scorpio", "aquarius", "virgo", "gemini", "sagittarius", "taurus", "cancer")
 
