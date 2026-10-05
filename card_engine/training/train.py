@@ -12,7 +12,10 @@ import copy
 import functools
 import json
 import math
+import multiprocessing as mp
+import os
 import time
+from concurrent.futures import ProcessPoolExecutor
 from pathlib import Path
 
 import numpy as np
@@ -38,6 +41,41 @@ def latest_label_dir(root=SHARD_DIR):
 _SHARD_CACHE = {}  # path -> (mtime, rules, validation, rows): each shard is read and checked once per rules version
 
 
+PARALLEL_LOAD = 2000  # a load with at least this many shards to read uses worker processes
+_READER = None  # (catalog, entity hashes, declared changes, rules key, pool cards): set by _reader_init
+
+
+def _reader_init(context, catalog=None):
+    global _READER
+    from ..catalog import load_catalog
+    from .flags import _pool_cards
+    torch.set_num_threads(1)
+    catalog = catalog or load_catalog()
+    current, changes, rules = context
+    _READER = (catalog, current, changes, rules, _pool_cards(catalog))
+
+
+def _read_shard(item):
+    """(path, cache entry) for one shard: its rows still valid under the rules in _READER."""
+    from .flags import valid_rows
+    path, mtime = item
+    catalog, current, changes, rules, pool_cards = _READER
+    with np.load(path) as shard:
+        arrays = {key: shard[key] for key in (*FIELDS, "probs")}
+        arrays.update(fixed_arrays(shard, len(arrays["probs"])))
+        snapshot_id = str(shard["snapshot"])
+    mask = valid_rows(arrays, snapshot_id, current, catalog=catalog, changes=changes, pool_cards=pool_cards)
+    finished = arrays["probs"][:, :2].sum(1)  # A win, B win (ties cannot happen; unfinished mass is dropped)
+    keep = mask & (finished > 0) & possible_rows(arrays["cards"])
+    rows = {key: arrays[key][keep].astype(np.int16) for key in FIELDS}
+    rows.update({key: arrays[key][keep] for key in FIXED_FIELDS})
+    rows["target"] = (arrays["probs"][keep, :2] / finished[keep, None]).astype(np.float32)
+    rows["hard"] = np.full(int(keep.sum()), path.name.startswith("hard_"), dtype=np.int8)
+    rows["favourite"] = stat_favourite({key: torch.as_tensor(value) for key, value in rows.items()
+                                        if key != "target"}).numpy().astype(np.int8)
+    return path, (mtime, rules, int(path.stem.split("_")[1]) % VALIDATION_EVERY == 0, rows)
+
+
 def load_split(directory, device, release=None):
     """(train, validation) tensors of the rows still valid under the current rules (training.flags);
     validation = shards whose seed is divisible by VALIDATION_EVERY. Every row carries `hard` (1 for training.hard's
@@ -50,37 +88,38 @@ def load_split(directory, device, release=None):
     there, so a reload never holds two copies of the store at once.
     """
     from ..catalog import load_catalog
-    from .flags import _pool_cards, entity_hashes, load_changes, valid_rows
+    from .flags import entity_hashes, load_changes
     catalog = load_catalog()
     current, changes = entity_hashes(catalog), load_changes()
     rules = json.dumps([sorted(current.items()), changes])
-    pool_cards = None
+    paths, started = sorted(shard_paths(directory)), time.time()
+    stale = [(path, path.stat().st_mtime) for path in paths]
+    stale = [(path, mtime) for path, mtime in stale if (_SHARD_CACHE.get(path) or (None, None))[:2] != (mtime, rules)]
+    # A first load reads tens of thousands of shards: worker processes share it (pod, 2026-10-05: 75,727 shards took
+    # about 40 minutes in one process, torch spreading each shard's small calculation over every core). A reload's
+    # few new shards are read here. Either way torch uses one thread per shard.
+    fresh = {}
+    threads = torch.get_num_threads()
+    torch.set_num_threads(1)
+    try:
+        context = (current, changes, rules)
+        if len(stale) >= PARALLEL_LOAD:
+            workers = min(32, os.cpu_count() or 1)
+            with ProcessPoolExecutor(workers, mp_context=mp.get_context("spawn"), initializer=_reader_init,
+                                     initargs=(context,)) as pool:
+                for done, (path, cached) in enumerate(pool.map(_read_shard, stale, chunksize=64), 1):
+                    fresh[path] = cached
+                    if done % 5000 == 0:
+                        print(json.dumps({"loading_shards": done, "of": len(stale), "seconds": round(time.time() - started)}),
+                              flush=True)
+        else:
+            _reader_init(context, catalog)
+            fresh = dict(map(_read_shard, stale))
+    finally:
+        torch.set_num_threads(threads)
     split, seen = {"train": [], "val": []}, {}
-    paths, read, started = sorted(shard_paths(directory)), 0, time.time()
     for path in paths:
-        mtime = path.stat().st_mtime
-        cached = _SHARD_CACHE.get(path)
-        if cached is None or cached[:2] != (mtime, rules):
-            validation = int(path.stem.split("_")[1]) % VALIDATION_EVERY == 0
-            with np.load(path) as shard:
-                arrays = {key: shard[key] for key in (*FIELDS, "probs")}
-                arrays.update(fixed_arrays(shard, len(arrays["probs"])))
-                snapshot_id = str(shard["snapshot"])
-            pool_cards = _pool_cards(catalog) if pool_cards is None else pool_cards
-            mask = valid_rows(arrays, snapshot_id, current, catalog=catalog, changes=changes, pool_cards=pool_cards)
-            finished = arrays["probs"][:, :2].sum(1)  # A win, B win (ties cannot happen; unfinished mass is dropped)
-            keep = mask & (finished > 0) & possible_rows(arrays["cards"])
-            rows = {key: arrays[key][keep].astype(np.int16) for key in FIELDS}
-            rows.update({key: arrays[key][keep] for key in FIXED_FIELDS})
-            rows["target"] = (arrays["probs"][keep, :2] / finished[keep, None]).astype(np.float32)
-            rows["hard"] = np.full(int(keep.sum()), path.name.startswith("hard_"), dtype=np.int8)
-            rows["favourite"] = stat_favourite({key: torch.as_tensor(value) for key, value in rows.items()
-                                                if key != "target"}).numpy().astype(np.int8)
-            cached = (mtime, rules, validation, rows)
-            read += 1
-            if read % 5000 == 0:  # a first load reads every shard (tens of thousands: minutes)
-                print(json.dumps({"loading_shards": read, "of": len(paths), "seconds": round(time.time() - started)}),
-                      flush=True)
+        cached = fresh.get(path) or _SHARD_CACHE[path]
         seen[path] = cached
         if len(cached[3]["target"]):
             split["val" if cached[2] else "train"].append(cached[3])
