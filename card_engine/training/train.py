@@ -386,6 +386,36 @@ def weight_norm(model):
     return math.sqrt(sum(float(p.detach().square().sum()) for p in model.parameters()))
 
 
+WATCH_FILE = Path(__file__).with_name("watch.json")
+
+
+def load_watch(path, device):
+    """Named battles scored at every evaluation beside the engine's answer (user, 2026-10-05): DaddyDrago's floor-105
+    cheese decks moved 0.08 -> 0.76 -> 0.02 between checks by hand while the summary metrics barely moved. Each entry:
+    "ally" (four cards), optional "red"/"blue" supports, and "tower": [floor, difficulty] (its fixed team and stats).
+    The ally attacks first. Returns (names, engine win chances, rows on the device)."""
+    from .. import tower
+    from ..catalog import load_catalog
+    from ..teams import parse_side, spec
+    from .predict import simulate
+    catalog = load_catalog()
+    entries = json.loads(Path(path).read_text())
+    names, engine, specs, fixed = [], [], [], []
+    for entry in entries:
+        ally = parse_side(catalog, entry["ally"], entry.get("red"), entry.get("blue"))
+        floor, level = entry["tower"]
+        enemy = tower.fixed_team(catalog, int(floor))
+        enemy.update(borders=[1] * 4, mutations=[0] * 4, red=0, red_tier=0, blue=0, blue_tier=0)
+        stats = tower.stats(int(floor), tower.difficulty(level))
+        (attack_first, _), _ = simulate(catalog, ally, enemy, enemy_stats=stats)
+        names.append(entry["name"]), engine.append(float(attack_first)), specs.append(spec(ally, enemy)), fixed.append(stats)
+    rows = {key: torch.tensor([s[key] for s in specs], device=device) for key in FIELDS}
+    rows["fixed_side"] = torch.ones(len(specs), dtype=torch.long, device=device)
+    rows["fixed_stats"] = torch.tensor([f[:2] for f in fixed], dtype=torch.float32, device=device)
+    rows["fixed_hp_mult"] = torch.tensor([int(f[2]) for f in fixed], device=device)
+    return names, engine, rows
+
+
 def focus_rows(rows):
     """Indices of the rows a new model learns first (user, 2026-10-04): upsets (the stat favourite lost), fixed-stat
     battles and hard examples, so "bigger stats win" is not learned before the abilities that overturn it."""
@@ -396,6 +426,7 @@ def focus_rows(rows):
 def train(*, steps=None, batch_size=512, lr=3e-4, warmup=1000, weight_decay=0.05, dropout=0.1, freeze_language_at=None,
           eval_every=1000, init_from=None, language_lr=None, hard_fraction=0.05, layers=None, language_from=None,
           focus_until=None, ema_decay=0.999, pack_labels=False, bf16=False, lr_decay=None, lr_floor=0.05,
+          watch=None,
           checkpoint_every=1000, reload_every=1000, device=None, run_dir=RUN_DIR, label_root=SHARD_DIR):
     """Train in run_dir, resuming its model and optimizer if both are there. Otherwise init_from (a model checkpoint,
     e.g. one downloaded from another machine) gives the starting weights and step, with a fresh optimizer whose learning
@@ -479,6 +510,7 @@ def train(*, steps=None, batch_size=512, lr=3e-4, warmup=1000, weight_decay=0.05
         raise SystemExit("No labels are valid under the current rules: see `python -m card_engine.training.flags status`")
     hard_rows, focus = train_rows["hard"].nonzero()[:, 0], focus_rows(train_rows)  # recomputed on each reload
     rules_id = snapshot()  # the current rules; probes and the best checkpoint reset when it changes
+    watched = load_watch(watch, device) if watch else None
     # Grokking probes: fixed subsets of the training and validation rows, so the curves stay comparable
     # (the full validation set grows with new shards and changes with the rules).
     probe_gen = torch.Generator(device="cpu").manual_seed(0)
@@ -595,6 +627,14 @@ def train(*, steps=None, batch_size=512, lr=3e-4, warmup=1000, weight_decay=0.05
                         record["ema"]["val_hard"] = {k: round(v, 4) for k, v in evaluate(ema, inputs, ema_table, part).items()
                                                      if k in ("kl", "accuracy", "upset_accuracy", "probabilistic_error")}
                     ema.eval()  # evaluate() leaves a model in training mode
+                    if watched is not None:  # the watch list: engine, live and averaged weights per battle
+                        names, engine, rows = watched
+                        with torch.no_grad():
+                            live = model.eval()(**inputs(rows, table)).float().softmax(-1)[:, 0].tolist()
+                            average = ema(**inputs(rows, ema_table)).float().softmax(-1)[:, 0].tolist()
+                        model.train()
+                        record["watch"] = [{"name": n, "engine": round(e, 3), "model": round(m, 3), "ema": round(a, 3)}
+                                           for n, e, m, a in zip(names, engine, live, average)]
                     kl = record["val"]["kl"]
                     if best is None or kl < best["kl"] or best.get("labels") != rules_id:
                         best = {"kl": kl, "step": step, "labels": rules_id}
@@ -633,6 +673,8 @@ if __name__ == "__main__":
                         "from, frozen (default --freeze-language-at 0)")
     parser.add_argument("--focus-until", type=int, help="step until which batches hold only upsets, fixed-stat "
                         "battles and hard examples (a new model's first data)")
+    parser.add_argument("--watch", default=str(WATCH_FILE),
+                        help="named battles scored at every evaluation beside the engine (JSON; '' for none)")
     parser.add_argument("--lr-decay", type=int, nargs=2, metavar=("FIRST", "LAST"),
                         help="cosine decay of the learning rate from step FIRST to step LAST (then held at --lr-floor)")
     parser.add_argument("--lr-floor", type=float, default=0.05, help="the decayed rate, as a fraction of --lr")
@@ -655,4 +697,5 @@ if __name__ == "__main__":
           weight_decay=parsed.weight_decay, dropout=parsed.dropout, freeze_language_at=parsed.freeze_language_at,
           eval_every=parsed.eval_every, init_from=parsed.init_from, language_lr=parsed.language_lr, hard_fraction=parsed.hard_fraction,
           layers=parsed.layers, language_from=parsed.language_from, focus_until=parsed.focus_until, ema_decay=parsed.ema_decay, pack_labels=parsed.pack_labels,
-          bf16=parsed.bf16, lr_decay=parsed.lr_decay, lr_floor=parsed.lr_floor, run_dir=parsed.run_dir)
+          bf16=parsed.bf16, lr_decay=parsed.lr_decay, lr_floor=parsed.lr_floor, watch=parsed.watch or None,
+          run_dir=parsed.run_dir)

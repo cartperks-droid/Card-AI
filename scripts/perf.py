@@ -45,3 +45,9 @@ if averaged:  # the weight average (ema.checkpoint) beside the live weights, on 
         print(f"{r['step']:<10,} {cell(live_probe, 'kl')}     {cell(ema_probe, 'kl')}  {cell(live_probe, 'probabilistic_error')}     "
               f"{cell(ema_probe, 'probabilistic_error')}  {cell(live_hard, 'kl')}    {cell(ema_hard, 'kl')}  "
               f"{cell(live_hard, 'upset_accuracy')}      {cell(ema_hard, 'upset_accuracy')}")
+watched = [json.loads(l) for l in lines[-200 * count:] if '"watch"' in l][-count:]
+if watched:  # the named battles of training/watch.json: the engine's answer, the live weights, their average
+    print("\nwatch list (ally win chance; engine / live / average)")
+    print("step       " + "  ".join(f"{w['name'][:22]:<22}" for w in watched[-1]["watch"]))
+    for r in watched:
+        print(f"{r['step']:<10,} " + "  ".join(f"{w['engine']:.2f} / {w['model']:.2f} / {w['ema']:.2f}    " for w in r["watch"]))

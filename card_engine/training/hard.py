@@ -13,7 +13,8 @@ evolution's teams are mostly one-change variants: 64 per enemy were memorised, 2
 others so the shards are not only extremes. Many enemies with few teams each, rather than the reverse.
 
 Enemies, half each:
-  - a tower floor (card_engine.tower): 1-105 at a random difficulty, its fixed team or random cards;
+  - a tower floor (card_engine.tower), weighted toward the top floors (a quarter on 95-105) and hard difficulties
+    (Normal 1 : Hard 1 : Extreme 2 : Hell 3 : Impossible 3), its fixed team or random cards;
   - random cards with stats HP = 10^U(2, 7.5), ATK = HP / 2 * 10^U(-0.5, 0.5).
 The enemy is side B; the candidate attacks first. Candidates: each card a stat-ignoring one with probability 1/2,
 else any card; borders, mutations and support tiers drawn per round (borderless, up to Crystal, or all borders;
@@ -29,6 +30,7 @@ chance the search reached. The trainer repeats hard rows
 
 import argparse
 import json
+import math
 import multiprocessing as mp
 import os
 import random
@@ -53,7 +55,11 @@ BORDER_SETS = ((1,), (1, 2, 3), tuple(range(1, 17)))  # borderless, up to Crysta
 def draw_enemy(rng, catalog):
     """(enemy side, fixed stats (HP, ATK, HP multiplier applies))."""
     if rng.random() < 0.5:
-        floor, level = rng.randint(1, tower.FLOORS), rng.choice(list(tower.DIFFICULTIES))
+        # Weighted toward the top floors and hardest difficulties, where cheese decks matter (2026-10-05: uniform
+        # floors made floor 105 Impossible about 1 enemy in 500, and the deep model rated Drago's decks there 0.02):
+        # floor = ceil(105 * u^(1/3)) puts a quarter of tower enemies on floors 95-105.
+        floor = max(1, math.ceil(tower.FLOORS * rng.random() ** (1 / 3)))
+        level = rng.choices(list(tower.DIFFICULTIES), weights=(1, 1, 2, 3, 3))[0]
         team = tower.fixed_team(catalog, floor)
         stats = tower.stats(floor, level)
     else:

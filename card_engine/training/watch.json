@@ -1,0 +1,7 @@
+[
+  {"name": "Drago 105 Fate", "ally": ["Fate Seamstress", "Judgement Day", "Parallax", "Robin Hood"], "blue": "Fate", "tower": [105, "Impossible"]},
+  {"name": "Drago 105 Storm Spirit", "ally": ["Fate Seamstress", "Judgement Day", "Parallax", "Robin Hood"], "blue": "Storm Spirit", "tower": [105, "Impossible"]},
+  {"name": "Drago 105 Guardian Angel", "ally": ["Fate Seamstress", "Judgement Day", "Parallax", "Robin Hood"], "blue": "Guardian Angel", "tower": [105, "Impossible"]},
+  {"name": "Drago 105 Berserker", "ally": ["Fate Seamstress", "Judgement Day", "Parallax", "Robin Hood"], "blue": "Berserker", "tower": [105, "Impossible"]},
+  {"name": "Drago 105 two Judgement Days", "ally": ["Parallax", "Judgement Day", "Judgement Day", "Robin Hood"], "blue": "Fate", "tower": [105, "Impossible"]}
+]
