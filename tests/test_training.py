@@ -203,6 +203,26 @@ class TrainingTests(unittest.TestCase):
         for name, value in source.description.state_dict().items():  # copied, then frozen
             self.assertTrue(torch.equal(value, model.description.state_dict()[name]), name)
 
+    def test_reload_appends_new_shards_in_place(self):
+        import numpy as np
+        from card_engine.training import train as trainer
+        directory = Path(self.temp.name) / "append" / "store"
+        directory.mkdir(parents=True)
+        for seed in (1, 2, 3, 4, 25):  # 24 training rows: a quarter spare holds one more shard
+            labels._worker((seed, 6, str(directory), snapshot(), True))
+        first, _ = load_split(directory, "cpu")
+        storage = first["target"].untyped_storage().data_ptr()
+        labels._worker((5, 6, str(directory), snapshot(), True))
+        second, val = load_split(directory, "cpu")
+        self.assertEqual(second["target"].untyped_storage().data_ptr(), storage)  # appended, not rebuilt
+        self.assertEqual(len(second["target"]), len(first["target"]) + 6)
+        trainer._TENSORS.clear()
+        trainer._SHARD_CACHE.clear()
+        rebuilt, rebuilt_val = load_split(directory, "cpu")  # the same rows as a full load, in another order
+        for key in rebuilt:
+            self.assertTrue(torch.equal(second[key].float().sum(0), rebuilt[key].float().sum(0)), key)
+        self.assertTrue(torch.equal(val["target"], rebuilt_val["target"]))
+
     def test_impossible_duplicates_are_dropped(self):
         cards = np.ones((3, 2, 4), dtype=np.int16)
         cards[1, 1, :2] = 250  # two Time Lord Stryx on one side

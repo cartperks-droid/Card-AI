@@ -171,19 +171,65 @@ def load_split(directory, device, release=None, pack=False):
     if pack and len(fresh) >= PARALLEL_LOAD:
         _write_pack(directory, rules, fresh)
         print(json.dumps({"packed_shards": len(fresh), "seconds": round(time.time() - started)}), flush=True)
-    split, seen = {"train": [], "val": []}, {}
-    for path in paths:
-        cached = fresh.get(path) or _SHARD_CACHE[path]
-        seen[path] = cached
-        if len(cached[3]["target"]):
-            split["val" if cached[2] else "train"].append(cached[3])
+    seen = {path: fresh.get(path) or _SHARD_CACHE[path] for path in paths}
     _SHARD_CACHE.clear()
     _SHARD_CACHE.update(seen)  # shards that disappeared, or old rules' entries, are dropped
-    if release is not None and split["train"]:
-        release()
-    out = {name: {key: torch.as_tensor(np.concatenate([part[key] for part in parts]), device=device) for key in parts[0]}
-           if parts else None for name, parts in split.items()}
+    # A reload under the same rules that only adds shards appends their rows to the tensors already on the device
+    # (in spare capacity); anything else rebuilds them. Rebuilding 15 GB every 1,000 steps idled the pod's GPU once
+    # it trained at 6.7 steps/s (2026-10-05).
+    loaded = _TENSORS.get("paths")
+    incremental = (loaded is not None and _TENSORS["rules"] == rules and _TENSORS["device"] == str(device)
+                   and loaded <= set(seen))
+
+    def parts(selected):
+        split = {"train": [], "val": []}
+        for path in selected:
+            cached = seen[path]
+            if len(cached[3]["target"]):
+                split["val" if cached[2] else "train"].append(cached[3])
+        return split
+
+    split = parts([path for path in paths if path not in loaded]) if incremental else None
+    if incremental and any(  # no spare room left: rebuild with room, never holding two copies on the device
+            _TENSORS.get(name + "_count", 0) + sum(len(part["target"]) for part in chunk)
+            > (len(_TENSORS[name]["target"]) if name in _TENSORS else 0) for name, chunk in split.items() if chunk):
+        incremental = False
+    if not incremental:
+        split = parts(paths)
+        _TENSORS.clear()
+        if release is not None and split["train"]:
+            release()
+        if not split["train"]:
+            return None, (_stack(split["val"], device) if split["val"] else None)
+    for name, chunk in split.items():
+        if chunk:
+            _append(name, chunk, device)
+    _TENSORS.update(paths=set(seen), rules=rules, device=str(device))
+    out = {name: ({key: buffer[:_TENSORS[name + "_count"]] for key, buffer in _TENSORS[name].items()}
+                  if name in _TENSORS else None) for name in ("train", "val")}
     return out["train"], out["val"]
+
+
+_TENSORS = {}  # the device tensors load_split last returned: buffers with spare room, their row counts, paths, rules
+
+
+def _stack(parts, device):
+    return {key: torch.as_tensor(np.concatenate([part[key] for part in parts]), device=device) for key in parts[0]}
+
+
+def _append(name, parts, device):
+    """Rows of these shards added to _TENSORS[name] (load_split checks they fit, else it rebuilds)."""
+    rows = sum(len(part["target"]) for part in parts)
+    count = _TENSORS.get(name + "_count", 0)
+    buffers = _TENSORS.get(name)
+    if buffers is None:  # a rebuild: a quarter spare, so reloads append for a while
+        capacity = int(rows * 1.25) + 1
+        _TENSORS[name] = buffers = {key: torch.empty((capacity, *parts[0][key].shape[1:]),
+                                                     dtype=torch.as_tensor(parts[0][key][:0]).dtype, device=device)
+                                    for key in ROW_KEYS}
+    for key in ROW_KEYS:
+        buffers[key][count:count + rows] = torch.as_tensor(np.concatenate([part[key] for part in parts]), device=device)
+    _TENSORS[name + "_count"] = count + rows
 
 
 def stat_favourite(rows):
