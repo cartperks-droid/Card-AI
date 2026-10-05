@@ -23,6 +23,7 @@ import multiprocessing as mp
 import os
 import random
 import re
+import sys
 import time
 from concurrent.futures import ProcessPoolExecutor, as_completed
 from pathlib import Path
@@ -148,6 +149,8 @@ def evaluate(catalog, spec, seed, **overrides):
     or recursion depth) is left unfinished, so training skips
     the row, and is appended to ENGINE_ERRORS instead of stopping the whole label run. If the engine process itself
     died (a broken pipe or an empty reply), the next battle starts a fresh one."""
+    if os.environ.get("CARD_ENGINE_TRACE"):  # each battle before the engine runs it: the last one shown is a crash's
+        print(json.dumps({"seed": int(seed), "spec": spec, "overrides": repr(overrides)}), file=sys.stderr, flush=True)
     try:
         return kernel.evaluate(catalog, spec, seed, **overrides)
     except (RuntimeError, OSError, ValueError) as error:  # engine error; dead process (pipe); empty reply (JSON)
