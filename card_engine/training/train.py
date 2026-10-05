@@ -55,7 +55,8 @@ def load_split(directory, device, release=None):
     rules = json.dumps([sorted(current.items()), changes])
     pool_cards = None
     split, seen = {"train": [], "val": []}, {}
-    for path in sorted(shard_paths(directory)):
+    paths, read, started = sorted(shard_paths(directory)), 0, time.time()
+    for path in paths:
         mtime = path.stat().st_mtime
         cached = _SHARD_CACHE.get(path)
         if cached is None or cached[:2] != (mtime, rules):
@@ -75,6 +76,10 @@ def load_split(directory, device, release=None):
             rows["favourite"] = stat_favourite({key: torch.as_tensor(value) for key, value in rows.items()
                                                 if key != "target"}).numpy().astype(np.int8)
             cached = (mtime, rules, validation, rows)
+            read += 1
+            if read % 5000 == 0:  # a first load reads every shard (tens of thousands: minutes)
+                print(json.dumps({"loading_shards": read, "of": len(paths), "seconds": round(time.time() - started)}),
+                      flush=True)
         seen[path] = cached
         if len(cached[3]["target"]):
             split["val" if cached[2] else "train"].append(cached[3])

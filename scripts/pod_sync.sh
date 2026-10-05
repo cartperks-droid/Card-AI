@@ -29,7 +29,8 @@ while true; do
   # The fresh deeper run (docs/training.md) comes back under its own name.
   mkdir -p data/training_deep
   rsync -az --no-owner --no-group -e "$ssh_cmd" "$remote/data/training_deep/log.jsonl" "$remote/data/training_deep/*.checkpoint" data/training_deep/ 2>/dev/null || true
-  tail -1 data/training_pod/log.jsonl 2>/dev/null || true
-  tail -1 data/training_deep/log.jsonl 2>/dev/null || true
+  for log in data/training_pod/log.jsonl data/training_deep/log.jsonl; do  # only logs that moved this pass
+    if [ -n "$(find "$log" -mmin -6 2>/dev/null)" ]; then echo "$log: $(tail -1 "$log")"; fi
+  done
   sleep 300
 done
