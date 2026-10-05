@@ -41,6 +41,23 @@ def latest_label_dir(root=SHARD_DIR):
 _SHARD_CACHE = {}  # path -> (mtime, rules, validation, rows): each shard is read and checked once per rules version
 
 
+def cpu_allowance():
+    """CPUs this process may use: the container's CPU quota (cgroup v2 cpu.max or v1 cfs quota) when one is set,
+    else the cores it may run on. A RunPod pod reported 128 cores but was allowed 13.6 (2026-10-05)."""
+    cores = len(os.sched_getaffinity(0)) if hasattr(os, "sched_getaffinity") else (os.cpu_count() or 1)
+    for quota, period in (("/sys/fs/cgroup/cpu.max", None),
+                          ("/sys/fs/cgroup/cpu/cpu.cfs_quota_us", "/sys/fs/cgroup/cpu/cpu.cfs_period_us")):
+        try:
+            values = Path(quota).read_text().split()
+            if period is not None:
+                values.append(Path(period).read_text().strip())
+            if values[0] not in ("max", "-1"):
+                return max(1, min(cores, int(float(values[0]) / float(values[1]))))
+        except (OSError, ValueError, IndexError):
+            continue
+    return cores
+
+
 PARALLEL_LOAD = 2000  # a load with at least this many shards to read uses worker processes
 _READER = None  # (catalog, entity hashes, declared changes, rules key, pool cards): set by _reader_init
 
@@ -155,7 +172,7 @@ def load_split(directory, device, release=None, pack=False):
     try:
         context = (current, changes, rules)
         if len(stale) >= PARALLEL_LOAD:
-            workers = min(32, os.cpu_count() or 1)
+            workers = max(1, min(32, cpu_allowance() - 2))  # the trainer's own thread keeps a core or two
             with ProcessPoolExecutor(workers, mp_context=mp.get_context("spawn"), initializer=_reader_init,
                                      initargs=(context,)) as pool:
                 for done, (path, cached) in enumerate(pool.map(_read_shard, stale, chunksize=64), 1):
