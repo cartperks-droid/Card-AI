@@ -395,7 +395,7 @@ def focus_rows(rows):
 
 def train(*, steps=None, batch_size=512, lr=3e-4, warmup=1000, weight_decay=0.05, dropout=0.1, freeze_language_at=None,
           eval_every=1000, init_from=None, language_lr=None, hard_fraction=0.05, layers=None, language_from=None,
-          focus_until=None, ema_decay=0.999, pack_labels=False, bf16=False,
+          focus_until=None, ema_decay=0.999, pack_labels=False, bf16=False, lr_decay=None, lr_floor=0.05,
           checkpoint_every=1000, reload_every=1000, device=None, run_dir=RUN_DIR, label_root=SHARD_DIR):
     """Train in run_dir, resuming its model and optimizer if both are there. Otherwise init_from (a model checkpoint,
     e.g. one downloaded from another machine) gives the starting weights and step, with a fresh optimizer whose learning
@@ -409,6 +409,10 @@ def train(*, steps=None, batch_size=512, lr=3e-4, warmup=1000, weight_decay=0.05
     checkpoint whose description transformer (card text to card vectors) the new run starts from, frozen from the
     first step. focus_until: until this step every batch is drawn from focus_rows (upsets, fixed-stat battles, hard
     examples); after it, from all rows, where those are already a large share.
+
+    lr_decay: (first, last) steps of a cosine decay of the learning rate to lr_floor times its value, held after
+    last (user, 2026-10-05: a fixed rate keeps the weights swinging, so the last part of a model's fit never comes).
+    Both steps are given, so restarts keep the same schedule.
 
     bf16: training steps run under bfloat16 autocast (the pod's GPU sat at its power limit in TF32, 2026-10-05);
     the weights, the loss, the weight average and every evaluation stay float32.
@@ -536,8 +540,13 @@ def train(*, steps=None, batch_size=512, lr=3e-4, warmup=1000, weight_decay=0.05
             if focus_until is not None and step < focus_until and len(focus):  # the focus phase: no ordinary rows
                 picks[n:] = focus[torch.randint(len(focus), (batch_size - n,), generator=generator).to(device)]
             batch = {k: v[picks] for k, v in train_rows.items()}
+            scale = min(1.0, (step - warm_from + 1) / warmup)
+            if lr_decay is not None:  # cosine from 1 at the first step to lr_floor at the last, then held
+                first, last = lr_decay
+                progress = min(1.0, max(0.0, (step - first) / max(1, last - first)))
+                scale *= lr_floor + (1 - lr_floor) * 0.5 * (1 + math.cos(math.pi * progress))
             for group in optimizer.param_groups:
-                group["lr"] = group["base_lr"] * min(1.0, (step - warm_from + 1) / warmup)
+                group["lr"] = group["base_lr"] * scale
             table = current_table()  # card vectors in float32, outside autocast (the model checks their dtype)
             with torch.autocast(str(device).split(":")[0], dtype=torch.bfloat16, enabled=bf16):
                 logits = model(**inputs(batch, table))
@@ -554,7 +563,7 @@ def train(*, steps=None, batch_size=512, lr=3e-4, warmup=1000, weight_decay=0.05
             if step % 100 == 0:
                 now = time.time()
                 record = {"step": step, "loss": round(loss.item(), 4), "steps_per_s": round(100 / (now - last), 2),
-                          "train_rows": count, "labels": rules_id}
+                          "train_rows": count, "labels": rules_id, "lr": float(f"{optimizer.param_groups[0]['lr']:.3g}")}
                 if focus_until is not None and step <= focus_until:
                     record["focus_rows"] = len(focus)
                 last = now
@@ -624,6 +633,9 @@ if __name__ == "__main__":
                         "from, frozen (default --freeze-language-at 0)")
     parser.add_argument("--focus-until", type=int, help="step until which batches hold only upsets, fixed-stat "
                         "battles and hard examples (a new model's first data)")
+    parser.add_argument("--lr-decay", type=int, nargs=2, metavar=("FIRST", "LAST"),
+                        help="cosine decay of the learning rate from step FIRST to step LAST (then held at --lr-floor)")
+    parser.add_argument("--lr-floor", type=float, default=0.05, help="the decayed rate, as a fraction of --lr")
     parser.add_argument("--bf16", action="store_true",
                         help="training steps in bfloat16 (autocast; weights, loss and evaluation stay float32)")
     parser.add_argument("--pack-labels", action="store_true",
@@ -643,4 +655,4 @@ if __name__ == "__main__":
           weight_decay=parsed.weight_decay, dropout=parsed.dropout, freeze_language_at=parsed.freeze_language_at,
           eval_every=parsed.eval_every, init_from=parsed.init_from, language_lr=parsed.language_lr, hard_fraction=parsed.hard_fraction,
           layers=parsed.layers, language_from=parsed.language_from, focus_until=parsed.focus_until, ema_decay=parsed.ema_decay, pack_labels=parsed.pack_labels,
-          bf16=parsed.bf16, run_dir=parsed.run_dir)
+          bf16=parsed.bf16, lr_decay=parsed.lr_decay, lr_floor=parsed.lr_floor, run_dir=parsed.run_dir)
