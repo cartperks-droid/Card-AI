@@ -93,6 +93,19 @@ class GeneratorTests(unittest.TestCase):
             scores = [win for _, win, _ in found]
             self.assertEqual(scores, sorted(scores, reverse=True))
 
+    def test_engine_search_stays_in_the_pool_and_walks_from_the_model_teams(self):
+        enemy = parse_side(self.catalog, ["Immortal Witch", "Archer", "Good Boy", "Set"])
+        allowed = {tuple(e) for e in self.pool.entries.tolist()}
+        start = generate.random_team(self.pool, np.random.default_rng(3))
+        found = generate.engine_search(self.space, enemy, [start], evaluations=40, enemy_stats=(5e5, 2e5, False),
+                                       workers=2, population=8, parents=2, children=4, catalog=self.catalog)
+        self.assertGreaterEqual(len(found), 8)
+        self.assertIn(generate._key(start), {generate._key(team) for team, _ in found})
+        for team, win in found:
+            self.assertTrue(all(e in allowed for e in zip(team["cards"], team["borders"], team["mutations"], team["arts"])))
+            self.assertTrue(-1e-9 <= win <= 1 + 1e-9, win)  # summed branch probabilities
+        self.assertEqual([w for _, w in found], sorted((w for _, w in found), reverse=True))
+
     def test_own_pool_respects_copy_counts(self):
         deck = {"cards": [{"card": 1, "border": 1, "mutation": "None", "count": 1},
                           {"card": 3, "border": 2, "mutation": "Storm", "count": 3}],

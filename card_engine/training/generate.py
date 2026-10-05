@@ -39,6 +39,16 @@ the masks: a deck pool is used as it is.
   - --max-rarity: leaves out entries rarer than this, card x border rarity as the game shows it (1 in N: 2.5M,
     30T, 10qd).
 
+Engine search (--engine-search N engine evaluations, off by default): a local refinement, not a replacement for the
+ascent, which is the generator (user). The ascent only finds what the model already believes, so where the model
+rates almost everything 0, against huge stats, it stacks stats and loses (2026-10-05, an older checkpoint: 32
+Titan/Gorilla teams, all 0.0 at floor-105 stats). It cannot cover the team space; it walks from the model's teams. Cheese decks are narrow four-card
+combinations, so an evolution scored by the engine itself searches the same pool, masks and copy counts: 64
+teams (the model's counters, then random pool teams whose cards are stat-ignoring ones half the time,
+labels.STAT_IGNORING), whose 16 best each get 4 variants per generation (a card, a support, or the lineup order
+changed), as training.hard mines hard examples. Its --counters best join the model's, and every team is then
+verified again with other dice, so a lucky estimate during the search does not rank a team.
+
 Enemies: an explicit team (--enemy), or --enemies N generated broadly. A broad enemy is a team ascended against
 a random pool opponent and decoded by sampling at a high temperature.
 
@@ -376,6 +386,90 @@ def broad_enemies(space, n, *, settings=Settings(), temperature=1.0, seed=1):
     return decode_sample(space, distance, red, blue, temperature, generator)
 
 
+def _role_win(job):
+    """The ally's win chance in one role (0 attack, 1 defend) against `enemy`, its stats fixed if per_card is given."""
+    from . import counter
+    player, enemy, seed, per_card, role = job
+    enemy_side = 1 - role
+    battle = counter._spec(player, enemy) if role == 0 else counter._spec(enemy, player)
+    probs, _ = counter.evaluate(counter._CATALOG, battle, seed,
+                                fixed=None if per_card is None else (enemy_side, per_card))
+    return float(probs[role])
+
+
+def _ids(pool, team):
+    """A team as pool indices: (entry per slot, red, blue)."""
+    index = {tuple(int(v) for v in entry): i for i, entry in enumerate(pool.entries)}
+    entries = tuple(index[c] for c in zip(team["cards"], team["borders"], team["mutations"], team["arts"]))
+    return entries, pool.reds.index((team["red"], team["red_tier"])), pool.blues.index((team["blue"], team["blue_tier"]))
+
+
+def engine_search(space, enemy, starts, *, evaluations=4096, role="attack", enemy_stats=None, workers=None, seed=1,
+                  catalog=None, population=64, parents=16, children=4):
+    """An evolution scored by the engine, inside the pool (see the module notes): [(team, engine win)], best first."""
+    from concurrent.futures import ProcessPoolExecutor
+    from .counter import _init
+    from .labels import stat_ignoring_cards
+    catalog = catalog or load_catalog()
+    pool, rng = space.pool, np.random.default_rng(seed)
+    ignoring = set(stat_ignoring_cards(catalog))
+    ignoring_entries = [i for i, entry in enumerate(pool.entries) if int(entry[0]) in ignoring]
+    per_card = None if enemy_stats is None else tower.engine_stats(catalog, enemy["cards"], enemy_stats)
+    column = ROLES.index(role)
+
+    def entry():
+        if ignoring_entries and rng.random() < 0.5:
+            return int(rng.choice(ignoring_entries))
+        return int(rng.integers(len(pool.entries)))
+
+    def fresh():
+        for _ in range(100):
+            ids = tuple(entry() for _ in range(4))
+            if _allowed(space, ids):
+                break
+        return ids, int(rng.integers(len(pool.reds))), int(rng.integers(len(pool.blues)))
+
+    def mutate(member):
+        ids, red, blue = member
+        move = rng.random()
+        if move < 0.6:
+            ids = list(ids)
+            ids[int(rng.integers(4))] = entry()
+            ids = tuple(ids)
+        elif move < 0.8:
+            if rng.random() < 0.5:
+                red = int(rng.integers(len(pool.reds)))
+            else:
+                blue = int(rng.integers(len(pool.blues)))
+        else:
+            a, b = rng.choice(4, 2, replace=False)
+            ids = list(ids)
+            ids[a], ids[b] = ids[b], ids[a]
+            ids = tuple(ids)
+        return (ids, red, blue) if _allowed(space, ids) else member
+
+    seen = {}
+    with ProcessPoolExecutor(workers or max(1, (os.cpu_count() or 2) - 1), mp_context=mp.get_context("spawn"),
+                             initializer=_init) as executor:
+        def score(members):
+            new = list(dict.fromkeys(m for m in members if m not in seen))
+            jobs = [(_team(space, *m), enemy, seed + 2 * (len(seen) + i), per_card, column) for i, m in enumerate(new)]
+            for member, win in zip(new, executor.map(_role_win, jobs, chunksize=8)):
+                seen[member] = win
+
+        alive = [_ids(pool, team) for team in starts][:population]
+        alive += [fresh() for _ in range(population - len(alive))]
+        score(alive)
+        while len(seen) < evaluations:
+            best = sorted(set(alive), key=lambda m: -seen[m])[:parents]
+            before = len(seen)
+            score([mutate(m) for m in best for _ in range(children)])
+            alive = sorted(seen, key=lambda m: -seen[m])[:population]  # the best so far, parents included
+            if len(seen) == before:  # nothing new to try
+                break
+    return [(_team(space, *m), win) for m, win in sorted(seen.items(), key=lambda item: -item[1])]
+
+
 def verify(teams, enemy, workers, seed=1, enemy_stats=None, catalog=None):
     """The engine's ally win chance attacking first and defending, per team."""
     from .counter import _evaluate, _init
@@ -411,6 +505,8 @@ def main():
     parser.add_argument("--role", choices=ROLES, default="attack",
                         help="attack: your team attacks first and loses a mutual wipe; defend: the enemy attacks first")
     parser.add_argument("--no-verify", action="store_true", help="skip the engine check")
+    parser.add_argument("--engine-search", type=int, default=0, metavar="N",
+                        help="also run an engine-guided search of N engine evaluations from the model's teams (see above)")
     parser.add_argument("--workers", type=int, default=max(1, (os.cpu_count() or 2) - 1))
     parser.add_argument("--checkpoint", default=str(RUN_DIR / "model.checkpoint"))
     parser.add_argument("--device")
@@ -440,20 +536,31 @@ def main():
                         "max_rarity": args.max_rarity},
               "matchups": []}
     for index, enemy in enumerate(enemies):
-        found = counters(space, enemy, count=args.counters, restarts=args.restarts, settings=settings,
-                         seed=args.seed + index, enemy_stats=enemy_stats)
-        checked = None if args.no_verify else verify([team for team, _, _ in found], enemy, args.workers, args.seed,
+        found = [(*entry, "model") for entry in counters(space, enemy, count=args.counters, restarts=args.restarts,
+                                                         settings=settings, seed=args.seed + index, enemy_stats=enemy_stats)]
+        if args.engine_search:
+            searched = engine_search(space, enemy, [team for team, *_ in found], evaluations=args.engine_search,
+                                     role=args.role, enemy_stats=enemy_stats, workers=args.workers,
+                                     seed=args.seed + 7919 * (index + 1), catalog=catalog)
+            known = {_key(team) for team, *_ in found}
+            extra = [team for team, _ in searched if _key(team) not in known][:args.counters]
+            if extra:
+                wins = space.classifier.ally_win([(team, enemy) for team in extra], enemy_stats)[:, ROLES.index(args.role)]
+                found += [(team, float(win), float("nan"), "engine search") for team, win in zip(extra, wins)]
+        checked = None if args.no_verify else verify([team for team, *_ in found], enemy, args.workers, args.seed,
                                                      enemy_stats, catalog)
         rows = []
         column = ROLES.index(args.role)
-        for i, (team, win, blur) in enumerate(found):
-            row = {**describe(catalog, team), "model": round(win, 3), "slot_blur": round(blur, 2)}
+        for i, (team, win, blur, source) in enumerate(found):
+            row = {**describe(catalog, team), "model": round(win, 3), "source": source}
+            if blur == blur:  # the ascent's slot blur (none for engine-search teams)
+                row["slot_blur"] = round(blur, 2)
             if checked:
                 row["simulator"] = round(checked[i][column], 3)
             rows.append(row)
         if checked:
             rows.sort(key=lambda r: (-r["simulator"], -r["model"]))  # engine ties (e.g. all 0.0): the model's order
-        report["matchups"].append({"enemy": describe(catalog, enemy, enemy_stats), "counters": rows})
+        report["matchups"].append({"enemy": describe(catalog, enemy, enemy_stats), "counters": rows[:args.counters]})
         print(json.dumps(report["matchups"][-1], ensure_ascii=False), flush=True)
     if args.output:
         Path(args.output).write_text(json.dumps(report, indent=1, ensure_ascii=False) + "\n")
