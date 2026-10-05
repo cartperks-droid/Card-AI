@@ -332,7 +332,7 @@ def focus_rows(rows):
 
 def train(*, steps=None, batch_size=512, lr=3e-4, warmup=1000, weight_decay=0.05, dropout=0.1, freeze_language_at=None,
           eval_every=1000, init_from=None, language_lr=None, hard_fraction=0.05, layers=None, language_from=None,
-          focus_until=None, ema_decay=0.999, pack_labels=False,
+          focus_until=None, ema_decay=0.999, pack_labels=False, bf16=False,
           checkpoint_every=1000, reload_every=1000, device=None, run_dir=RUN_DIR, label_root=SHARD_DIR):
     """Train in run_dir, resuming its model and optimizer if both are there. Otherwise init_from (a model checkpoint,
     e.g. one downloaded from another machine) gives the starting weights and step, with a fresh optimizer whose learning
@@ -346,6 +346,9 @@ def train(*, steps=None, batch_size=512, lr=3e-4, warmup=1000, weight_decay=0.05
     checkpoint whose description transformer (card text to card vectors) the new run starts from, frozen from the
     first step. focus_until: until this step every batch is drawn from focus_rows (upsets, fixed-stat battles, hard
     examples); after it, from all rows, where those are already a large share.
+
+    bf16: training steps run under bfloat16 autocast (the pod's GPU sat at its power limit in TF32, 2026-10-05);
+    the weights, the loss, the weight average and every evaluation stay float32.
 
     ema_decay: the trainer also keeps an exponential moving average of the weights (user, 2026-10-05), saved as
     ema.checkpoint beside model.checkpoint. At a fixed learning rate the live weights swing between evaluations (the
@@ -472,8 +475,10 @@ def train(*, steps=None, batch_size=512, lr=3e-4, warmup=1000, weight_decay=0.05
             batch = {k: v[picks] for k, v in train_rows.items()}
             for group in optimizer.param_groups:
                 group["lr"] = group["base_lr"] * min(1.0, (step - warm_from + 1) / warmup)
-            logits = model(**inputs(batch, current_table()))
-            loss = -(batch["target"] * logits.log_softmax(-1)).sum(-1).mean()
+            table = current_table()  # card vectors in float32, outside autocast (the model checks their dtype)
+            with torch.autocast(str(device).split(":")[0], dtype=torch.bfloat16, enabled=bf16):
+                logits = model(**inputs(batch, table))
+            loss = -(batch["target"] * logits.float().log_softmax(-1)).sum(-1).mean()
             total = loss + model.strategy.identity_penalty()
             optimizer.zero_grad(set_to_none=True)
             total.backward()
@@ -556,6 +561,8 @@ if __name__ == "__main__":
                         "from, frozen (default --freeze-language-at 0)")
     parser.add_argument("--focus-until", type=int, help="step until which batches hold only upsets, fixed-stat "
                         "battles and hard examples (a new model's first data)")
+    parser.add_argument("--bf16", action="store_true",
+                        help="training steps in bfloat16 (autocast; weights, loss and evaluation stay float32)")
     parser.add_argument("--pack-labels", action="store_true",
                         help="keep the checked labels in large pack files too, so a restart reads few files (for disks "
                         "slow per file, like the pod's)")
@@ -573,4 +580,4 @@ if __name__ == "__main__":
           weight_decay=parsed.weight_decay, dropout=parsed.dropout, freeze_language_at=parsed.freeze_language_at,
           eval_every=parsed.eval_every, init_from=parsed.init_from, language_lr=parsed.language_lr, hard_fraction=parsed.hard_fraction,
           layers=parsed.layers, language_from=parsed.language_from, focus_until=parsed.focus_until, ema_decay=parsed.ema_decay, pack_labels=parsed.pack_labels,
-          run_dir=parsed.run_dir)
+          bf16=parsed.bf16, run_dir=parsed.run_dir)
