@@ -11,6 +11,9 @@ the lineup order changed). Every team evaluated is then scored by the current cl
 --keep teams with the largest |model - engine| are kept, each at least two places apart from the others (one
 evolution's teams are mostly one-change variants: 64 per enemy were memorised, 2026-10-05), plus --keep-random
 others so the shards are not only extremes. Many enemies with few teams each, rather than the reverse.
+Every --generator-every-th enemy (4) gets the annealed generator's teams instead (training.generate, sigma 4): the
+engine search finds the winners the model underrates, the generator the losers it overrates (2026-10-05: 0.92 by the
+model, 0.0 by the engine, borderless at floor 105).
 
 Enemies, half each:
   - a tower floor (card_engine.tower), weighted toward the top floors (a quarter on 95-105) and hard difficulties
@@ -170,15 +173,42 @@ def distinct(teams, ranked, keep, apart=2):
     return taken
 
 
-def hard_shard(classifier, catalog, seed, rounds, pool, candidates=1024, keep=16, keep_random=4):
+def proposals(rng, classifier, catalog, pool, enemy, fixed, per_card, seed, spaces):
+    """Teams the classifier rates highest against `enemy`, from the annealed generator (training.generate), each
+    played by the engine: [(team, probs, engine win chance, exact)]. The engine search finds teams the model
+    underrates; these are the ones it overrates (2026-10-05: at floor 105, borderless, the deep model rated
+    Kira / Time Lord Stryx / Legends / Hades 0.92; the engine, 0.0)."""
+    from .generate import Settings, SlotSpace, counters, make_pool
+    borders, mutations, tiers = rng.choice(BORDER_SETS), rng.choice(((0,), None)), rng.choice(((1,), None))
+    key = (borders, mutations, tiers)
+    if key not in spaces:  # one slot space per mask and shard (the classifier is reloaded per shard)
+        spaces[key] = SlotSpace(classifier, make_pool(catalog, "all", borders=list(borders), tiers=tiers,
+                                                      mutations=None if mutations is None else list(mutations)))
+    settings = Settings(steps=300, noise_levels=12, sigma_max=4.0)
+    teams = [team for team, *_ in counters(spaces[key], enemy, count=32, restarts=32, settings=settings,
+                                           seed=seed, enemy_stats=fixed)]
+    jobs = [(spec(team, enemy), seed + i, per_card) for i, team in enumerate(teams)]
+    out = []
+    for team, (probs, exact) in zip(teams, pool.map(_label, jobs, chunksize=4)):
+        finished = probs[0] + probs[1]
+        out.append((team, probs, probs[0] / finished if finished > 0 else float("nan"), exact))
+    return out
+
+
+def hard_shard(classifier, catalog, seed, rounds, pool, candidates=1024, keep=16, keep_random=4, generator_every=4):
     """One shard's rows: per round, the `keep` distinct searched teams the model gets most wrong plus `keep_random`
-    others."""
+    others. Every `generator_every`-th round proposes its teams with the annealed generator instead of the engine
+    search (0: never)."""
     rng = random.Random(f"hard-{seed}")
-    rows, gaps_all, gaps_kept, best_found = [], [], [], []
+    rows, gaps_all, gaps_kept, best_found, spaces = [], [], [], [], {}
     for r in range(rounds):
         enemy, fixed = draw_enemy(rng, catalog)
         per_card = tower.engine_stats(catalog, enemy["cards"], fixed)
-        evaluated = search(rng, catalog, pool, enemy, per_card, seed * 1_000_003 + r * 4 * candidates, candidates)
+        if generator_every and r % generator_every == generator_every - 1:
+            evaluated = proposals(rng, classifier, catalog, pool, enemy, fixed, per_card,
+                                  seed * 1_000_003 + r * 4 * candidates, spaces)
+        else:
+            evaluated = search(rng, catalog, pool, enemy, per_card, seed * 1_000_003 + r * 4 * candidates, candidates)
         teams = [team for team, *_ in evaluated]
         engine = np.array([e for _, _, e, _ in evaluated])
         model = classifier.ally_win([(team, enemy) for team in teams], fixed)[:, 0]
@@ -202,7 +232,7 @@ def hard_shard(classifier, catalog, seed, rounds, pool, candidates=1024, keep=16
 
 
 def run(shards, *, rounds=80, workers=None, checkpoint=None, out_dir=STORE, first_seed=None, device=None,
-        candidates=1024, keep=16, keep_random=4):
+        candidates=1024, keep=16, keep_random=4, generator_every=4):
     from .flags import snapshot
     out_dir = Path(out_dir)
     out_dir.mkdir(parents=True, exist_ok=True)
@@ -220,7 +250,8 @@ def run(shards, *, rounds=80, workers=None, checkpoint=None, out_dir=STORE, firs
             classifier = Classifier(path, device)  # reloaded every shard: the mining follows training
             started = time.time()
             arrays, probs, exact, extra, gap_all, gap_kept, best = hard_shard(classifier, catalog, seed, rounds, pool,
-                                                                              candidates, keep, keep_random)
+                                                                              candidates, keep, keep_random,
+                                                                              generator_every)
             target = out_dir / f"hard_{seed:08d}.npz"
             tmp = target.with_name(f"partial_{target.name}")
             np.savez_compressed(tmp, probs=probs, exact=exact, snapshot=np.array(snapshot(catalog)), **arrays, **extra)
@@ -239,6 +270,9 @@ def main():
     parser.add_argument("--candidates", type=int, default=1024, help="teams scored per enemy")
     parser.add_argument("--keep", type=int, default=16, help="largest-disagreement teams kept per enemy, each at least "
                         "two places (card slots, supports) apart from the others")
+    parser.add_argument("--generator-every", type=int, default=4,
+                        help="every Nth enemy gets the annealed generator's teams (the model's overconfident ones) "
+                        "instead of the engine search's (0: never)")
     parser.add_argument("--keep-random", type=int, default=4, help="other teams kept per enemy")
     parser.add_argument("--workers", type=int, help="engine labelling processes")
     parser.add_argument("--checkpoint", help="model (default: data/training_pod's, else data/training's), reloaded per shard")
@@ -246,7 +280,8 @@ def main():
     parser.add_argument("--device")
     args = parser.parse_args()
     run(args.shards, rounds=args.rounds, workers=args.workers, checkpoint=args.checkpoint, first_seed=args.first_seed,
-        device=args.device, candidates=args.candidates, keep=args.keep, keep_random=args.keep_random)
+        device=args.device, candidates=args.candidates, keep=args.keep, keep_random=args.keep_random,
+        generator_every=args.generator_every)
 
 
 if __name__ == "__main__":
