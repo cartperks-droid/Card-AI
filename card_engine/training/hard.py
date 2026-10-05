@@ -33,6 +33,7 @@ import multiprocessing as mp
 import os
 import random
 import time
+from concurrent.futures import ProcessPoolExecutor
 from pathlib import Path
 
 import numpy as np
@@ -202,7 +203,10 @@ def run(shards, *, rounds=80, workers=None, checkpoint=None, out_dir=STORE, firs
     existing = {int(p.stem.split("_")[1]) for p in out_dir.glob("hard_*.npz")}
     seed = first_seed if first_seed is not None else (max(existing) + 1 if existing else 1)
     catalog = load_catalog()
-    with mp.get_context("spawn").Pool(workers or max(1, (os.cpu_count() or 2) - 1), initializer=_init) as pool:
+    # An executor, not multiprocessing.Pool: a worker the OS kills (memory pressure) raises BrokenProcessPool and
+    # ends the run, so a shell loop restarts it; Pool waited forever for the lost result (2026-10-05, after shard 120).
+    with ProcessPoolExecutor(workers or max(1, (os.cpu_count() or 2) - 1), mp_context=mp.get_context("spawn"),
+                             initializer=_init) as pool:
         for done in range(1, shards + 1):
             while seed in existing:
                 seed += 1

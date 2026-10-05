@@ -24,6 +24,7 @@ import os
 import random
 import re
 import time
+from concurrent.futures import ProcessPoolExecutor, as_completed
 from pathlib import Path
 
 import numpy as np
@@ -225,9 +226,12 @@ def generate(shards, *, rows=2000, workers=None, first_seed=None, out_dir=STORE,
         seed += 1
     workers = workers or max(1, (os.cpu_count() or 2) - 1)
     started = time.time()
-    with mp.get_context("spawn").Pool(workers) as pool:
+    # An executor, not multiprocessing.Pool: a worker the OS kills raises BrokenProcessPool and ends the run (a shell
+    # loop restarts it; unfinished shards are redone), where Pool waited forever for the lost shard.
+    with ProcessPoolExecutor(workers, mp_context=mp.get_context("spawn")) as pool:
         exact_total = 0
-        for done, (name, count, exact) in enumerate(pool.imap_unordered(_worker, jobs), 1):
+        for done, future in enumerate(as_completed([pool.submit(_worker, job) for job in jobs]), 1):
+            name, count, exact = future.result()
             exact_total += exact
             rate = done * rows / (time.time() - started)
             print(json.dumps({"shard": name, "done": done, "of": shards, "battles_per_s": round(rate, 1),
