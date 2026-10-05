@@ -8,8 +8,9 @@ almost none win (0 of 200 at 10.9M HP), since cheese decks are specific four-car
 with the engine: --candidates evaluations (milliseconds each) of an evolution from 64 random teams leaning on
 stat-ignoring cards (labels.STAT_IGNORING), whose 16 best each get 4 variants per generation (a card, a support, or
 the lineup order changed). Every team evaluated is then scored by the current classifier (one batch), and the
---keep teams with the largest |model - engine| are kept, plus --keep-random others so the shards are not only
-extremes.
+--keep teams with the largest |model - engine| are kept, each at least two places apart from the others (one
+evolution's teams are mostly one-change variants: 64 per enemy were memorised, 2026-10-05), plus --keep-random
+others so the shards are not only extremes. Many enemies with few teams each, rather than the reverse.
 
 Enemies, half each:
   - a tower floor (card_engine.tower): 1-105 at a random difficulty, its fixed team or random cards;
@@ -23,7 +24,7 @@ mining time; each prints the mean gap over every team evaluated and over the kep
 chance the search reached. The trainer repeats hard rows
 (--hard-fraction of each batch) and scores validation's separately (val_hard).
 
-    python -m card_engine.training.hard --shards 100 --rounds 20 --workers 7
+    python -m card_engine.training.hard --shards 100 --workers 7
 """
 
 import argparse
@@ -146,8 +147,25 @@ def search(rng, catalog, pool, enemy, per_card, seed, candidates, population=64,
     return list(seen.values())
 
 
-def hard_shard(classifier, catalog, seed, rounds, pool, candidates=1024, keep=64, keep_random=16):
-    """One shard's rows: per round, the `keep` searched teams the model gets most wrong plus `keep_random` others."""
+def distinct(teams, ranked, keep, apart=2):
+    """The first `keep` of `ranked` that differ from every one already taken in at least `apart` places (the four
+    lineup slots' cards and the two supports). One evolution's teams are mostly one-change variants of each other:
+    keeping all of them taught the model those few lineups by heart (probe, 2026-10-05: hard training KL 0.04,
+    held-out 0.46)."""
+    def places(team):
+        return (*team["cards"], team["red"], team["blue"])
+    taken = []
+    for i in ranked:
+        if len(taken) == keep:
+            break
+        if all(sum(a != b for a, b in zip(places(teams[i]), places(teams[j]))) >= apart for j in taken):
+            taken.append(i)
+    return taken
+
+
+def hard_shard(classifier, catalog, seed, rounds, pool, candidates=1024, keep=16, keep_random=4):
+    """One shard's rows: per round, the `keep` distinct searched teams the model gets most wrong plus `keep_random`
+    others."""
     rng = random.Random(f"hard-{seed}")
     rows, gaps_all, gaps_kept, best_found = [], [], [], []
     for r in range(rounds):
@@ -159,8 +177,9 @@ def hard_shard(classifier, catalog, seed, rounds, pool, candidates=1024, keep=64
         model = classifier.ally_win([(team, enemy) for team in teams], fixed)[:, 0]
         gap = np.abs(engine - model)
         ranked = [i for i in np.argsort(-np.nan_to_num(gap, nan=-1.0)) if not np.isnan(engine[i])]
-        chosen = ranked[:keep]
-        chosen += rng.sample(ranked[keep:], min(keep_random, len(ranked) - keep)) if len(ranked) > keep else []
+        chosen = distinct(teams, ranked, keep)
+        rest = [i for i in ranked if i not in set(chosen)]
+        chosen += rng.sample(rest, min(keep_random, len(rest)))
         gaps_all.append(float(np.nanmean(gap)))
         gaps_kept.append(float(np.mean(gap[chosen[:keep]])) if chosen else float("nan"))
         best_found.append(float(np.nanmax(engine)))
@@ -175,8 +194,8 @@ def hard_shard(classifier, catalog, seed, rounds, pool, candidates=1024, keep=64
     return arrays, probs, exact, extra, float(np.mean(gaps_all)), float(np.nanmean(gaps_kept)), float(np.mean(best_found))
 
 
-def run(shards, *, rounds=20, workers=None, checkpoint=None, out_dir=STORE, first_seed=None, device=None,
-        candidates=1024, keep=64, keep_random=16):
+def run(shards, *, rounds=80, workers=None, checkpoint=None, out_dir=STORE, first_seed=None, device=None,
+        candidates=1024, keep=16, keep_random=4):
     from .flags import snapshot
     out_dir = Path(out_dir)
     out_dir.mkdir(parents=True, exist_ok=True)
@@ -206,10 +225,11 @@ def run(shards, *, rounds=20, workers=None, checkpoint=None, out_dir=STORE, firs
 def main():
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--shards", type=int, default=1)
-    parser.add_argument("--rounds", type=int, default=20, help="enemies per shard")
+    parser.add_argument("--rounds", type=int, default=80, help="enemies per shard")
     parser.add_argument("--candidates", type=int, default=1024, help="teams scored per enemy")
-    parser.add_argument("--keep", type=int, default=64, help="largest-disagreement teams kept per enemy")
-    parser.add_argument("--keep-random", type=int, default=16, help="other teams kept per enemy")
+    parser.add_argument("--keep", type=int, default=16, help="largest-disagreement teams kept per enemy, each at least "
+                        "two places (card slots, supports) apart from the others")
+    parser.add_argument("--keep-random", type=int, default=4, help="other teams kept per enemy")
     parser.add_argument("--workers", type=int, help="engine labelling processes")
     parser.add_argument("--checkpoint", help="model (default: data/training_pod's, else data/training's), reloaded per shard")
     parser.add_argument("--first-seed", type=int)

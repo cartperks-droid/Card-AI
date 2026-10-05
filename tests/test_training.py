@@ -152,6 +152,16 @@ class TrainingTests(unittest.TestCase):
         saved = torch.load(run / "trainer.pt", weights_only=True)["optimizer"]
         self.assertEqual([g["base_lr"] for g in saved["param_groups"]], [3e-4, 1e-3])
 
+    def test_hard_examples_keep_distinct_teams(self):
+        from card_engine.training.hard import distinct
+        def team(cards, red=1, blue=1):
+            return {"cards": cards, "red": red, "blue": blue}
+        teams = [team([1, 2, 3, 4]), team([1, 2, 3, 5]), team([2, 1, 3, 4]), team([1, 2, 3, 4], red=2, blue=2),
+                 team([6, 7, 8, 9])]
+        # a one-card variant is skipped; a swap of two slots, two support changes or a new lineup are kept
+        self.assertEqual(distinct(teams, [0, 1, 2, 3, 4], keep=4), [0, 2, 3, 4])
+        self.assertEqual(distinct(teams, [0, 1, 2, 3, 4], keep=2), [0, 2])
+
     def test_hard_examples_take_a_share_of_each_batch(self):
         import numpy as np
         root = Path(self.temp.name) / "hardmix"
