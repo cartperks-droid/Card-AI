@@ -22,6 +22,9 @@ State on 2026-10-04 and how the pieces fit. Read this first when picking the run
 ## Loading labels on the pod
 The pod's `/workspace` disk is slow per file: reading 76,657 shard files took about 38 minutes (2026-10-05) whatever the CPU did, against 5 minutes on the Mac. Start the pod's trainer with `--pack-labels`: the first load also writes the checked rows into one large file in `data/labels/packs/`, and every later restart reads that file plus only the shards that are newer. Packs written under older rules are deleted automatically.
 
+## Labelling on the pod too
+The pod's CPUs sit nearly idle while its GPU trains, and its engine is built (`sim_js/setup.sh`), so it labels as well (2026-10-05). Its shards are numbered from their own ranges, `--first-seed 50000000` for battles and fixed-stat battles and `--first-seed 5000000` for hard examples, so they never share a name with the Mac's (the Mac numbers on from its own highest seed, and `pod_sync.sh` only sends shards up). Its hard examples are mined against the deep run's weight average (`data/training_deep/ema.checkpoint`), the model training there. The Mac's local run does not see the pod's shards.
+
 ## Connecting
 `ssh root@<ip> -p <port> -i ~/.ssh/id_ed25519`. The IP and port change whenever the pod restarts: copy them from the RunPod Connect tab. Claude's cloud sessions cannot reach the pod (their network blocks raw SSH), so commands run from the Mac.
 
