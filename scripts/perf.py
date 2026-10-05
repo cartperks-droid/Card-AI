@@ -34,3 +34,14 @@ for name, title in (("val_fixed", "fixed-stat battles only"), ("val_hard", "hard
         print(f"{r['step']:<10,} {r[name + '_rows']:<9,} {int(v.get('upset_rows', 0)):<7,} {v['accuracy']:.3f}  "
               f"{v['baseline']:.3f}  {v['upset_accuracy']:.3f}  {v['kl']:.3f}  {v['decisive_accuracy']:.3f}     "
               f"{v['probabilistic_error']:.3f}")
+averaged = [json.loads(l) for l in lines[-200 * count:] if '"ema"' in l][-count:]
+if averaged:  # the weight average (ema.checkpoint) beside the live weights, on the same rows
+    print("\nlive weights vs their average (ema.checkpoint)")
+    print("step       probe_kl  ema    probe_err ema    hard_kl  ema    hard_upset ema")
+    for r in averaged:
+        live_probe, ema_probe = r.get("grok", {}).get("val_probe", {}), r["ema"].get("val_probe", {})
+        live_hard, ema_hard = r.get("val_hard", {}), r["ema"].get("val_hard", {})
+        cell = lambda d, k: f"{d[k]:.3f}" if k in d else "  -  "
+        print(f"{r['step']:<10,} {cell(live_probe, 'kl')}     {cell(ema_probe, 'kl')}  {cell(live_probe, 'probabilistic_error')}     "
+              f"{cell(ema_probe, 'probabilistic_error')}  {cell(live_hard, 'kl')}    {cell(ema_hard, 'kl')}  "
+              f"{cell(live_hard, 'upset_accuracy')}      {cell(ema_hard, 'upset_accuracy')}")

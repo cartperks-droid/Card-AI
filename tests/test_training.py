@@ -196,6 +196,10 @@ class TrainingTests(unittest.TestCase):
               label_root=root, layers=2, language_from=Path(self.temp.name) / "source.checkpoint", focus_until=1)
         model, metadata = load_checkpoint(run / "model.checkpoint")
         self.assertEqual((len(model.strategy.blocks), metadata["step"]), (2, 2))
+        ema, ema_meta = load_checkpoint(run / "ema.checkpoint")  # the weight average, beside the live weights
+        self.assertEqual((len(ema.strategy.blocks), ema_meta["step"]), (2, 2))
+        live, average = dict(model.named_parameters()), dict(ema.named_parameters())
+        self.assertTrue(any(not torch.equal(live[n], average[n]) for n in live))  # it trails the live weights
         for name, value in source.description.state_dict().items():  # copied, then frozen
             self.assertTrue(torch.equal(value, model.description.state_dict()[name]), name)
 

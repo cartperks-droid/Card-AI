@@ -8,6 +8,7 @@ directory (rule fingerprint) is used; when rules change, training continues on t
 Checkpoints hold the model (model.checkpoint) plus optimizer/step state for exact resumption.
 """
 
+import copy
 import functools
 import json
 import math
@@ -238,7 +239,7 @@ def focus_rows(rows):
 
 def train(*, steps=None, batch_size=512, lr=3e-4, warmup=1000, weight_decay=0.05, dropout=0.1, freeze_language_at=None,
           eval_every=1000, init_from=None, language_lr=None, hard_fraction=0.05, layers=None, language_from=None,
-          focus_until=None,
+          focus_until=None, ema_decay=0.999,
           checkpoint_every=1000, reload_every=1000, device=None, run_dir=RUN_DIR, label_root=SHARD_DIR):
     """Train in run_dir, resuming its model and optimizer if both are there. Otherwise init_from (a model checkpoint,
     e.g. one downloaded from another machine) gives the starting weights and step, with a fresh optimizer whose learning
@@ -251,11 +252,17 @@ def train(*, steps=None, batch_size=512, lr=3e-4, warmup=1000, weight_decay=0.05
     A new run (random weights) takes `layers` strategic layers (default StrategicConfig's). language_from: a model
     checkpoint whose description transformer (card text to card vectors) the new run starts from, frozen from the
     first step. focus_until: until this step every batch is drawn from focus_rows (upsets, fixed-stat battles, hard
-    examples); after it, from all rows, where those are already a large share."""
+    examples); after it, from all rows, where those are already a large share.
+
+    ema_decay: the trainer also keeps an exponential moving average of the weights (user, 2026-10-05), saved as
+    ema.checkpoint beside model.checkpoint. At a fixed learning rate the live weights swing between evaluations (the
+    cheese decks moved by 0.35 in 1,000 steps); the average moves slowly, so predict, generate and hard should read
+    it. Each evaluation scores it on the validation probe and the hard examples ("ema" in the log)."""
     device = device or ("cuda" if torch.cuda.is_available() else "mps" if torch.backends.mps.is_available() else "cpu")
     run_dir = Path(run_dir)
     run_dir.mkdir(parents=True, exist_ok=True)
     model_path, state_path, log_path = run_dir / "model.checkpoint", run_dir / "trainer.pt", run_dir / "log.jsonl"
+    ema_path = run_dir / "ema.checkpoint"
     warm_from = 0  # step the learning-rate warmup counts from (a fresh optimizer warms up again)
     if model_path.exists() and state_path.exists():
         model, _ = load_checkpoint(model_path, map_location=device)
@@ -274,6 +281,9 @@ def train(*, steps=None, batch_size=512, lr=3e-4, warmup=1000, weight_decay=0.05
         freeze_language_at = 0  # the borrowed language side stays as it was trained
     set_dropout(model, dropout)
     model.train()
+    # the average starts from the saved one when resuming, else from the starting weights
+    ema = load_checkpoint(ema_path, map_location=device)[0] if ema_path.exists() and state is not None else copy.deepcopy(model)
+    ema.eval().requires_grad_(False)
     language = list(model.description.parameters())
     ids = {id(p) for p in language}
     rest = [p for p in model.parameters() if id(p) not in ids]
@@ -372,6 +382,9 @@ def train(*, steps=None, batch_size=512, lr=3e-4, warmup=1000, weight_decay=0.05
             total.backward()
             torch.nn.utils.clip_grad_norm_(model.parameters(), 1.0)
             optimizer.step()
+            with torch.no_grad():
+                for average, live in zip(ema.parameters(), model.parameters()):
+                    average.lerp_(live, 1 - ema_decay)
             step += 1
             if step % 100 == 0:
                 now = time.time()
@@ -396,6 +409,18 @@ def train(*, steps=None, batch_size=512, lr=3e-4, warmup=1000, weight_decay=0.05
                                       "val_probe": {k: round(v, 4) for k, v in evaluate(model, inputs, table, val_probe).items()
                                                     if k in ("kl", "accuracy", "upset_accuracy", "decisive_accuracy", "probabilistic_error")},
                                       "weight_norm": round(weight_norm(model), 2)}
+                    with torch.no_grad():
+                        ema_table = card_table(ema, tokens)
+                    hard = val_rows["hard"] > 0
+                    record["ema"] = {}
+                    if val_probe is not None:
+                        record["ema"]["val_probe"] = {k: round(v, 4) for k, v in evaluate(ema, inputs, ema_table, val_probe).items()
+                                                      if k in ("kl", "accuracy", "upset_accuracy", "probabilistic_error")}
+                    if bool(hard.any()):
+                        part = {k: v[hard] for k, v in val_rows.items()}
+                        record["ema"]["val_hard"] = {k: round(v, 4) for k, v in evaluate(ema, inputs, ema_table, part).items()
+                                                     if k in ("kl", "accuracy", "upset_accuracy", "probabilistic_error")}
+                    ema.eval()  # evaluate() leaves a model in training mode
                     kl = record["val"]["kl"]
                     if best is None or kl < best["kl"] or best.get("labels") != rules_id:
                         best = {"kl": kl, "step": step, "labels": rules_id}
@@ -406,6 +431,8 @@ def train(*, steps=None, batch_size=512, lr=3e-4, warmup=1000, weight_decay=0.05
             if step % checkpoint_every == 0:
                 save_checkpoint(model, model_path, metadata={"step": step, "labels": rules_id,
                                                              "objective": "A initiates; outcome frequencies"})
+                save_checkpoint(ema, ema_path, metadata={"step": step, "labels": rules_id, "ema_decay": ema_decay,
+                                                         "objective": "A initiates; outcome frequencies"})
                 tmp = state_path.with_suffix(".tmp")
                 torch.save({"optimizer": optimizer.state_dict(), "step": step, "best": best, "warm_from": warm_from}, tmp)
                 tmp.replace(state_path)
@@ -432,6 +459,8 @@ if __name__ == "__main__":
                         "from, frozen (default --freeze-language-at 0)")
     parser.add_argument("--focus-until", type=int, help="step until which batches hold only upsets, fixed-stat "
                         "battles and hard examples (a new model's first data)")
+    parser.add_argument("--ema-decay", type=float, default=0.999,
+                        help="decay of the weight average saved as ema.checkpoint (about 1 / (1 - decay) steps)")
     parser.add_argument("--init-from", help="model checkpoint to start from when the run directory has no trainer state "
                         "(its step is kept; the optimizer starts fresh)")
     parser.add_argument("--device")
@@ -443,4 +472,4 @@ if __name__ == "__main__":
     train(steps=parsed.steps, batch_size=parsed.batch_size, lr=parsed.lr, device=parsed.device, reload_every=parsed.reload_every,
           weight_decay=parsed.weight_decay, dropout=parsed.dropout, freeze_language_at=parsed.freeze_language_at,
           eval_every=parsed.eval_every, init_from=parsed.init_from, language_lr=parsed.language_lr, hard_fraction=parsed.hard_fraction,
-          layers=parsed.layers, language_from=parsed.language_from, focus_until=parsed.focus_until, run_dir=parsed.run_dir)
+          layers=parsed.layers, language_from=parsed.language_from, focus_until=parsed.focus_until, ema_decay=parsed.ema_decay, run_dir=parsed.run_dir)
