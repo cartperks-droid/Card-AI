@@ -119,19 +119,46 @@ def _read_packs(directory, rules):
 
 
 def _write_pack(directory, rules, entries):
-    """One uncompressed file holding these shards' checked rows, read back by _read_packs."""
+    """One uncompressed file holding these shards' checked rows, read back by _read_packs. Packs written under other
+    rules are deleted first; with too little free disk the pack is skipped, never the training (2026-10-05: a new pack
+    beside the old one filled the pod's 30 GB disk and stopped the trainer)."""
+    import shutil
     folder = _packs(directory)
     folder.mkdir(parents=True, exist_ok=True)
+    for old in [*folder.glob("partial_*"), *folder.glob("pack_*.npz")]:
+        try:
+            with np.load(old) as data:
+                keep = old.name.startswith("pack_") and str(data["rules"]) == rules
+        except (OSError, ValueError, KeyError):
+            keep = False
+        if not keep:
+            old.unlink(missing_ok=True)
     items = sorted(entries.items())
+    size = sum(value.nbytes for _, entry in items for value in entry[3].values())
+    free = shutil.disk_usage(folder).free
+    if free < size * 1.2 + 2e9:
+        print(json.dumps({"pack_skipped": f"needs {size / 1e9:.1f} GB, {free / 1e9:.1f} GB free"}), flush=True)
+        return
+    started = time.time()
     target = folder / f"pack_{time.strftime('%Y%m%d_%H%M%S')}.npz"
     tmp = target.with_name("partial_" + target.name)
+    try:
+        _save_pack(tmp, rules, items)
+    except OSError as error:  # out of space after all: drop the partial file and train on
+        tmp.unlink(missing_ok=True)
+        print(json.dumps({"pack_skipped": str(error)}), flush=True)
+        return
+    os.replace(tmp, target)
+    print(json.dumps({"packed_shards": len(items), "seconds": round(time.time() - started)}), flush=True)
+
+
+def _save_pack(tmp, rules, items):
     with open(tmp, "wb") as handle:
         np.savez(handle, rules=np.array(rules), names=np.array([path.name for path, _ in items]),
                  mtimes=np.array([entry[0] for _, entry in items], dtype=np.float64),
                  validation=np.array([entry[2] for _, entry in items], dtype=bool),
                  counts=np.array([len(entry[3]["target"]) for _, entry in items], dtype=np.int64),
                  **{key: np.concatenate([entry[3][key] for _, entry in items]) for key in ROW_KEYS})
-    os.replace(tmp, target)
 
 
 def load_split(directory, device, release=None, pack=False):
@@ -187,7 +214,6 @@ def load_split(directory, device, release=None, pack=False):
         torch.set_num_threads(threads)
     if pack and len(fresh) >= PARALLEL_LOAD:
         _write_pack(directory, rules, fresh)
-        print(json.dumps({"packed_shards": len(fresh), "seconds": round(time.time() - started)}), flush=True)
     seen = {path: fresh.get(path) or _SHARD_CACHE[path] for path in paths}
     _SHARD_CACHE.clear()
     _SHARD_CACHE.update(seen)  # shards that disappeared, or old rules' entries, are dropped
