@@ -12,6 +12,7 @@ from pathlib import Path
 
 import torch
 
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))  # run as a script: the project root holds card_engine
 from card_engine.model.checkpoint import load_checkpoint
 from card_engine.training.predict import default_device
 from card_engine.training.train import Inputs, card_table, evaluate, latest_label_dir, load_split
