@@ -152,6 +152,22 @@ class TrainingTests(unittest.TestCase):
         saved = torch.load(run / "trainer.pt", weights_only=True)["optimizer"]
         self.assertEqual([g["base_lr"] for g in saved["param_groups"]], [3e-4, 1e-3])
 
+    def test_hard_examples_take_a_share_of_each_batch(self):
+        import numpy as np
+        root = Path(self.temp.name) / "hardmix"
+        directory = root / "store"
+        directory.mkdir(parents=True)
+        labels._worker((1, 6, str(directory), snapshot(), False, Path(self.temp.name) / "tb4"))
+        labels._worker((2, 6, str(directory), snapshot(), True))
+        with np.load(directory / "fixed_00000002.npz") as shard:  # stands in for a hard shard
+            np.savez(directory / "hard_00000003.npz", **{k: shard[k] for k in shard.files})
+        train_rows, _ = load_split(directory, "cpu")
+        self.assertEqual(int(train_rows["hard"].sum()), 6)
+        self.assertEqual(len(train_rows["hard"]), int(train_rows["target"].shape[0]))  # no copies
+        run = Path(self.temp.name) / "hardmix_run"
+        train(steps=2, batch_size=4, warmup=1, eval_every=100, checkpoint_every=2, device="cpu", run_dir=run,
+              label_root=root, hard_fraction=0.5)
+
     def test_impossible_duplicates_are_dropped(self):
         cards = np.ones((3, 2, 4), dtype=np.int16)
         cards[1, 1, :2] = 250  # two Time Lord Stryx on one side

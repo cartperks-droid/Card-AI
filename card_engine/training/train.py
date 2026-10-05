@@ -36,10 +36,10 @@ def latest_label_dir(root=SHARD_DIR):
 _SHARD_CACHE = {}  # path -> (mtime, rules, validation, rows): each shard is read and checked once per rules version
 
 
-def load_split(directory, device, hard_repeat=1):
+def load_split(directory, device):
     """(train, validation) tensors of the rows still valid under the current rules (training.flags);
     validation = shards whose seed is divisible by VALIDATION_EVERY. Every row carries `hard` (1 for training.hard's
-    generator-proposed battles); training repeats those rows hard_repeat times, so the few there are weigh in.
+    hard-example battles); training draws a set share of each batch from them (train's hard_fraction).
 
     Shards are read and checked once, then cached: a reload reads only new shards, and rechecks the others only
     when the rules change. Card fields stay int16 as stored (a quarter of int64's memory); Inputs widens each batch.
@@ -73,11 +73,8 @@ def load_split(directory, device, hard_repeat=1):
                                                     if key != "target"}).numpy().astype(np.int8)
             cached = (mtime, rules, validation, rows)
         seen[path] = cached
-        rows = cached[3]
-        if len(rows["target"]):
-            if not cached[2] and hard_repeat > 1 and rows["hard"].any():
-                rows = {key: np.repeat(value, hard_repeat, axis=0) for key, value in rows.items()}
-            split["val" if cached[2] else "train"].append(rows)
+        if len(cached[3]["target"]):
+            split["val" if cached[2] else "train"].append(cached[3])
     _SHARD_CACHE.clear()
     _SHARD_CACHE.update(seen)  # shards that disappeared, or old rules' entries, are dropped
     out = {name: {key: torch.as_tensor(np.concatenate([part[key] for part in parts]), device=device) for key in parts[0]}
@@ -223,7 +220,7 @@ def weight_norm(model):
 
 
 def train(*, steps=None, batch_size=512, lr=3e-4, warmup=1000, weight_decay=0.05, dropout=0.1, freeze_language_at=None,
-          eval_every=1000, init_from=None, language_lr=None, hard_repeat=20,
+          eval_every=1000, init_from=None, language_lr=None, hard_fraction=0.05,
           checkpoint_every=1000, reload_every=1000, device=None, run_dir=RUN_DIR, label_root=SHARD_DIR):
     """Train in run_dir, resuming its model and optimizer if both are there. Otherwise init_from (a model checkpoint,
     e.g. one downloaded from another machine) gives the starting weights and step, with a fresh optimizer whose learning
@@ -270,7 +267,8 @@ def train(*, steps=None, batch_size=512, lr=3e-4, warmup=1000, weight_decay=0.05
     tokens = inputs.data.description_tokens
     from .flags import snapshot
     label_dir = latest_label_dir(label_root)
-    train_rows, val_rows = load_split(label_dir, device, hard_repeat)
+    train_rows, val_rows = load_split(label_dir, device)
+    hard_rows = train_rows["hard"].nonzero()[:, 0] if train_rows is not None else None  # recomputed on each reload
     if train_rows is None:
         raise SystemExit("No labels are valid under the current rules: see `python -m card_engine.training.flags status`")
     rules_id = snapshot()  # the current rules; probes and the best checkpoint reset when it changes
@@ -311,16 +309,20 @@ def train(*, steps=None, batch_size=512, lr=3e-4, warmup=1000, weight_decay=0.05
         while steps is None or step < steps:
             if step and step % reload_every == 0:  # new shards, or new rules
                 label_dir = latest_label_dir(label_root)
-                fresh = load_split(label_dir, device, hard_repeat)
+                fresh = load_split(label_dir, device)
                 if fresh[0] is None:  # every row held back (an undeclared engine change): keep the rows already loaded
                     print(json.dumps({"step": step, "labels_held_back": "no rows are valid under the current rules; "
                                       "training continues on the loaded rows until the change is declared (flags status)"}),
                           flush=True)
                 else:
                     train_rows, val_rows = fresh
+                    hard_rows = train_rows["hard"].nonzero()[:, 0]
                     rules_id = snapshot()
             count = train_rows["target"].shape[0]
             picks = torch.randint(count, (batch_size,), generator=generator).to(device)
+            if hard_fraction and len(hard_rows):  # a set share of the batch from hard examples, no copies kept
+                n = int(round(batch_size * hard_fraction))
+                picks[:n] = hard_rows[torch.randint(len(hard_rows), (n,), generator=generator).to(device)]
             batch = {k: v[picks] for k, v in train_rows.items()}
             for group in optimizer.param_groups:
                 group["lr"] = group["base_lr"] * min(1.0, (step - warm_from + 1) / warmup)
@@ -382,7 +384,8 @@ if __name__ == "__main__":
     parser.add_argument("--freeze-language-at", type=int, help="step after which the description transformer is frozen; "
                         "a step past the current one unfreezes it until then")
     parser.add_argument("--language-lr", type=float, help="the description transformer's learning rate (default --lr)")
-    parser.add_argument("--hard-repeat", type=int, default=20, help="times each hard example (training.hard) appears in training")
+    parser.add_argument("--hard-fraction", type=float, default=0.05,
+                        help="share of each batch drawn from hard examples (training.hard); the rest uniformly from all rows")
     parser.add_argument("--init-from", help="model checkpoint to start from when the run directory has no trainer state "
                         "(its step is kept; the optimizer starts fresh)")
     parser.add_argument("--device")
@@ -393,5 +396,5 @@ if __name__ == "__main__":
     parsed = parser.parse_args()
     train(steps=parsed.steps, batch_size=parsed.batch_size, lr=parsed.lr, device=parsed.device, reload_every=parsed.reload_every,
           weight_decay=parsed.weight_decay, dropout=parsed.dropout, freeze_language_at=parsed.freeze_language_at,
-          eval_every=parsed.eval_every, init_from=parsed.init_from, language_lr=parsed.language_lr, hard_repeat=parsed.hard_repeat,
+          eval_every=parsed.eval_every, init_from=parsed.init_from, language_lr=parsed.language_lr, hard_fraction=parsed.hard_fraction,
           run_dir=parsed.run_dir)

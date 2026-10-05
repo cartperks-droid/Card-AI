@@ -13,6 +13,8 @@ import sys
 path = sys.argv[1] if len(sys.argv) > 1 else "data/training_pod/log.jsonl"
 count = int(sys.argv[2]) if len(sys.argv) > 2 else 6
 lines = open(path).readlines()
+if not lines:
+    raise SystemExit(f"{path} is empty: the trainer is still loading its labels (see its .out file)")
 last = json.loads(lines[-1])
 print(f"latest step {last['step']:,}  rows {last['train_rows']:,}  {last.get('steps_per_s')} steps/s")
 print("step       rows        val_rows  upsets  acc    base   upset  kl     decisive  prob_err  train_acc")

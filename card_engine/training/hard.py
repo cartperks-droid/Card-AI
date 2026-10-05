@@ -21,7 +21,7 @@ mutations none or random; supports base or random tier, none 10% of the time).
 Shards (hard_<seed>.npz, their own seed sequence) hold the label fields plus model_win, the model's win chance at
 mining time; each prints the mean gap over every team evaluated and over the kept ones, and the mean best engine win
 chance the search reached. The trainer repeats hard rows
-(--hard-repeat) and scores validation's separately (val_hard).
+(--hard-fraction of each batch) and scores validation's separately (val_hard).
 
     python -m card_engine.training.hard --shards 100 --rounds 20 --workers 7
 """
