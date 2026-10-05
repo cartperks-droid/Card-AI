@@ -280,5 +280,7 @@ Each support card has exactly one border tier: I base, II Platinum, III Crystal,
 - Awakened Toy Bear gets ×(1 + fallen awakened Toys) HP and ATK on entry. User: 3,886 / 5,829 / 7,772 ATK, and 15,544 HP at 3 fallen = Platinum stats.
 - Phantom Galaxy is 20%.
 - Santa Claus has a 2× stat multiplier, not Aurora's 1.75×. Toy Bear's 2/3 card modifier cancels Snow's 1.5×.
+- Hades behind Hades (user, 2026-10-05): the second Hades copies the first's ability, which is useless on its own. His engine agrees (battle-v2.ts: Hades copies the latest fallen ally's ability other than The Underworld), so no change; the classifier overrated such teams at floor 105.
+- Achlys's Divine Mist resets the facing enemy to its card's base borderless stats, fixed tower stats included (his engine, battle-v2.ts). Floor 105's Sable the Envious (Jealousy) turns it back onto Achlys, so Achlys teams lose there (engine 0.0).
 - **Open:**
   - The user will verify every class list.
