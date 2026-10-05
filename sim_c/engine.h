@@ -104,13 +104,15 @@ enum { CMP_LT, CMP_LE, CMP_GT, CMP_GE };
 // FNV-1a over his card id strings; it streams, so `parent + suffix` continues the parent's hash.
 #define FNV_START 1469598103934665603ull
 static inline uint64_t fnv(uint64_t h, const char *s) { for (; *s; s++) { h ^= (unsigned char)*s; h *= 1099511628211ull; } return h; }
-// More cards than MAXC / MAXT, or recursion past MAXDEPTH: the search abandons the battle (an error, never a wrong answer).
+// More cards than MAXC / MAXT, recursion past MAXDEPTH, or more than MAXOPS engine operations in one playthrough: the
+// search abandons the battle (an error, never a wrong answer).
 _Noreturn void engine_overflow(Runtime *rt);
 
 struct Runtime {
   State s;
   double deathEpoch;
   int depth;     // nesting of on_entry / deal_damage / resolve_deaths (engine.c MAXDEPTH)
+  long ops;      // on_entry / deal_damage / death checks in this playthrough (engine.c MAXOPS)
   void *search;  // the search's tape (search.c)
 };
 

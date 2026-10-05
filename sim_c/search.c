@@ -103,6 +103,7 @@ static int play(const char *start, Node *node, uint32_t *random, const Options *
   else state_unpack(start, &rt->s);
   rt->search = tape;
   rt->depth = 0;
+  rt->ops = 0;
   current = tape;
   int jumped = setjmp(tape->branch);
   if (jumped) return jumped == 1 ? -1 : -2;

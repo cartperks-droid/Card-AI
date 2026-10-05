@@ -195,7 +195,14 @@ static void on_entry(Runtime *rt, int c);
 #ifndef MAXDEPTH
 #define MAXDEPTH 2000
 #endif
-static void enter(Runtime *rt) { if (++rt->depth > MAXDEPTH) engine_overflow(rt); }
+// An operation budget per playthrough: a battle that loops inside one turn (the turn cap never comes) is abandoned
+// like an overflow. 2026-10-05: a hard-example battle ran for over an hour on one worker. A 2,000-turn battle uses
+// about a hundred thousand.
+#ifndef MAXOPS
+#define MAXOPS 20000000L
+#endif
+static void count_op(Runtime *rt) { if (++rt->ops > MAXOPS) engine_overflow(rt); }
+static void enter(Runtime *rt) { count_op(rt); if (++rt->depth > MAXDEPTH) engine_overflow(rt); }
 
 // withAbility: run with the card's ability temporarily replaced.
 #define WITH_ABILITY(c, name, stmt) do { int prev_ = CARD(c)->abilityOverride; CARD(c)->abilityOverride = (name); stmt; CARD(c)->abilityOverride = prev_; } while (0)
@@ -1533,6 +1540,7 @@ static void apply_on_death(Runtime *rt, int dead, int opponent, int skip_opponen
 static void resolve_deaths_(Runtime *rt) {
   int changed = 1;
   while (changed) {
+    count_op(rt);
     changed = 0;
     for (int team = 0; team < 2; team++) {
       int c = active(rt, team);

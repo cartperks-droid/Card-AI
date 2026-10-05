@@ -128,7 +128,8 @@ class Battle:
         out = (ctypes.c_double * 7)()
         library().ce_solve(self.state, nodeBudget, sampleBelow, rollouts, rolloutError, maxTurns, seed, out)
         if out[6]:
-            raise RuntimeError("C engine: more cards or deeper recursion than it has room for (sim_c/engine.h MAXC, engine.c MAXDEPTH)")
+            raise RuntimeError("C engine: more cards, deeper recursion or more operations in one playthrough than it allows "
+                               "(sim_c/engine.h MAXC, engine.c MAXDEPTH, MAXOPS)")
         return {"a": out[0], "b": out[1], "draw": out[2], "exact": bool(out[3]), "nodes": int(out[4]), "playouts": int(out[5])}
 
     def close(self):
