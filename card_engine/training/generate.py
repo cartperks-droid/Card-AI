@@ -7,9 +7,12 @@ vector, the three factors a card token is built from:
   - mutation: the mutation embedding.
 Each side also has a distribution over the pool's red and blue supports.
 
-Adam ascends the classifier's log win probability in one role, --role attack (the ally attacks first and loses a
+Adam ascends the classifier's log win probability in one role: --role attack (the ally attacks first and loses a
 mutual wipe) or --role defend (the enemy attacks first). The two are separate situations and are never averaged
 (user, 2026-10-04). The classifier's weights never change.
+  - Annealing (user, 2026-10-05), like a diffusion sampler with the classifier's gradient as the score: the ascent
+    runs in --noise-levels levels, each after the first starting with fresh noise that shrinks geometrically from
+    --sigma-max, so slots can leave a poor peak early and only polish late.
   - Stats: a slot's stats depend on the discrete choice. So the slot gets the expected log stats over the pool's
     entries under p(entry) = softmax(-distance / temperature). The distance factorises over card, border and
     mutation, each measured in units of its table's typical gap between neighbouring options.
@@ -247,6 +250,9 @@ class Settings:
     rechecks: int = 3  # extra ascent rounds (doubled penalty) while slots stay blurred
     nearest: int = 3  # decoding: k nearest entries per slot
     role: str = "attack"  # the ascended side attacks first ("attack") or defends ("defend")
+    noise_levels: int = 6  # annealing: the ascent runs in this many levels, fresh noise before each after the first
+    sigma_max: float = 0.5  # noise added before the second level, in units of each factor's spread (z)
+    sigma_min: float = 0.02  # noise before the last level; levels between are geometric
 
 
 def ascend(space, opponents, settings, generator, enemy_stats=None):
@@ -283,8 +289,25 @@ def ascend(space, opponents, settings, generator, enemy_stats=None):
         loss.backward()
         optimizer.step()
 
-    for t in range(settings.steps):
-        step(settings.commitment * ((t + 1) / settings.steps) ** 2)
+    # Annealing (user, 2026-10-05: "like a diffusion model with a time variable"): the classifier's gradient is the
+    # score; each level after the first starts by adding fresh noise of size sigma(t) to the slots and support
+    # logits, so a slot stuck on a poor peak can leave it, and sigma falls geometrically to sigma_min, so the last
+    # levels only polish. The commitment weight ramps over the whole schedule. One level is a plain ascent.
+    levels = max(1, settings.noise_levels)
+    sigmas = np.geomspace(settings.sigma_max, settings.sigma_min, levels - 1) if levels > 1 else []
+    per_level = max(1, settings.steps // levels)
+    total, t = per_level * levels, 0
+    for level in range(levels):
+        if level:
+            sigma = float(sigmas[level - 1])
+            with torch.no_grad():
+                for zi in z:
+                    zi.add_(sigma * torch.randn(zi.shape, generator=generator).to(space.device))
+                for logits in (red_logits, blue_logits):
+                    logits.add_(sigma * torch.randn(logits.shape, generator=generator).to(space.device))
+        for _ in range(per_level):
+            t += 1
+            step(settings.commitment * (t / total) ** 2)
     weight = settings.commitment
     for _ in range(settings.rechecks):
         with torch.no_grad():
@@ -502,6 +525,9 @@ def main():
     parser.add_argument("--steps", type=int, default=Settings.steps)
     parser.add_argument("--temperature", type=float, default=Settings.temperature)
     parser.add_argument("--nearest", type=int, default=Settings.nearest)
+    parser.add_argument("--noise-levels", type=int, default=Settings.noise_levels,
+                        help="annealing levels: fresh noise, shrinking from --sigma-max, before each after the first (1: none)")
+    parser.add_argument("--sigma-max", type=float, default=Settings.sigma_max)
     parser.add_argument("--role", choices=ROLES, default="attack",
                         help="attack: your team attacks first and loses a mutual wipe; defend: the enemy attacks first")
     parser.add_argument("--no-verify", action="store_true", help="skip the engine check")
@@ -522,7 +548,8 @@ def main():
     mask = dict(zip(("borders", "mutations", "tiers"), masks(args.borders, args.mutations, args.support_tiers)),
                 max_rarity=parse_rarity(args.max_rarity) if args.max_rarity else None)
     classifier = Classifier(args.checkpoint, args.device)
-    settings = Settings(steps=args.steps, temperature=args.temperature, nearest=args.nearest, role=args.role)
+    settings = Settings(steps=args.steps, temperature=args.temperature, nearest=args.nearest, role=args.role,
+                        noise_levels=args.noise_levels, sigma_max=args.sigma_max)
     space = SlotSpace(classifier, make_pool(catalog, args.pool, limited=not args.no_limited, **mask))
     if enemy is not None:
         enemies = [enemy]
