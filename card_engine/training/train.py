@@ -18,6 +18,7 @@ import numpy as np
 import torch
 
 from ..model import BattleModel, load_model_data
+from ..model.config import StrategicConfig
 from ..model.checkpoint import load_checkpoint, save_checkpoint
 from .labels import FIELDS, FIXED_FIELDS, SHARD_DIR, fixed_arrays, possible_rows, shard_paths
 
@@ -41,6 +42,7 @@ def load_split(directory, device, release=None):
     validation = shards whose seed is divisible by VALIDATION_EVERY. Every row carries `hard` (1 for training.hard's
     hard-example battles); training draws a set share of each batch from them (train's hard_fraction).
 
+    Every row also carries `favourite`, the stat favourite (stat_favourite): upsets are rows it did not win.
     Shards are read and checked once, then cached: a reload reads only new shards, and rechecks the others only
     when the rules change. Card fields stay int16 as stored (a quarter of int64's memory); Inputs widens each batch.
     `release` runs just before the tensors are built, once rows are known to exist: the trainer drops its old tensors
@@ -70,9 +72,8 @@ def load_split(directory, device, release=None):
             rows.update({key: arrays[key][keep] for key in FIXED_FIELDS})
             rows["target"] = (arrays["probs"][keep, :2] / finished[keep, None]).astype(np.float32)
             rows["hard"] = np.full(int(keep.sum()), path.name.startswith("hard_"), dtype=np.int8)
-            if validation:
-                rows["favourite"] = stat_favourite({key: torch.as_tensor(value) for key, value in rows.items()
-                                                    if key != "target"}).numpy().astype(np.int8)
+            rows["favourite"] = stat_favourite({key: torch.as_tensor(value) for key, value in rows.items()
+                                                if key != "target"}).numpy().astype(np.int8)
             cached = (mtime, rules, validation, rows)
         seen[path] = cached
         if len(cached[3]["target"]):
@@ -223,8 +224,16 @@ def weight_norm(model):
     return math.sqrt(sum(float(p.detach().square().sum()) for p in model.parameters()))
 
 
+def focus_rows(rows):
+    """Indices of the rows a new model learns first (user, 2026-10-04): upsets (the stat favourite lost), fixed-stat
+    battles and hard examples, so "bigger stats win" is not learned before the abilities that overturn it."""
+    upset = rows["favourite"].long() != rows["target"].argmax(-1)
+    return (upset | (rows["fixed_side"] >= 0) | (rows["hard"] > 0)).nonzero()[:, 0]
+
+
 def train(*, steps=None, batch_size=512, lr=3e-4, warmup=1000, weight_decay=0.05, dropout=0.1, freeze_language_at=None,
-          eval_every=1000, init_from=None, language_lr=None, hard_fraction=0.05,
+          eval_every=1000, init_from=None, language_lr=None, hard_fraction=0.05, layers=None, language_from=None,
+          focus_until=None,
           checkpoint_every=1000, reload_every=1000, device=None, run_dir=RUN_DIR, label_root=SHARD_DIR):
     """Train in run_dir, resuming its model and optimizer if both are there. Otherwise init_from (a model checkpoint,
     e.g. one downloaded from another machine) gives the starting weights and step, with a fresh optimizer whose learning
@@ -232,7 +241,12 @@ def train(*, steps=None, batch_size=512, lr=3e-4, warmup=1000, weight_decay=0.05
 
     language_lr: the description transformer's learning rate (default lr), its own parameter group. Its Adam state
     starts fresh whenever the saved optimizer has no such group, so unfreezing it later (a --freeze-language-at past
-    the current step) does not resume momentum from before the freeze."""
+    the current step) does not resume momentum from before the freeze.
+
+    A new run (random weights) takes `layers` strategic layers (default StrategicConfig's). language_from: a model
+    checkpoint whose description transformer (card text to card vectors) the new run starts from, frozen from the
+    first step. focus_until: until this step every batch is drawn from focus_rows (upsets, fixed-stat battles, hard
+    examples); after it, from all rows, where those are already a large share."""
     device = device or ("cuda" if torch.cuda.is_available() else "mps" if torch.backends.mps.is_available() else "cpu")
     run_dir = Path(run_dir)
     run_dir.mkdir(parents=True, exist_ok=True)
@@ -245,7 +259,14 @@ def train(*, steps=None, batch_size=512, lr=3e-4, warmup=1000, weight_decay=0.05
         model, metadata = load_checkpoint(init_from, map_location=device)
         state, warm_from = None, int(metadata["step"])
     else:
-        model, state = BattleModel().to(device), None
+        strategic = StrategicConfig(**({"layers": layers} if layers else {}))
+        model, state = BattleModel(strategic_config=strategic).to(device), None
+        if language_from is not None:
+            source, _ = load_checkpoint(language_from, map_location=device)
+            model.description.load_state_dict(source.description.state_dict())
+            del source
+    if language_from is not None and freeze_language_at is None:
+        freeze_language_at = 0  # the borrowed language side stays as it was trained
     set_dropout(model, dropout)
     model.train()
     language = list(model.description.parameters())
@@ -272,9 +293,9 @@ def train(*, steps=None, batch_size=512, lr=3e-4, warmup=1000, weight_decay=0.05
     from .flags import snapshot
     label_dir = latest_label_dir(label_root)
     train_rows, val_rows = load_split(label_dir, device)
-    hard_rows = train_rows["hard"].nonzero()[:, 0] if train_rows is not None else None  # recomputed on each reload
     if train_rows is None:
         raise SystemExit("No labels are valid under the current rules: see `python -m card_engine.training.flags status`")
+    hard_rows, focus = train_rows["hard"].nonzero()[:, 0], focus_rows(train_rows)  # recomputed on each reload
     rules_id = snapshot()  # the current rules; probes and the best checkpoint reset when it changes
     # Grokking probes: fixed subsets of the training and validation rows, so the curves stay comparable
     # (the full validation set grows with new shards and changes with the rules).
@@ -327,13 +348,15 @@ def train(*, steps=None, batch_size=512, lr=3e-4, warmup=1000, weight_decay=0.05
                           flush=True)
                 else:
                     train_rows, val_rows = fresh
-                    hard_rows = train_rows["hard"].nonzero()[:, 0]
+                    hard_rows, focus = train_rows["hard"].nonzero()[:, 0], focus_rows(train_rows)
                     rules_id = snapshot()
             count = train_rows["target"].shape[0]
             picks = torch.randint(count, (batch_size,), generator=generator).to(device)
-            if hard_fraction and len(hard_rows):  # a set share of the batch from hard examples, no copies kept
-                n = int(round(batch_size * hard_fraction))
+            n = int(round(batch_size * hard_fraction)) if hard_fraction and len(hard_rows) else 0
+            if n:  # a set share of the batch from hard examples, no copies kept
                 picks[:n] = hard_rows[torch.randint(len(hard_rows), (n,), generator=generator).to(device)]
+            if focus_until is not None and step < focus_until and len(focus):  # the focus phase: no ordinary rows
+                picks[n:] = focus[torch.randint(len(focus), (batch_size - n,), generator=generator).to(device)]
             batch = {k: v[picks] for k, v in train_rows.items()}
             for group in optimizer.param_groups:
                 group["lr"] = group["base_lr"] * min(1.0, (step - warm_from + 1) / warmup)
@@ -349,6 +372,8 @@ def train(*, steps=None, batch_size=512, lr=3e-4, warmup=1000, weight_decay=0.05
                 now = time.time()
                 record = {"step": step, "loss": round(loss.item(), 4), "steps_per_s": round(100 / (now - last), 2),
                           "train_rows": count, "labels": rules_id}
+                if focus_until is not None and step <= focus_until:
+                    record["focus_rows"] = len(focus)
                 last = now
                 if step % eval_every == 0 and val_rows is not None:
                     table = eval_table()
@@ -397,6 +422,11 @@ if __name__ == "__main__":
     parser.add_argument("--language-lr", type=float, help="the description transformer's learning rate (default --lr)")
     parser.add_argument("--hard-fraction", type=float, default=0.05,
                         help="share of each batch drawn from hard examples (training.hard); the rest uniformly from all rows")
+    parser.add_argument("--layers", type=int, help="strategic transformer layers, for a run starting from random weights")
+    parser.add_argument("--language-from", help="model checkpoint whose description transformer a new run starts "
+                        "from, frozen (default --freeze-language-at 0)")
+    parser.add_argument("--focus-until", type=int, help="step until which batches hold only upsets, fixed-stat "
+                        "battles and hard examples (a new model's first data)")
     parser.add_argument("--init-from", help="model checkpoint to start from when the run directory has no trainer state "
                         "(its step is kept; the optimizer starts fresh)")
     parser.add_argument("--device")
@@ -408,4 +438,4 @@ if __name__ == "__main__":
     train(steps=parsed.steps, batch_size=parsed.batch_size, lr=parsed.lr, device=parsed.device, reload_every=parsed.reload_every,
           weight_decay=parsed.weight_decay, dropout=parsed.dropout, freeze_language_at=parsed.freeze_language_at,
           eval_every=parsed.eval_every, init_from=parsed.init_from, language_lr=parsed.language_lr, hard_fraction=parsed.hard_fraction,
-          run_dir=parsed.run_dir)
+          layers=parsed.layers, language_from=parsed.language_from, focus_until=parsed.focus_until, run_dir=parsed.run_dir)

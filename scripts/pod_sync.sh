@@ -26,6 +26,10 @@ while true; do
   rsync -az --no-owner --no-group -e "$ssh_cmd" --exclude 'partial_*' --include 'store/***' --include 'snapshots/***' \
     --include rule_changes.json --exclude '*' data/labels/ "$remote/data/labels/" || true
   rsync -az --no-owner --no-group -e "$ssh_cmd" "$remote/data/training/log.jsonl" "$remote/data/training/*.checkpoint" data/training_pod/ 2>/dev/null || true
+  # The fresh deeper run (docs/training.md) comes back under its own name.
+  mkdir -p data/training_deep
+  rsync -az --no-owner --no-group -e "$ssh_cmd" "$remote/data/training_deep/log.jsonl" "$remote/data/training_deep/*.checkpoint" data/training_deep/ 2>/dev/null || true
   tail -1 data/training_pod/log.jsonl 2>/dev/null || true
+  tail -1 data/training_deep/log.jsonl 2>/dev/null || true
   sleep 300
 done

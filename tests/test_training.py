@@ -178,6 +178,27 @@ class TrainingTests(unittest.TestCase):
         train(steps=2, batch_size=4, warmup=1, eval_every=100, checkpoint_every=2, device="cpu", run_dir=run,
               label_root=root, hard_fraction=0.5)
 
+    def test_fresh_deeper_run_borrows_the_language_side_and_starts_on_focus_rows(self):
+        from card_engine.model.checkpoint import load_checkpoint, save_checkpoint
+        from card_engine.training.train import focus_rows
+        root = Path(self.temp.name) / "fresh"
+        directory = root / "store"
+        directory.mkdir(parents=True)
+        labels._worker((1, 6, str(directory), snapshot(), False, Path(self.temp.name) / "tb5"))
+        labels._worker((2, 6, str(directory), snapshot(), True))
+        train_rows, _ = load_split(directory, "cpu")
+        focus = focus_rows(train_rows)
+        self.assertTrue(set(torch.nonzero(train_rows["fixed_side"] >= 0)[:, 0].tolist()) <= set(focus.tolist()))
+        source = BattleModel()
+        save_checkpoint(source, Path(self.temp.name) / "source.checkpoint", metadata={"step": 7})
+        run = Path(self.temp.name) / "fresh_run"
+        train(steps=2, batch_size=4, warmup=1, eval_every=100, checkpoint_every=2, device="cpu", run_dir=run,
+              label_root=root, layers=2, language_from=Path(self.temp.name) / "source.checkpoint", focus_until=1)
+        model, metadata = load_checkpoint(run / "model.checkpoint")
+        self.assertEqual((len(model.strategy.blocks), metadata["step"]), (2, 2))
+        for name, value in source.description.state_dict().items():  # copied, then frozen
+            self.assertTrue(torch.equal(value, model.description.state_dict()[name]), name)
+
     def test_impossible_duplicates_are_dropped(self):
         cards = np.ones((3, 2, 4), dtype=np.int16)
         cards[1, 1, :2] = 250  # two Time Lord Stryx on one side
