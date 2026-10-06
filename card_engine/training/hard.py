@@ -268,7 +268,9 @@ def hard_shard(classifier, catalog, seed, rounds, pool, candidates=1024, keep=16
              "fixed_stats": np.array([f[:2] for *_, f, _ in rows], dtype=np.float32),
              "fixed_hp_mult": np.array([f[2] for *_, f, _ in rows], dtype=np.int8),
              "model_win": np.array([m for *_, m in rows], dtype=np.float32)}
-    return arrays, probs, exact, extra, float(np.mean(gaps_all)), float(np.nanmean(gaps_kept)), float(np.mean(best_found))
+    reached = float(np.mean([not np.isnan(b) for b in best_found])) if best_found else float("nan")
+    best = float(np.nanmean(best_found)) if reached else float("nan")
+    return arrays, probs, exact, extra, float(np.mean(gaps_all)), float(np.nanmean(gaps_kept)), (best, reached)
 
 
 def run(shards, *, rounds=40, workers=None, checkpoint=None, out_dir=STORE, first_seed=None, device=None,
@@ -303,7 +305,8 @@ def run(shards, *, rounds=40, workers=None, checkpoint=None, out_dir=STORE, firs
             print(json.dumps({"shard": target.name, "done": done, "of": shards, "rows": len(probs),
                               "model_step": classifier.metadata.get("step") if classifier else None, "seconds": round(time.time() - started),
                               "mean_gap_all": round(gap_all, 3), "mean_gap_kept": round(gap_kept, 3),
-                              "mean_best_engine_win": round(best, 3)}), flush=True)
+                              "mean_best_engine_win": round(best[0], 3), "reached_full_stats": round(best[1], 3)}),
+                  flush=True)
             seed += 1
 
 
@@ -313,12 +316,13 @@ def main():
     parser.add_argument("--rounds", type=int, default=40, help="enemies per shard")
     parser.add_argument("--candidates", type=int, default=12000, help="engine battles per enemy (the annealed search climbs "
                         "floor 105 Impossible from random teams in about 3,400, 2026-10-06)")
-    parser.add_argument("--keep", type=int, default=16, help="largest-disagreement teams kept per enemy, each at least "
+    parser.add_argument("--keep", type=int, help="largest-disagreement teams kept per enemy, each at least "
                         "two places (card slots, supports) apart from the others")
     parser.add_argument("--generator-every", type=int, default=4,
                         help="every Nth enemy gets the annealed generator's teams (the model's overconfident ones) "
                         "instead of the engine search's (0: never)")
-    parser.add_argument("--keep-random", type=int, default=4, help="other teams kept per enemy")
+    parser.add_argument("--keep-random", type=int, help="other teams kept per enemy (4; 200 with --select engine: "
+                        "every battle played is a label, and the gap ladder's random ones cost nothing more)")
     parser.add_argument("--workers", type=int, help="engine labelling processes")
     parser.add_argument("--checkpoint", help="model (default: data/training_pod's, else data/training's), reloaded per shard")
     parser.add_argument("--first-seed", type=int)
@@ -329,6 +333,9 @@ def main():
     parser.add_argument("--prior", type=float, default=PRIOR,
                         help="chance a drawn card comes from the stat-ignoring list (0: discovery from the whole pool)")
     args = parser.parse_args()
+    engine = args.select == "engine"  # the engine's picks: keep many (the model mode keeps few: near-duplicates were memorised)
+    args.keep = args.keep if args.keep is not None else 32 if engine else 16
+    args.keep_random = args.keep_random if args.keep_random is not None else 200 if engine else 4
     run(args.shards, rounds=args.rounds, workers=args.workers, checkpoint=args.checkpoint, first_seed=args.first_seed,
         device=args.device, candidates=args.candidates, keep=args.keep, keep_random=args.keep_random,
         generator_every=args.generator_every, prior=args.prior, select=args.select)
