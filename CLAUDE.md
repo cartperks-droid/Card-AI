@@ -56,7 +56,7 @@ python -m card_engine.training.train --batch-size 512 --weight-decay 0.05 --drop
   - accuracy on deterministic battles;
   - error on random battles' win chance;
   - accuracy on "upsets", where abilities overturn the stat favourite.
-- **Regularisation:** dropout only at the GELU upscale. The language transformer freezes at a set step.
+- **Regularisation:** dropout only at the GELU upscale. The language transformer freezes at a set step and trains again once the stat MLP plateaus (user, 2026-10-06; `stat_drift` in the log).
 - **A fresh run** (user, 2026-10-04; built 2026-10-05 as the deeper pod run, `docs/training.md`): if the model is ever initialised again, its first data should be upsets and fixed-stat battles, before the general mix (`train.py --mix-start/--mix-until/--mix`, set batch shares that move toward the natural mix), and more layers (`--layers`). Its description transformer is its own, learned from scratch with it (user, 2026-10-06: cheap next to 18 strategic layers; earlier runs borrowed a frozen one with `--language-from`). The run from 2026-10-02 learned "bigger stats win" first and resisted ability wins at large stat gaps (Drago's floor-105 cheese decks: engine 0.31-0.56, model 0.01-0.09).
 - **Grokking:** probes (fixed training and validation subsets, plus the weight norm) are logged. The dataset keeps growing.
 - **Generator** (`training/generate.py`; built 2026-10-03, its results are only as good as the classifier):

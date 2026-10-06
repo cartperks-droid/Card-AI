@@ -6,6 +6,8 @@
 
 val_rows and upsets are the validation set's size and its upset slice: when new shards change them, the
 metrics move with the data, not the model.
+stat_drift: the stat MLP's progress over the interval; about 1 means it only wanders (a plateau), and the frozen
+description transformer trains again after two such intervals.
 """
 
 import json
@@ -21,12 +23,13 @@ if not lines:
     raise SystemExit(f"{path} is empty: the trainer is still loading its labels (see its .out file)")
 last = json.loads(lines[-1])
 print(f"latest step {last['step']:,}  rows {last['train_rows']:,}  {last.get('steps_per_s')} steps/s")
-print("step       rows        val_rows  upsets  acc    base   upset  kl     decisive  prob_err  train_acc")
+print("step       rows        val_rows  upsets  acc    base   upset  kl     decisive  prob_err  train_acc  stat_drift")
 for r in [json.loads(l) for l in lines[-200 * count:] if '"val"' in l][-count:]:
     v, t = r["val"], r.get("grok", {}).get("train_probe", {})
     print(f"{r['step']:<10,} {r['train_rows']:<11,} {r.get('val_rows', 0):<9,} {int(v.get('upset_rows', 0)):<7,} "
           f"{v['accuracy']:.3f}  {v['baseline']:.3f}  {v['upset_accuracy']:.3f}  {v['kl']:.3f}  "
-          f"{v['decisive_accuracy']:.3f}     {v['probabilistic_error']:.3f}     {t.get('accuracy', float('nan')):.3f}")
+          f"{v['decisive_accuracy']:.3f}     {v['probabilistic_error']:.3f}     {t.get('accuracy', float('nan')):.3f}      {r.get('stat_drift', float('nan')):.2f}"
+          + ("  language unfrozen" if r.get("language_unfrozen") else ""))
 for name, title in (("val_fixed", "fixed-stat battles only"), ("val_hard", "hard examples only (generator-proposed)"),
                     ("val_hidden", "incomplete mode only (against the unseen field)"),
                     ("val_found", "found by the annealed search only (hard.py --select engine)")):
