@@ -15,7 +15,9 @@
  "disabled_borders": [
   16
  ],
- "added_cards": [],
+ "added_cards": [
+  222
+ ],
  "removed_cards": [],
  "border_overrides": {}
 }
