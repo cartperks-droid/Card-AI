@@ -99,9 +99,9 @@ CARD_ENGINE_TRACE=1 python3 -m card_engine.training.labels --fixed --shards 1 --
 
 ## 4. Training
 
-The current run (18 layers, stat tokens with pair comparisons, curriculum). The same command resumes it after a stop:
+The current run (18p: the original 18 layout, stat comparisons in the stat MLP, its own description transformer learned from scratch, the found share). The same command resumes it after a stop:
 ```
-python3 -m card_engine.training.train --run-dir data/training_18t --layers 18 --stat-tokens --stat-pairs --no-pack-embedding --no-mutation-embedding --language-from data/training_deep/watch_best_ema.checkpoint --batch-size 512 --lr 3e-4 --weight-decay 0.05 --dropout 0.1 --mix-start 0.03 0.45 0.45 --mix-until 60000 --mix 0.03 0.1 0.1 --max-rows 60000000 --eval-rows 100000 --eval-every 2000 2>&1 | tee -a data/training_18t.out
+python3 -m card_engine.training.train --run-dir data/training_18p --layers 18 --stat-pairs --batch-size 512 --lr 3e-4 --weight-decay 0.05 --dropout 0.1 --mix-start 0.03 0.42 0.42 0 0.01 --mix-until 60000 --mix 0.03 0.1 0.1 0 0.06 --max-rows 60000000 --eval-rows 100000 --eval-every 2000 2>&1 | tee -a data/training_18p.out
 ```
 
 Battles found by the annealed search (`hard.py --select engine`, `found_*` shards) get the fifth share; incomplete mode is the fourth (0 until it has labels):
@@ -123,7 +123,7 @@ Every trainer option:
 - `--run-dir DIR`: where the run lives. A new directory starts a new model.
 - New-run settings, saved in the run, ignored when resuming: `--layers N`, `--stat-tokens`, `--stat-pairs`, `--stat-width S`, `--no-pack-embedding`, `--no-mutation-embedding`, `--language-from CHECKPOINT`.
 - Rates: `--lr`, `--language-lr`, `--lr-decay FIRST LAST`, `--lr-floor 0.05`, `--weight-decay`, `--dropout`, `--batch-size`.
-- Description encoder: `--freeze-language-at STEP`. A step after the current one trains it until then; `--language-from` freezes it from the start.
+- Description encoder: a new run learns its own from scratch. `--freeze-language-at STEP` freezes it from that step (a later step than the current one trains it until then); `--language-from CHECKPOINT` borrows another run's instead, frozen from the start.
 - Batch mix: `--mix HARD UPSET FIXED [HIDDEN]`, `--mix-start ...`, `--mix-until STEP`.
 - Data: `--max-rows N` (36 GB Mac: 60M at most), `--field-generations 2` (incomplete mode), `--reload-every 1000`, `--pack-labels` (slow pod disks only).
 - Evaluation: `--eval-every`, `--eval-rows`, `--watch FILE` (`''` for none), `--ema-decay 0.999`.
