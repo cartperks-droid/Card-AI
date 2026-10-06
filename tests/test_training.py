@@ -434,31 +434,30 @@ class TrainingTests(unittest.TestCase):
               freeze_language_at=4)
         after = load_checkpoint(run / "model.checkpoint")[0].description.state_dict()
         self.assertTrue(all(torch.equal(before[k], after[k]) for k in before))  # frozen language transformer
-        # a new run's language side waits for the stat MLP's plateau, its card vectors 0 until then (any drift counts
-        # as flat here: it starts at the first evaluation)
+        # a new run's language side waits for the stat MLP's plateau, its card vectors 0 until then; then it thaws and
+        # freezes by the stat MLP (a plateau_drift of 1e9 reads every interval as a plateau, -1 as learning)
         small = {"architecture": {"width": 64, "attention_width": 64, "feedforward_width": 128, "stat_hidden_width": 128},
                  "language": {"width": 64, "layers": 1, "heads": 1, "feedforward_width": 128, "output_width": 64,
                               "projection_hidden_width": 64}, "layers": 1}
         plateau = Path(self.temp.name) / "plateau"
-        train(steps=100, batch_size=4, warmup=1, eval_every=1000, checkpoint_every=100, device="cpu", run_dir=plateau,
-              label_root=root, language_after_plateau=True, plateau_drift=1e9, plateau_evals=1, watch=None, **small)
-        waited = load_checkpoint(plateau / "model.checkpoint")[0]
-        self.assertTrue(torch.load(plateau / "trainer.pt", weights_only=True)["language_waiting"])
-        with torch.no_grad():
-            self.assertEqual(float(card_table(waited, inputs.data.description_tokens).abs().max()), 0.0)
-        train(steps=200, batch_size=4, warmup=1, eval_every=100, checkpoint_every=100, device="cpu", run_dir=plateau,
-              label_root=root, plateau_drift=1e9, plateau_evals=1, watch=None, language_steps=50)
+        spells = dict(eval_every=100, checkpoint_every=100, batch_size=4, warmup=1, device="cpu", run_dir=plateau,
+                      label_root=root, watch=None, plateau_evals=1, frozen_min=100, thaw_min=100)
+        vectors = lambda: float(card_table(load_checkpoint(plateau / "model.checkpoint")[0],
+                                           inputs.data.description_tokens).detach().abs().max())
+        state = lambda: torch.load(plateau / "trainer.pt", weights_only=True)["language_spells"]
+        train(steps=100, language_after_plateau=True, plateau_drift=-1, **spells, **small)
+        self.assertEqual((state()["frozen"], vectors()), (True, 0.0))  # waiting, and no plateau yet
+        train(steps=200, plateau_drift=1e9, language_budget=1000, **spells)  # plateau: thaws at 200 (frozen 200 steps)
+        self.assertEqual(state(), {"frozen": False, "since": 200, "thawed": 0, "done": False})
+        train(steps=300, plateau_drift=-1, language_budget=1000, **spells)  # 100 thawed steps, the MLP learns: refreezes
+        self.assertEqual(state(), {"frozen": True, "since": 300, "thawed": 100, "done": False})
+        self.assertGreater(vectors(), 0.0)  # it learned from zero
+        train(steps=500, plateau_drift=1e9, language_budget=150, **spells)  # thaws at 400, its budget is spent at 450
+        self.assertEqual(state(), {"frozen": True, "since": 450, "thawed": 150, "done": True})
         records = [_json.loads(line) for line in (plateau / "log.jsonl").read_text().splitlines()]
-        self.assertTrue(records[-1]["language_started"] and records[-1]["stat_drift"] >= 0)
-        state = torch.load(plateau / "trainer.pt", weights_only=True)
-        self.assertEqual((state["language_waiting"], state["freeze_language_at"]), (False, 250))
-        train(steps=300, batch_size=4, warmup=1, eval_every=100, checkpoint_every=100, device="cpu", run_dir=plateau,
-              label_root=root, watch=None)  # learns from zero for 50 steps, then frozen for good
-        with torch.no_grad():
-            self.assertGreater(float(card_table(load_checkpoint(plateau / "model.checkpoint")[0],
-                                                inputs.data.description_tokens).abs().max()), 0.0)
-        frozen = [_json.loads(line) for line in (plateau / "log.jsonl").read_text().splitlines()]
-        self.assertNotIn("language_started", frozen[-1])
+        events = [(r["step"], k) for r in records for k in ("language_thawed", "language_refrozen") if r.get(k)]
+        self.assertEqual(events, [(200, "language_thawed"), (300, "language_refrozen"), (400, "language_thawed")])
+        self.assertTrue(records[-1]["language_done"])
         # a new machine: continue from the downloaded model with a fresh optimizer, keeping the step
         moved = Path(self.temp.name) / "moved"
         train(steps=8, batch_size=4, warmup=1, eval_every=100, checkpoint_every=2, device="cpu", run_dir=moved, label_root=root,
