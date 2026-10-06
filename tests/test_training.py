@@ -325,6 +325,23 @@ class TrainingTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             StrategicConfig(stat_tokens=True, stat_width=64)
 
+    def test_stat_pairs_compare_each_card_with_the_other_seven_from_its_own_side(self):
+        from card_engine.model.config import StrategicConfig
+        strategy = BattleModel(strategic_config=StrategicConfig(layers=1, stat_tokens=True, stat_pairs=True)).strategy
+        torch.manual_seed(3)
+        stats = torch.rand(2, 2, 4, 2) * 1e4 + 1
+        visible = torch.ones(2, 2, 4, dtype=torch.bool)
+        inputs = strategy.stat_inputs(stats, visible)
+        self.assertEqual(inputs.shape, (2, 2, 4, 37))
+        torch.testing.assert_close(inputs, strategy.stat_inputs(stats * 1e5, visible))  # ratios only
+        swapped = strategy.stat_inputs(stats.flip(1), visible)  # the sides trade places: each card sees the same
+        torch.testing.assert_close(swapped, inputs.flip(1))
+        hits = inputs[0, 0, 0, 2 + 3 * 5 + 2]  # ally card 1 against the enemy's first card: hits to kill it
+        self.assertAlmostEqual(float(hits), float(stats[0, 1, 0, 0].log() - stats[0, 0, 0, 1].log()), places=4)
+        visible[:, 1, 3] = False
+        hidden = strategy.stat_inputs(stats, visible)
+        self.assertTrue(bool((hidden[:, 0, 0, 2 + 6 * 5:] == 0).all()))  # nothing about an unseen card
+
     def test_training_runs_and_resumes(self):
         root = Path(self.temp.name) / "labels"
         directory = root / "store"

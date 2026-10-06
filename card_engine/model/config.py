@@ -62,6 +62,10 @@ class StrategicConfig:
     # Stats as tokens of their own (user, 2026-10-06: "two inks overlapping" are hard to read): each card's stats
     # become a second token beside its card token, with its own position, and attention relates the two.
     stat_tokens: bool = False
+    # Each card's stats against each of the other 7 (user, 2026-10-06: an 8x7 comparison matrix): per pair the HP
+    # and ATK ratios and the hits each needs to kill the other (log HP over the other's log ATK), and whether the
+    # other is visible, beside the card's own normalised stats; the stat MLP reads all of it (37 inputs, not 2).
+    stat_pairs: bool = False
     # The engine reads a card's pack and mutation weather only for its stats and the stat supports that boost it,
     # all inside the card's stats already (2026-10-06): without these embeddings neither can stand in for identity.
     pack_embedding: bool = True

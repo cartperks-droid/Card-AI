@@ -23,7 +23,7 @@ This project simulates a Roblox "Snap!"-style card game and trains an AI to pred
   - `crosscheck.py`: our engine against DaddyDrago's own unmodified battle code, on fixed-stat battles (`docs/drago_crosscheck.md`).
 - `card_engine/tower.py`: tower floors (DaddyDrago's formula and fixed teams).
 - `card_engine/teams.py`: teams by name: `"Name[@Border][/Mutation]"` cards, `"Name[@Tier]"` supports.
-- `card_engine/model/` has two transformers: a description (language) encoder and a strategic encoder. New runs can give each card's stats a token of their own (`--stat-tokens`) or their own channels of the card token (`--stat-width`) and drop the pack and mutation embeddings, which the engine reads only through stats (2026-10-06). The head gives **two outcomes, A win and B win. There are no ties**: a draw (both sides wiped out, or his 2,000-turn cap) counts as the attacker A's loss.
+- `card_engine/model/` has two transformers: a description (language) encoder and a strategic encoder. New runs can give each card's stats a token of their own (`--stat-tokens`), fed its comparisons with the other 7 cards (`--stat-pairs`), or their own channels of the card token (`--stat-width`) and drop the pack and mutation embeddings, which the engine reads only through stats (2026-10-06). The head gives **two outcomes, A win and B win. There are no ties**: a draw (both sides wiped out, or his 2,000-turn cap) counts as the attacker A's loss.
 - Player tools:
   - `card_engine/deck.py`: the user's own collection (`data/my_deck.json`), and with `--custom` the custom pool (`data/custom_pool.json`) for suggestions tailored to one collection.
   - `card_engine/restricted.py`: player-base availability (`data/restricted_deck.json`).

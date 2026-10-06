@@ -12,6 +12,11 @@ from .config import DescriptionConfig, StrategicConfig
 
 
 OUTCOME_NAMES = ("a_win", "b_win")  # no ties: the attacker (A) loses if both sides are wiped out (user)
+# Per card (side * 4 + slot), the other 7 from its own point of view: its side's other cards, then the other side's.
+_OTHERS = torch.tensor([[side * 4 + j for j in range(4) if j != slot] + [(1 - side) * 4 + j for j in range(4)]
+                        for side in range(2) for slot in range(4)])
+STAT_PAIR_INPUTS = 2 + 7 * 5  # own normalized (HP, ATK); per other card 4 log ratios and its visibility
+
 SLOT_NAMES = (
     "BOS", "ally_red", "ally_blue", "ally_card_1", "ally_card_2",
     "ally_card_3", "ally_card_4", "enemy_red", "enemy_blue", "enemy_card_1",
@@ -190,7 +195,7 @@ class StrategicModel(nn.Module):
         # its predictions unchanged until training puts the stats to use (the skip still passes gradient).
         # Registered last: these parameters come after all others (training.add_stat_mlp relies on this).
         stat_width = c.stat_width or c.width
-        self.stat_projection = nn.Linear(2, stat_width)
+        self.stat_projection = nn.Linear(STAT_PAIR_INPUTS if c.stat_pairs else 2, stat_width)
         self.stat_mlp = nn.Sequential(nn.Linear(stat_width, c.stat_hidden_width), nn.GELU(),
                                       nn.Linear(c.stat_hidden_width, stat_width))
         if c.stat_width:  # stats in their own channels: the card is projected onto the others, each part normalised
@@ -218,6 +223,24 @@ class StrategicModel(nn.Module):
         if self.config.stat_width:
             return torch.cat([self.card_norm(self.card_projection(cards)), self.stat_norm(self.stat_vectors(normalized))], -1), None
         return cards + self.stat_vectors(normalized), None
+
+    def stat_inputs(self, card_stats: Tensor, visible: Tensor) -> Tensor:
+        """The stat MLP's input per card [B, 2, 4, F]: its normalized stats, and with stat_pairs its comparisons
+        with the other 7 cards, ordered from its own point of view (its side's other cards, then the other side's)."""
+        normalized = self.normalized_stats(card_stats, visible)
+        if not self.config.stat_pairs:
+            return normalized
+        batch = card_stats.shape[0]
+        logs = card_stats.log().reshape(batch, 8, 2)
+        seen = visible.reshape(batch, 8)
+        others = _OTHERS.to(card_stats.device)
+        own, other = logs[:, :, None], logs[:, others]  # [B, 8, 1, 2], [B, 8, 7, 2]
+        hp, attack = own[..., 0], own[..., 1]
+        pairs = torch.stack([hp - other[..., 0], attack - other[..., 1],  # HP and ATK ratios
+                             other[..., 0] - attack, hp - other[..., 1]], -1)  # hits to kill the other, to be killed
+        both = (seen[:, :, None] & seen[:, others])[..., None]
+        pairs = torch.cat([torch.where(both, pairs, 0.0), both.to(pairs.dtype)], -1)
+        return torch.cat([normalized, pairs.reshape(batch, 2, 4, -1)], -1)
 
     @staticmethod
     def normalized_stats(card_stats: Tensor, visible: Tensor) -> Tensor:
@@ -349,7 +372,7 @@ class StrategicModel(nn.Module):
                 raise ValueError("card_stats must be [batch, 2, 4, 2] (HP, ATK) on the model device/dtype")
             if not bool((torch.where(cv[..., None], card_stats, 1.0) > 0).all()):
                 raise ValueError("Visible card stats must be positive")
-            normalized = self.normalized_stats(torch.where(cv[..., None], card_stats, 1.0), cv)
+            normalized = self.stat_inputs(torch.where(cv[..., None], card_stats, 1.0), cv)
             cards, stat_tokens = self.with_stats(cards, normalized)
         # Replace the entire identity+border+pack+class representation, not only identity.
         cards = torch.where(cv[..., None], cards, self.hidden_card)
