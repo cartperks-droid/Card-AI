@@ -227,13 +227,15 @@ def hard_shard(classifier, catalog, seed, rounds, pool, candidates=1024, keep=16
                prior=PRIOR):
     """One shard's rows: per round, the `keep` distinct searched teams the model gets most wrong plus `keep_random`
     others. Every `generator_every`-th round proposes its teams with the annealed generator instead of the engine
-    search (0: never)."""
+    search (0: never). With no classifier (--select engine) the engine's own choice is kept instead: the `keep`
+    distinct teams that won most, those at the full stats first, plus `keep_random` battles from any gap, so no
+    model has to score the search (2026-10-06: 12,000 teams per enemy through 18 layers on the Mac's CPU)."""
     rng = random.Random(f"hard-{seed}")
     rows, gaps_all, gaps_kept, best_found, spaces = [], [], [], [], {}
     for r in range(rounds):
         enemy, fixed = draw_enemy(rng, catalog)
         per_card = tower.engine_stats(catalog, enemy["cards"], fixed)
-        if generator_every and r % generator_every == generator_every - 1:
+        if classifier is not None and generator_every and r % generator_every == generator_every - 1:
             evaluated = proposals(rng, classifier, catalog, pool, enemy, fixed, per_card,
                                   seed * 1_000_003 + r * 4 * candidates, spaces)
         else:
@@ -241,17 +243,22 @@ def hard_shard(classifier, catalog, seed, rounds, pool, candidates=1024, keep=16
                                prior=prior)
         teams = [team for team, *_ in evaluated]
         engine = np.array([e for _, _, e, _, _ in evaluated])
-        model = np.zeros(len(teams))
-        for stats in {e[4] for e in evaluated}:  # each gap the search played, scored at its own stats
-            where = [i for i, e in enumerate(evaluated) if e[4] == stats]
-            model[where] = classifier.ally_win([(teams[i], enemy) for i in where], stats)[:, 0]
+        model = np.full(len(teams), np.nan)
+        if classifier is not None:
+            for stats in {e[4] for e in evaluated}:  # each gap the search played, scored at its own stats
+                where = [i for i, e in enumerate(evaluated) if e[4] == stats]
+                model[where] = classifier.ally_win([(teams[i], enemy) for i in where], stats)[:, 0]
         gap = np.abs(engine - model)
-        ranked = [i for i in np.argsort(-np.nan_to_num(gap, nan=-1.0)) if not np.isnan(engine[i])]
+        if classifier is not None:
+            ranked = [i for i in np.argsort(-np.nan_to_num(gap, nan=-1.0)) if not np.isnan(engine[i])]
+        else:  # the engine's selection: the full-stats winners first, then by win chance at any gap
+            ranked = sorted((i for i in range(len(teams)) if not np.isnan(engine[i])),
+                            key=lambda i: (evaluated[i][4] != fixed, -engine[i]))
         chosen = distinct(teams, ranked, keep)
         rest = [i for i in ranked if i not in set(chosen)]
         chosen += rng.sample(rest, min(keep_random, len(rest)))
-        gaps_all.append(float(np.nanmean(gap)))
-        gaps_kept.append(float(np.mean(gap[chosen[:keep]])) if chosen else float("nan"))
+        gaps_all.append(float(np.nanmean(gap)) if classifier is not None else float("nan"))
+        gaps_kept.append(float(np.mean(gap[chosen[:keep]])) if chosen and classifier is not None else float("nan"))
         best_found.append(float(np.nanmax([e for e, x in zip(engine, evaluated) if x[4] == fixed] or [np.nan])))
         rows += [(spec(teams[i], enemy), (evaluated[i][1], evaluated[i][3]), evaluated[i][4], float(model[i])) for i in chosen]
     arrays = {name: np.array([b[name] for b, *_ in rows], dtype=np.int16) for name in FIELDS}
@@ -265,7 +272,7 @@ def hard_shard(classifier, catalog, seed, rounds, pool, candidates=1024, keep=16
 
 
 def run(shards, *, rounds=40, workers=None, checkpoint=None, out_dir=STORE, first_seed=None, device=None,
-        candidates=12000, keep=16, keep_random=4, generator_every=4, prior=PRIOR):
+        candidates=12000, keep=16, keep_random=4, generator_every=4, prior=PRIOR, select="model"):
     from .flags import snapshot
     out_dir = Path(out_dir)
     out_dir.mkdir(parents=True, exist_ok=True)
@@ -279,8 +286,11 @@ def run(shards, *, rounds=40, workers=None, checkpoint=None, out_dir=STORE, firs
         for done in range(1, shards + 1):
             while seed in existing:
                 seed += 1
-            path = checkpoint or next(p for p in (POD_RUN / "model.checkpoint", RUN_DIR / "model.checkpoint") if p.exists())
-            classifier = Classifier(path, device)  # reloaded every shard: the mining follows training
+            if select == "model":
+                path = checkpoint or next(p for p in (POD_RUN / "model.checkpoint", RUN_DIR / "model.checkpoint") if p.exists())
+                classifier = Classifier(path, device)  # reloaded every shard: the mining follows training
+            else:
+                classifier = None
             started = time.time()
             arrays, probs, exact, extra, gap_all, gap_kept, best = hard_shard(classifier, catalog, seed, rounds, pool,
                                                                               candidates, keep, keep_random,
@@ -290,7 +300,7 @@ def run(shards, *, rounds=40, workers=None, checkpoint=None, out_dir=STORE, firs
             np.savez_compressed(tmp, probs=probs, exact=exact, snapshot=np.array(snapshot(catalog)), **arrays, **extra)
             os.replace(tmp, target)
             print(json.dumps({"shard": target.name, "done": done, "of": shards, "rows": len(probs),
-                              "model_step": classifier.metadata.get("step"), "seconds": round(time.time() - started),
+                              "model_step": classifier.metadata.get("step") if classifier else None, "seconds": round(time.time() - started),
                               "mean_gap_all": round(gap_all, 3), "mean_gap_kept": round(gap_kept, 3),
                               "mean_best_engine_win": round(best, 3)}), flush=True)
             seed += 1
@@ -312,12 +322,15 @@ def main():
     parser.add_argument("--checkpoint", help="model (default: data/training_pod's, else data/training's), reloaded per shard")
     parser.add_argument("--first-seed", type=int)
     parser.add_argument("--device")
+    parser.add_argument("--select", choices=("model", "engine"), default="model",
+                        help="keep the battles the model gets most wrong (model), or the engine's own winners and "
+                        "random battles from every gap, with no model to score (engine; no --checkpoint needed)")
     parser.add_argument("--prior", type=float, default=PRIOR,
                         help="chance a drawn card comes from the stat-ignoring list (0: discovery from the whole pool)")
     args = parser.parse_args()
     run(args.shards, rounds=args.rounds, workers=args.workers, checkpoint=args.checkpoint, first_seed=args.first_seed,
         device=args.device, candidates=args.candidates, keep=args.keep, keep_random=args.keep_random,
-        generator_every=args.generator_every, prior=args.prior)
+        generator_every=args.generator_every, prior=args.prior, select=args.select)
 
 
 if __name__ == "__main__":

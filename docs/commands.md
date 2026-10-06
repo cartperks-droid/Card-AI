@@ -65,6 +65,10 @@ Hard examples (annealed engine search, then the model's disagreements). `--check
 ```
 caffeinate -i nice -n 19 env OMP_NUM_THREADS=2 bash -c 'while true; do python3 -m card_engine.training.hard --shards 2 --workers 2 --device cpu --prior 0 --checkpoint data/training_18t/ema.checkpoint; done' >> hard.out 2>&1 &
 ```
+Without a model scoring the search (cheaper next to a trainer), keep the engine's winners and random battles from every gap:
+```
+caffeinate -i nice -n 19 bash -c 'while true; do python3 -m card_engine.training.hard --shards 2 --workers 2 --select engine --prior 0; done' >> hard.out 2>&1 &
+```
 Options: `--candidates 12000` (battles per enemy; 6000 is half the time and still climbs floor 105), `--rounds 40` (enemies per shard), `--keep 16`, `--generator-every 4` (0: no generator rounds).
 
 Incomplete mode (PvP): build a field generation, then mine labels against it. Rebuild the field with newer weights as the model improves:
