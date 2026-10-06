@@ -182,16 +182,7 @@ export function createTwoSidedState(a: TeamLoadout, b: TeamLoadout): BattleState
 }
 `
 exact("from './auras'", "from './auras.label'")
-exact("from './stats'", "from './stats.label'")
 writeFileSync(output, src)
-
-// Eclipse mutation (user, 2026-10-06, the game's combat changes "Eclipse x5", read by the user as the weather
-// multiplier): stats x5, not his x2.5. stats.label.ts carries it; the label engine, the worker's tables and the C
-// engine's tables all read that file.
-const statsPath = input.replace(/battle-v2\.ts$/, 'stats.ts')
-src = readFileSync(statsPath, 'utf8')
-exact("  Eclipse: 2.5,\n", "  Eclipse: 5,\n")
-writeFileSync(statsPath.replace(/\.ts$/, '.label.ts'), src)
 
 // Ruby support cards (user's binder, IMG_0350-0354). Red: his formula floor(2^log10(rarity x multiplier) / 2) with a
 // Ruby multiplier of 500 gives every value read (user: The One Ring 256%, Dinosaur King 207% / 334% boosted). Blue: Ruby uses the base values (user).

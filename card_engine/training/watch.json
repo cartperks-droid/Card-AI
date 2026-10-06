@@ -3,5 +3,16 @@
   {"name": "Drago 105 Storm Spirit", "ally": ["Fate Seamstress", "Judgement Day", "Parallax", "Robin Hood"], "blue": "Storm Spirit", "tower": [105, "Impossible"]},
   {"name": "Drago 105 Guardian Angel", "ally": ["Fate Seamstress", "Judgement Day", "Parallax", "Robin Hood"], "blue": "Guardian Angel", "tower": [105, "Impossible"]},
   {"name": "Drago 105 Berserker", "ally": ["Fate Seamstress", "Judgement Day", "Parallax", "Robin Hood"], "blue": "Berserker", "tower": [105, "Impossible"]},
-  {"name": "Drago 105 two Judgement Days", "ally": ["Parallax", "Judgement Day", "Judgement Day", "Robin Hood"], "blue": "Fate", "tower": [105, "Impossible"]}
+  {"name": "Drago 105 two Judgement Days", "ally": ["Parallax", "Judgement Day", "Judgement Day", "Robin Hood"], "blue": "Fate", "tower": [105, "Impossible"]},
+  {"name": "Drago 105 JD-P-JD-RH Fate", "ally": ["Judgement Day", "Parallax", "Judgement Day", "Robin Hood"], "blue": "Fate", "tower": [105, "Impossible"]},
+  {"name": "Drago 105 Phantom", "ally": ["Fate Seamstress", "Judgement Day", "Parallax", "Robin Hood"], "blue": "Phantom", "tower": [105, "Impossible"]},
+  {"name": "Drago 105 no support", "ally": ["Fate Seamstress", "Judgement Day", "Parallax", "Robin Hood"], "tower": [105, "Impossible"]},
+  {"name": "Drago 105 FS-JD-JD-RH Fate", "ally": ["Fate Seamstress", "Judgement Day", "Judgement Day", "Robin Hood"], "blue": "Fate", "tower": [105, "Impossible"]},
+  {"name": "Drago 105 End Times", "ally": ["Fate Seamstress", "Judgement Day", "Parallax", "Robin Hood"], "blue": "End Times", "tower": [105, "Impossible"]},
+  {"name": "Drago 100 P-JD-FS-JD Fate", "ally": ["Parallax", "Judgement Day", "Fate Seamstress", "Judgement Day"], "blue": "Fate", "tower": [100, "Impossible"]},
+  {"name": "Drago 100 JD-FS-JD-P Fate", "ally": ["Judgement Day", "Fate Seamstress", "Judgement Day", "Parallax"], "blue": "Fate", "tower": [100, "Impossible"]},
+  {"name": "Drago 100 JD-FS-JD-JD Fate", "ally": ["Judgement Day", "Fate Seamstress", "Judgement Day", "Judgement Day"], "blue": "Fate", "tower": [100, "Impossible"]},
+  {"name": "Drago 100 JD-JD-FS-JD Fate", "ally": ["Judgement Day", "Judgement Day", "Fate Seamstress", "Judgement Day"], "blue": "Fate", "tower": [100, "Impossible"]},
+  {"name": "Drago 100 P-FS-JD-JD Phantom", "ally": ["Parallax", "Fate Seamstress", "Judgement Day", "Judgement Day"], "blue": "Phantom", "tower": [100, "Impossible"]},
+  {"name": "Drago 100 P-JD-FS-JD Phantom", "ally": ["Parallax", "Judgement Day", "Fate Seamstress", "Judgement Day"], "blue": "Phantom", "tower": [100, "Impossible"]}
 ]

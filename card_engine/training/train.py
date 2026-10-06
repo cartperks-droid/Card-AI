@@ -617,6 +617,15 @@ def train(*, steps=None, batch_size=512, lr=3e-4, warmup=1000, weight_decay=0.05
     mixed = mix_rows(train_rows)  # recomputed on each reload
     rules_id = snapshot()  # the current rules; probes and the best checkpoint reset when it changes
     watched = load_watch(watch, device) if watch else None
+    if watched is not None:  # the best errors only compare on the same battles: a new list starts its own record
+        watch_id = json.dumps(list(zip(watched[0], [round(e, 6) for e in watched[1]])))
+        if watch_best and watch_best.get("watch_id") != watch_id:
+            for name in ("watch_best", "watch_best_ema"):  # the old list's best weights are kept beside the new ones
+                if (run_dir / f"{name}.checkpoint").exists():
+                    os.replace(run_dir / f"{name}.checkpoint", run_dir / f"{name}.previous_list.checkpoint")
+            print(json.dumps({"watch_list_changed": len(watched[0]), "previous_best": watch_best}), flush=True)
+            watch_best = {}
+        watch_best["watch_id"] = watch_id
     # Grokking probes: fixed subsets of the training and validation rows, so the curves stay comparable
     # (the full validation set grows with new shards and changes with the rules).
     probe_gen = torch.Generator(device="cpu").manual_seed(0)

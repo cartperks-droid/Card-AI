@@ -48,8 +48,14 @@ if averaged:  # the weight average (ema.checkpoint) beside the live weights, on 
               f"{cell(ema_probe, 'probabilistic_error')}  {cell(live_hard, 'kl')}    {cell(ema_hard, 'kl')}  "
               f"{cell(live_hard, 'upset_accuracy')}      {cell(ema_hard, 'upset_accuracy')}")
 watched = [json.loads(l) for l in lines[-200 * count:] if '"watch"' in l][-count:]
-if watched:  # the named battles of training/watch.json: the engine's answer, the live weights, their average
-    print("\nwatch list (ally win chance; engine / live / average)")
-    print("step       " + "  ".join(f"{w['name'][:22]:<22}" for w in watched[-1]["watch"]))
-    for r in watched:
-        print(f"{r['step']:<10,} " + "  ".join(f"{w['engine']:.2f} / {w['model']:.2f} / {w['ema']:.2f}    " for w in r["watch"]))
+if watched:  # the named battles of training/watch.json, one per row: the engine's answer, then live / average per step
+    names = [w["name"] for w in watched[-1]["watch"]]
+    shown = [r for r in watched if [w["name"] for w in r["watch"]] == names][-4:]  # the current list's evaluations
+    print("\nwatch list (ally win chance; engine, then live / average at each step)")
+    print(f"{'battle':<32} engine  " + "  ".join(f"{r['step']:>11,}" for r in shown))
+    for i, name in enumerate(names):
+        print(f"{name[:32]:<32} {shown[-1]['watch'][i]['engine']:.2f}    "
+              + "  ".join(f"{r['watch'][i]['model']:.2f} / {r['watch'][i]['ema']:.2f}" for r in shown))
+    print(f"{'mean |model - engine|':<32}         " + "  ".join(
+        f"{sum(abs(w['model'] - w['engine']) for w in r['watch']) / len(names):.2f} / "
+        f"{sum(abs(w['ema'] - w['engine']) for w in r['watch']) / len(names):.2f}" for r in shown))
