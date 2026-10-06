@@ -47,7 +47,7 @@ from .. import tower
 from ..catalog import load_catalog
 from ..mutations import MUTATION_NAMES
 from ..teams import ASTRAEUS, ASTRAEUS_ARTS, SINGLE_COPY, side, spec
-from .labels import AURA_TIERS, FIELDS, STORE, evaluate, stat_ignoring_cards
+from .labels import AURA_TIERS, FIELDS, STORE, evaluate, next_seed, stat_ignoring_cards
 from .predict import Classifier
 from .train import RUN_DIR
 
@@ -237,7 +237,7 @@ def run(shards, *, rounds=80, workers=None, checkpoint=None, out_dir=STORE, firs
     out_dir = Path(out_dir)
     out_dir.mkdir(parents=True, exist_ok=True)
     existing = {int(p.stem.split("_")[1]) for p in out_dir.glob("hard_*.npz")}
-    seed = first_seed if first_seed is not None else (max(existing) + 1 if existing else 1)
+    seed = next_seed(existing, first_seed)
     catalog = load_catalog()
     # An executor, not multiprocessing.Pool: a worker the OS kills (memory pressure) raises BrokenProcessPool and
     # ends the run, so a shell loop restarts it; Pool waited forever for the lost result (2026-10-05, after shard 120).

@@ -213,6 +213,16 @@ def _worker(args):
     return path.name, rows, int(exact.sum())
 
 
+POD_SEEDS = 5_000_000  # the pod numbers from here up (docs/runpod.md); the Mac stays below
+
+
+def next_seed(existing, first_seed=None):
+    """The first free seed of this machine's range: past its highest shard, from first_seed (the pod's ranges) or
+    below POD_SEEDS (the Mac, which also holds the pod's shards once pod_sync pulls them)."""
+    own = [seed for seed in existing if (seed >= first_seed if first_seed is not None else seed < POD_SEEDS)]
+    return max(own) + 1 if own else (first_seed if first_seed is not None else 1)
+
+
 def generate(shards, *, rows=2000, workers=None, first_seed=None, out_dir=STORE, fixed=False):
     """Write `shards` new shards (seeds continue after those on disk) with a process pool, stamped with the
     current rules snapshot (training.flags). fixed: fixed-stat battles (fixed_<seed>.npz, their own seeds)."""
@@ -221,7 +231,7 @@ def generate(shards, *, rows=2000, workers=None, first_seed=None, out_dir=STORE,
     out_dir.mkdir(parents=True, exist_ok=True)
     fingerprint = snapshot()
     existing = {int(p.stem.split("_")[1]) for p in out_dir.glob("fixed_*.npz" if fixed else "shard_*.npz")}
-    seed = first_seed if first_seed is not None else (max(existing) + 1 if existing else 1)
+    seed = next_seed(existing, first_seed)
     jobs = []
     while len(jobs) < shards:
         if seed not in existing:
@@ -287,7 +297,7 @@ if __name__ == "__main__":
     parser.add_argument("--shards", type=int, default=1)
     parser.add_argument("--rows", type=int, default=2000)
     parser.add_argument("--workers", type=int)
-    parser.add_argument("--first-seed", type=int, help="number shards from here (a second machine uses its own range)")
+    parser.add_argument("--first-seed", type=int, help="number shards on from here (the pod's range); default: below POD_SEEDS")
     parser.add_argument("--fixed", action="store_true", help="fixed-stat battles (every card on one side at the same "
                         "stats, up to 10,000x the other side's), written as fixed_<seed>.npz")
     parsed = parser.parse_args()
