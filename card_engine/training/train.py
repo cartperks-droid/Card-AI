@@ -842,8 +842,11 @@ if __name__ == "__main__":
     parser.add_argument("--stat-prior", action="store_true",
                         help="new run: the stat rule (the larger total sqrt(HP x ATK) wins, log-odds +-2.36) as a "
                         "prior; the network adds a residual in log-odds")
-    parser.add_argument("--stat-hidden", type=int, default=3072,
-                        help="new run: the stat MLP's hidden width (768 keeps the stat path smaller than the text path)")
+    parser.add_argument("--width", type=int, default=768,
+                        help="new run: the token width (user, 2026-10-06: 256 is far faster and makes the 289 cards share "
+                        "directions); attention width / 2 (at least 64), feed-forward and stat MLP 4 x width")
+    parser.add_argument("--stat-hidden", type=int,
+                        help="new run: the stat MLP's hidden width (default 4 x --width)")
     parser.add_argument("--language-width", type=int, default=128,
                         help="new run: the description transformer's width (heads: width / 64, feed-forward: 4 x width)")
     parser.add_argument("--language-layers", type=int, default=4, help="new run: the description transformer's layers")
@@ -884,8 +887,11 @@ if __name__ == "__main__":
           eval_every=parsed.eval_every, init_from=parsed.init_from, language_lr=parsed.language_lr, mix=parsed.mix,
           layers=parsed.layers, architecture={"stat_width": parsed.stat_width, "stat_tokens": parsed.stat_tokens, "stat_pairs": parsed.stat_pairs,
           "pack_embedding": not parsed.no_pack_embedding, "mutation_embedding": not parsed.no_mutation_embedding,
-          "stat_hidden_width": parsed.stat_hidden, "stat_prior": parsed.stat_prior},
+          "stat_hidden_width": parsed.stat_hidden or 4 * parsed.width, "stat_prior": parsed.stat_prior,
+          **({} if parsed.width == 768 else {"width": parsed.width, "attention_width": max(64, parsed.width // 2),
+                                             "feedforward_width": 4 * parsed.width})},
           language={"width": parsed.language_width, "layers": parsed.language_layers,
+                    "output_width": parsed.width, "projection_hidden_width": parsed.width,
                     "heads": max(1, parsed.language_width // 64) if parsed.language_width > 128 else 4,
                     "feedforward_width": 4 * parsed.language_width},
           language_from=parsed.language_from, mix_start=parsed.mix_start, mix_until=parsed.mix_until, ema_decay=parsed.ema_decay, pack_labels=parsed.pack_labels,

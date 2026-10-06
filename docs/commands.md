@@ -121,7 +121,7 @@ For the last stretch of a run, decay the learning rate between two steps (pick F
 
 Every trainer option:
 - `--run-dir DIR`: where the run lives. A new directory starts a new model.
-- New-run settings, saved in the run, ignored when resuming: `--stat-prior`, `--language-width W`, `--language-layers N`, `--stat-hidden H`, `--layers N`, `--stat-tokens`, `--stat-pairs`, `--stat-width S`, `--no-pack-embedding`, `--no-mutation-embedding`, `--language-from CHECKPOINT`.
+- New-run settings, saved in the run, ignored when resuming: `--width W` (256 is fast), `--stat-prior`, `--language-width W`, `--language-layers N`, `--stat-hidden H`, `--layers N`, `--stat-tokens`, `--stat-pairs`, `--stat-width S`, `--no-pack-embedding`, `--no-mutation-embedding`, `--language-from CHECKPOINT`.
 - Rates: `--lr`, `--language-lr`, `--lr-decay FIRST LAST`, `--lr-floor 0.05`, `--weight-decay`, `--dropout`, `--batch-size`.
 - Description encoder: a new run learns its own from scratch. `--freeze-language-at STEP` freezes it from that step (a later step than the current one trains it until then); `--language-from CHECKPOINT` borrows another run's instead, frozen from the start.
 - Batch mix: `--mix HARD UPSET FIXED [HIDDEN]`, `--mix-start ...`, `--mix-until STEP`.
