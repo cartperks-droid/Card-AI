@@ -9,10 +9,11 @@ metrics move with the data, not the model.
 
 import json
 import sys
+from pathlib import Path
 
 path = sys.argv[1] if len(sys.argv) > 1 else "data/training_pod/log.jsonl"
 count = int(sys.argv[2]) if len(sys.argv) > 2 else 6
-lines = open(path).readlines()
+lines = open(path).readlines() if Path(path).exists() else []
 if not lines:
     raise SystemExit(f"{path} is empty: the trainer is still loading its labels (see its .out file)")
 last = json.loads(lines[-1])
