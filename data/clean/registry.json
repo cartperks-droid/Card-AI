@@ -4157,7 +4157,7 @@
     "confidence": "HIGH",
     "review_reason": "",
     "raw_clause": "deal 2 x damage, gain extra turn, and + 20 % stats on kill",
-    "full_description": "deal 2 x damage, gain extra turn, and + 20 % stats on kill",
+    "full_description": "deal 1.5 x damage, gain extra turn, and + 20 % stats on kill",
     "source_full_description": "deal 2 x damage, gain extra turn, and + 20 % stats on kill",
     "card_id": 111,
     "parameters": {

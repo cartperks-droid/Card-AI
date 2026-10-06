@@ -23100,7 +23100,7 @@
     {
       "card_id": 111,
       "original": "Deal 2x damage, gain extra turn, and +20% stats when defeating an enemy.",
-      "refined": "deal 2 x damage, gain extra turn, and + 20 % stats on kill",
+      "refined": "deal 1.5 x damage, gain extra turn, and + 20 % stats on kill",
       "source": {
         "original": {
           "file": "Cards-2.xml",
@@ -32606,7 +32606,7 @@
       "confidence": "HIGH",
       "review_reason": "",
       "raw_clause": "deal 2 x damage, gain extra turn, and + 20 % stats on kill",
-      "full_description": "deal 2 x damage, gain extra turn, and + 20 % stats on kill",
+      "full_description": "deal 1.5 x damage, gain extra turn, and + 20 % stats on kill",
       "source_full_description": "deal 2 x damage, gain extra turn, and + 20 % stats on kill",
       "card_id": 111,
       "parameters": {
@@ -47413,7 +47413,7 @@
         "token_ids": [
           439,
           30,
-          12,
+          90,
           14,
           2,
           3,
@@ -47449,7 +47449,7 @@
           " ",
           ""
         ],
-        "lexical_text": "deal 2 x damage , gain extra turn , and + 20 % stats on kill"
+        "lexical_text": "deal 1.5 x damage , gain extra turn , and + 20 % stats on kill"
       },
       {
         "card_id": 112,
@@ -57757,7 +57757,7 @@
       ],
       [
         30,
-        12,
+        90,
         14,
         2,
         3,

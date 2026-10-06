@@ -108,7 +108,7 @@
       "detail": "Learned table preserved losslessly. It is not a runtime rarity-to-stat rule."
     }
   ],
-  "correction_count": 156,
+  "correction_count": 158,
   "source_files": [
     {
       "file": "Cards-2.xml",

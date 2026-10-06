@@ -191,6 +191,8 @@ RED_SUPPORT_DESCRIPTION_SWAPS = ((4, 5), (13, 15), (20, 21), (22, 23), (26, 27))
 RED_SUPPORT_TEXT_FIXES = {19: ("+22 Stats. +36% for Era 2 cards.", "+22% Stats. +36% for Era 2 cards.")}
 
 USER_DESCRIPTION_EDITS = {
+    110: ("deal 2 x damage, gain extra turn, and + 20 % stats on kill", "deal 1.5 x damage, gain extra turn, and + 20 % stats on kill",
+          "User (2026-10-06): Shuten-dōji was nerfed from 2x to 1.5x damage (DaddyDrago's engine already deals 1.5x)"),
     87: ("each enemy loses hp equal to 40 % of damage dealt", "each enemy loses hp equal to 30 % of damage dealt",
          "User: Academy Student was nerfed to 30 %"),
     163: ("the next card will dodge a lethal attack", "on death, the next card will dodge an attack",

@@ -285,3 +285,5 @@ Each support card has exactly one border tier: I base, II Platinum, III Crystal,
 - Ruler of Humans (Supreme Ozzy) adds 1.25 × the HP Ozzy actually loses, not the whole hit (user, 2026-10-06). Heaven's Armor@RuPl (163,840 ATK) hit Ozzy with Dinosaur King Crystal (×2.28, so 3,918 × 2.28 = 8,933 HP) and Guardian Angel Crystal; every ally's ATK went to 2.28 × deck ATK + 11,167 = 1.25 × 8,933 (Dancer 65 → 11,315, Arthur of Excalibur 1,447 → 14,466, Parallax 10,240 → 34,514). His engine adds 1.25 × the uncapped hit (battle-v2.ts: `damage` reaches targetRetro before the HP cap), 204,800 here. Corrected in `codemod.mjs` and `sim_c/engine.c` (the HP lost to the latest hit, 0 when another card takes it); reported to DaddyDrago. Open: the user saw Ozzy's HP as 4,467 on entry, half of 8,933.
 - **Open:**
   - The user will verify every class list.
+
+- **Shuten-dōji, Decapitate** (user, 2026-10-06): nerfed from 2x to 1.5x damage. DaddyDrago's engine already deals 1.5x (`battle-v2.ts` `Decapitate`, mirrored in `sim_c/engine.c`), so labels are unchanged; the model's card text said 2x and now says 1.5x (`import_snap.USER_DESCRIPTION_EDITS`).
