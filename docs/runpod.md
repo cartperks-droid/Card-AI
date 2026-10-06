@@ -37,7 +37,7 @@ python3 scripts/perf.py           # last 6 evaluations; add a number for more
 - On 2026-10-04, step ~1.13M: accuracy 0.969 (baseline 0.903), upsets 0.81, KL 0.044, deterministic 0.988, random-battle error 0.117, train accuracy 0.973. Rows rose from 11.8M to 17.5M once the Mac's labels were synced.
 
 ## Stopping the pod on a timer
-`scripts/runpod_finish.sh TIME` (on the pod) waits, stops training and labelling cleanly, archives `data/training`, `data/labels` and `data/tablebase` to `/workspace/card-ai-results-<date>.tar.gz`, then runs `runpodctl stop pod`. TIME is in the pod's clock, UTC (`"+3 hours"`, `"15:20"`).
+`scripts/runpod_finish.sh TIME` (on the pod) waits, stops training, labelling and hard mining cleanly, archives every `data/training*` run (with `trainer.pt`) and `data/tablebase` (the pod's label shards reach the Mac through `pod_sync.sh`, which pulls the ones the Mac lacks) to `/workspace/card-ai-results-<date>.tar.gz`, then runs `runpodctl stop pod`. TIME is in the pod's clock, UTC (`"+3 hours"`, `"15:20"`).
 ```sh
 cd /workspace/card_engine && nohup setsid scripts/runpod_finish.sh "+3 hours" > /workspace/finish.log 2>&1 < /dev/null &
 ```

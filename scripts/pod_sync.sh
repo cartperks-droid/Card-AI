@@ -25,10 +25,13 @@ while true; do
   # New-engine shards only (old ones were moved to data/labels/old_engine); partial files are still being written.
   rsync -az --no-owner --no-group -e "$ssh_cmd" --exclude 'partial_*' --include 'store/***' --include 'snapshots/***' \
     --include rule_changes.json --exclude '*' data/labels/ "$remote/data/labels/" || true
+  # The pod's own shards down (its seed ranges, docs/runpod.md): it never deletes them, so only new names move.
+  rsync -az --ignore-existing --no-owner --no-group -e "$ssh_cmd" --exclude 'partial_*' "$remote/data/labels/store/" data/labels/store/ || true
   rsync -az --no-owner --no-group -e "$ssh_cmd" "$remote/data/training/log.jsonl" "$remote/data/training/*.checkpoint" data/training_pod/ 2>/dev/null || true
   # The fresh deeper run (docs/training.md) comes back under its own name.
   mkdir -p data/training_deep
-  rsync -az --no-owner --no-group -e "$ssh_cmd" "$remote/data/training_deep/log.jsonl" "$remote/data/training_deep/*.checkpoint" data/training_deep/ 2>/dev/null || true
+  rsync -az --no-owner --no-group -e "$ssh_cmd" "$remote/data/training_deep/log.jsonl" "$remote/data/training_deep/*.checkpoint" \
+    "$remote/data/training_deep/trainer.pt" data/training_deep/ 2>/dev/null || true
   for log in data/training_pod/log.jsonl data/training_deep/log.jsonl; do  # only logs that moved this pass
     if [ -n "$(find "$log" -mmin -6 2>/dev/null)" ]; then echo "$log: $(tail -1 "$log")"; fi
   done

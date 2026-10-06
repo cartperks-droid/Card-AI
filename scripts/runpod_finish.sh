@@ -14,12 +14,14 @@ target=$(date -d "$at" +%s)
 echo "pod ${RUNPOD_POD_ID:-?}: finishing at $(date -d "@$target") ($(( (target - $(date +%s)) / 60 )) min)"
 sleep $(( target - $(date +%s) ))
 
-pkill -INT -f 'card_engine.training.(train|labels)' || true
-for _ in $(seq 60); do pgrep -f 'card_engine.training.(train|labels)' > /dev/null || break; sleep 5; done
-pkill -KILL -f 'card_engine.training.(train|labels)' || true
+pkill -INT -f 'card_engine.training.(train|labels|hard)' || true
+for _ in $(seq 60); do pgrep -f 'card_engine.training.(train|labels|hard)' > /dev/null || break; sleep 5; done
+pkill -KILL -f 'card_engine.training.(train|labels|hard)' || true
 
 archive="$out/card-ai-results-$(date +%Y%m%d-%H%M).tar.gz"
-tar -C "$repo" -czf "$archive" $(cd "$repo" && ls -d data/training data/labels data/tablebase 2>/dev/null)
+# The runs (trainer.pt included) and the tablebase; label shards go to the Mac through pod_sync.sh, and a copy here
+# would not fit the 30 GB volume.
+tar -C "$repo" -czf "$archive" $(cd "$repo" && ls -d data/training* data/tablebase 2>/dev/null)
 echo "archived $(du -h "$archive" | cut -f1) to $archive"
 sync
 runpodctl stop pod "$RUNPOD_POD_ID"
