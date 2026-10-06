@@ -190,5 +190,8 @@ const aurasPath = input.replace(/battle-v2\.ts$/, 'auras.ts')
 src = readFileSync(aurasPath, 'utf8')
 exact("  Crystal: 100,\n  Galaxy: 1_000,\n}", "  Crystal: 100,\n  Ruby: 500,\n  Galaxy: 1_000,\n}")
 exact("  Crystal: 2,\n  Galaxy: 3,\n}", "  Crystal: 2,\n  Ruby: 0,\n  Galaxy: 3,\n}")
+// Jurassic World (user, 2026-10-06, the game's combat changes "Jurassic +80% max"): the bonus per Prehistoric card
+// adds up to at most +80% (4 at Galaxy: +120% in his engine). Mirrored in card_engine/training/train.py card_stats.
+exact("    const bonus = prehistoricCount * value\n", "    const bonus = Math.min(80, prehistoricCount * value)\n")
 writeFileSync(aurasPath.replace(/\.ts$/, '.label.ts'), src)
 console.error(JSON.stringify(counts))

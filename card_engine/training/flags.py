@@ -105,29 +105,35 @@ def load_changes():
     return json.loads(CHANGES_FILE.read_text()) if CHANGES_FILE.exists() else []
 
 
-def declared_path(from_core, to_core, changes):
-    """The shortest chain of declared core changes leading from one core to another (declarations chain, so each new
-    engine version is declared once, from the version before it); None if there is none."""
+def declared_path(from_core, to_core, changes, key="core"):
+    """The shortest chain of declared changes of `key` (the engine core, or the support logic) leading from one
+    fingerprint to another (declarations chain, so each new version is declared once, from the version before it);
+    None if there is none."""
     paths, frontier = {from_core: []}, [from_core]
     while frontier and to_core not in paths:
         nxt = []
         for core in frontier:
             for change in changes:
-                if change["from_core"] == core and change["to_core"] not in paths:
-                    paths[change["to_core"]] = paths[core] + [change]
-                    nxt.append(change["to_core"])
+                if change.get(f"from_{key}") == core and change.get(f"to_{key}") not in paths:
+                    paths[change[f"to_{key}"]] = paths[core] + [change]
+                    nxt.append(change[f"to_{key}"])
         frontier = nxt
     return paths.get(to_core)
 
 
 def changed_entities(old, new, changes):
-    """Entities whose fingerprint differs between snapshots; None if a core change is undeclared."""
+    """Entities whose fingerprint differs between snapshots; None if a core change is undeclared. A declared change
+    of the support logic narrows it to the supports it names; undeclared, every row with a support is affected."""
     changed = {key for key in set(old) | set(new) if old.get(key) != new.get(key)}
-    if "core" in changed:
-        path = declared_path(old["core"], new["core"], changes)
+    for key in ("core", "support_logic"):
+        if key not in changed:
+            continue
+        path = declared_path(old.get(key), new.get(key), changes, key)
         if path is None:
-            return None
-        changed.discard("core")
+            if key == "core":
+                return None
+            continue
+        changed.discard(key)
         if any(c.get("all") for c in path):
             return {"*"}
         for c in path:
@@ -179,7 +185,7 @@ def main(argv=None):
     group.add_argument("--cards", nargs="+")
     group.add_argument("--all", action="store_true")
     group.add_argument("--none", action="store_true")
-    p.add_argument("--supports", nargs="*", default=[], help="e.g. red27 blue8 (every tier)")
+    p.add_argument("--supports", nargs="*", default=[], help="e.g. red27 blue8 (every tier), or blue13:5 (one tier)")
     p.add_argument("--mutations", nargs="*", default=[], help="mutation names whose stats changed, e.g. Eclipse")
     p.add_argument("--note", required=True)
     p.add_argument("--from-snapshot", help="snapshot id to declare from (default: the newest with a different core)")
@@ -213,22 +219,25 @@ def main(argv=None):
     changes = load_changes()
     last = changes[-1]["to_core"] if changes else None
     candidates = sorted(counts, key=lambda i: (load_snapshot(i)["core"] != last, -counts[i]))
-    old_ident = args.from_snapshot or next((i for i in candidates if load_snapshot(i)["core"] != current["core"]), None)
+    differs = lambda i: any(load_snapshot(i).get(key) != current[key] for key in ("core", "support_logic"))
+    old_ident = args.from_snapshot or next((i for i in candidates if differs(i)), None)
     if old_ident is None:
-        raise SystemExit("No stored labels have a different core; nothing to declare")
+        raise SystemExit("No stored labels have a different engine core or support logic; nothing to declare")
     names = [(c.id, c.name) for c in catalog.cards]
     from ..deck import _match
     affects = [f"card:{_match(q, names, 'Card')[0]}" for q in (args.cards or [])]
     for s in args.supports:
         color = "red" if s.startswith("red") else "blue"
-        sid = int(s[len(color):])
-        affects += [f"support:{color}{sid}:{t}" for t in range(1, 6)]
+        sid, _, tier = s[len(color):].partition(":")
+        affects += [f"support:{color}{int(sid)}:{t}" for t in ([int(tier)] if tier else range(1, 6))]
     for name in args.mutations:
         if name not in MUTATION_NAMES:
             raise SystemExit(f"Unknown mutation {name!r}; one of {', '.join(MUTATION_NAMES[1:])}")
         affects.append(f"mutation:{MUTATION_NAMES.index(name)}")
-    changes.append({"from_core": load_snapshot(old_ident)["core"], "to_core": current["core"], "all": bool(args.all),
-                    "affects": affects, "note": args.note})
+    old = load_snapshot(old_ident)
+    changes.append({"from_core": old["core"], "to_core": current["core"],
+                    "from_support_logic": old.get("support_logic"), "to_support_logic": current["support_logic"],
+                    "all": bool(args.all), "affects": affects, "note": args.note})
     CHANGES_FILE.parent.mkdir(parents=True, exist_ok=True)
     CHANGES_FILE.write_text(json.dumps(changes, indent=1) + "\n")
     print(f"Declared: {args.note} ({'all labels' if args.all else f'{len(affects)} entities' if affects else 'no outcome change'})")

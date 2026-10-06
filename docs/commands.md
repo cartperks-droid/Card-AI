@@ -37,12 +37,13 @@ The declaration can name cards, supports or mutations, or say nothing changed or
 ```
 python3 -m card_engine.training.flags declare --cards 231 "Shuten-dōji" --note "..."
 python3 -m card_engine.training.flags declare --supports red27 blue8 --note "..."
+python3 -m card_engine.training.flags declare --supports blue13:5 --note "one tier only"
 python3 -m card_engine.training.flags declare --mutations Eclipse --note "..."
 python3 -m card_engine.training.flags declare --none --note "refactor, no outcome changes"
 python3 -m card_engine.training.flags declare --all --note "everything changed"
 ```
 
-`status` should read "N entities changed" for the big snapshots, never "held back". Card data changes (stats, abilities in his JSON) are detected on their own; only code changes need a declaration.
+`status` should read "N entities changed" for the big snapshots, never "held back". Card data changes (stats, abilities in his JSON) are detected on their own; only code changes need a declaration. A change to the support code (`auras.label.ts`) can be declared the same way, naming the supports it affects; undeclared, it drops every battle with a support.
 
 Changes made so far live in `sim_js/codemod.mjs` (TypeScript) and `sim_c/engine.c` (C); both must change together. `tests/test_kernel.py` checks they agree. The rule log is `docs/simulator_questions.md`.
 

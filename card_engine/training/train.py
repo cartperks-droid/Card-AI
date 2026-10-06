@@ -324,6 +324,7 @@ def stat_favourite(rows):
 
 
 JURASSIC_WORLD = 13  # blue: Prehistoric cards gain value% stats per Prehistoric card on the team
+JURASSIC_CAP = 0.8  # at most +80% in all (user, 2026-10-06: the game's combat changes; sim_js/codemod.mjs)
 
 
 @functools.cache
@@ -352,7 +353,7 @@ def card_stats(rows, tables):
     red = red[cards, mutations, rows["red"][..., None], rows["red_tier"][..., None]]
     member = prehistoric[cards]
     bonus = torch.where(rows["blue"] == JURASSIC_WORLD, jurassic[rows["blue_tier"]], 0.0)
-    blue = 1 + member * (bonus * member.sum(-1))[..., None]
+    blue = 1 + member * (bonus * member.sum(-1)).clamp(max=JURASSIC_CAP)[..., None]
     stats = base[cards, rows["borders"], mutations] * red * blue[..., None]
     if "fixed_side" in rows:
         side = rows["fixed_side"].to(stats.device).long()

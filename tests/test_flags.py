@@ -67,3 +67,15 @@ class FlagTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class SupportLogicDeclarationTests(unittest.TestCase):
+    def test_a_declared_support_logic_change_narrows_to_the_supports_it_names(self):
+        from card_engine.training.flags import changed_entities
+        old = {"core": "c", "support_logic": "s0", "card:1": "a"}
+        new = {"core": "c", "support_logic": "s1", "card:1": "a"}
+        self.assertEqual(changed_entities(old, new, []), {"support_logic"})  # undeclared: every support row
+        declared = [{"from_core": "c", "to_core": "c", "from_support_logic": "s0", "to_support_logic": "s1",
+                     "all": False, "affects": ["support:blue13:5"], "note": "Jurassic cap"}]
+        self.assertEqual(changed_entities(old, new, declared), {"support:blue13:5"})
+        self.assertEqual(changed_entities(old, dict(new, core="c2"), declared), None)  # an undeclared core still holds back
