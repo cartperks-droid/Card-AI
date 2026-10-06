@@ -375,8 +375,9 @@ class TrainingTests(unittest.TestCase):
         train(steps=2, batch_size=8, warmup=1, eval_every=100, checkpoint_every=2, device="cpu",
               run_dir=Path(self.temp.name) / "found_run", label_root=root, mix=(0.0, 0.0, 0.0, 0.0, 0.5))
 
-    def test_the_stat_rule_is_the_prior_and_the_network_predicts_upsets(self):
+    def test_the_stat_rule_is_a_log_odds_prior_with_a_residual(self):
         from card_engine.model.config import StrategicConfig
+        from card_engine.model.networks import STAT_PRIOR_LOGIT
         torch.manual_seed(4)
         strategy = BattleModel(strategic_config=StrategicConfig(layers=1, stat_prior=True)).strategy.eval()
         common = dict(card_embeddings=torch.randn(3, 2, 4, 768), border_ids=torch.ones(3, 2, 4, dtype=torch.long),
@@ -387,18 +388,20 @@ class TrainingTests(unittest.TestCase):
         stats[2, 1] *= 100
         with torch.no_grad():
             probs = strategy(**common, card_stats=stats).softmax(-1)[:, 0]
-            q = strategy.upset_probability(strategy.build_sequence(**common, card_stats=stats))
-        self.assertTrue(bool((q < 0.06).all()))  # it starts on the rule
-        torch.testing.assert_close(probs[0], 1 - q[0])  # A favoured: A wins unless upset
-        torch.testing.assert_close(probs[1], q[1])  # B favoured: A wins only by an upset
-        loss = -strategy(**common, card_stats=stats)[1].log_softmax(-1)[0]  # the rule says B; the target says A
-        self.assertTrue(bool(torch.isfinite(loss)))
+        favourite = torch.sigmoid(torch.tensor(STAT_PRIOR_LOGIT))
+        torch.testing.assert_close(probs[0], favourite)  # the residual starts at 0: the rule's 91.4%
+        torch.testing.assert_close(probs[1], 1 - favourite)
+        with torch.no_grad():
+            strategy.outcome_head[-1].bias.copy_(torch.tensor([1.0, -1.0]))  # a residual of +2 log-odds for A
+            shifted = strategy(**common, card_stats=stats).softmax(-1)[1, 0]
+            residual = strategy.prior_residual(strategy.build_sequence(**common, card_stats=stats))
+        torch.testing.assert_close(shifted, torch.sigmoid(torch.tensor(-STAT_PRIOR_LOGIT + 2.0)))
+        torch.testing.assert_close(residual, torch.full((3,), 2.0))
         hidden = torch.ones(3, 2, 4, dtype=torch.bool)
-        hidden[2, 1] = False  # a side unseen: no rule, the outcome head answers
+        hidden[2, 1] = False  # a side unseen: no rule, the residual alone
         with torch.no_grad():
             seen = strategy(**common, card_stats=stats, card_visible=hidden).softmax(-1)[2, 0]
-            alone = strategy.outcome(strategy.build_sequence(**common, card_stats=stats, card_visible=hidden)).softmax(-1)[2, 0]
-        torch.testing.assert_close(seen, alone)
+        torch.testing.assert_close(seen, torch.sigmoid(torch.tensor(2.0)))
 
     def test_training_runs_and_resumes(self):
         root = Path(self.temp.name) / "labels"

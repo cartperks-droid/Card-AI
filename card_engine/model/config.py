@@ -66,10 +66,10 @@ class StrategicConfig:
     # and ATK ratios and the hits each needs to kill the other (log HP over the other's log ATK), and whether the
     # other is visible, beside the card's own normalised stats; the stat MLP reads all of it (37 inputs, not 2).
     stat_pairs: bool = False
-    # The stat rule as the prior (user, 2026-10-06): rule is 1 when side A has the larger total sqrt(HP x ATK) (ties
-    # to A), else 0, and the network predicts q, the chance the stat favourite loses (an upset): P(A wins) =
-    # rule + (1 - 2 * rule) * q. q starts near 0.05 (user: low), so every battle begins on the rule. The network needs no
-    # capacity for "bigger stats win" and learns where abilities overturn it; with a side unseen there is no rule.
+    # The stat rule as a prior in log-odds (user, 2026-10-06): the A-win log-odds is +-STAT_PRIOR_LOGIT (the stat
+    # favourite wins 91.4% of validation battles: ln(0.914 / 0.086) = 2.36), + when side A has the larger total
+    # sqrt(HP x ATK) (ties to A), plus the network's residual, which starts at 0. The residual's target is centred on
+    # 0 rather than near a pole, so overturning the favourite is a bounded shift; with a side unseen there is no rule.
     stat_prior: bool = False
     # The engine reads a card's pack and mutation weather only for its stats and the stat supports that boost it,
     # all inside the card's stats already (2026-10-06): without these embeddings neither can stand in for identity.

@@ -57,10 +57,10 @@ if watched:  # the named battles of training/watch.json, one per row: the engine
     shown = [r for r in watched if [w["name"] for w in r["watch"]] == names][-4:]  # the current list's evaluations
     print("\nwatch list (ally win chance; engine, then live / average at each step)")
     print(f"{'battle':<32} engine  " + "  ".join(f"{r['step']:>11,}" for r in shown))
-    for i, name in enumerate(names):  # q: the averaged weights' chance the stat favourite loses (--stat-prior)
+    for i, name in enumerate(names):  # residual: the averaged weights' log-odds correction to the stat rule (--stat-prior)
         print(f"{name[:32]:<32} {shown[-1]['watch'][i]['engine']:.2f}    "
               + "  ".join(f"{r['watch'][i]['model']:.2f} / {r['watch'][i]['ema']:.2f}" for r in shown)
-              + (f"   upset {shown[-1]['watch_upset'][i]:.2f}" if "watch_upset" in shown[-1] else ""))
+              + (f"   residual {shown[-1]['watch_residual'][i]:+.2f}" if "watch_residual" in shown[-1] else ""))
     print(f"{'mean |model - engine|':<32}         " + "  ".join(
         f"{sum(abs(w['model'] - w['engine']) for w in r['watch']) / len(names):.2f} / "
         f"{sum(abs(w['ema'] - w['engine']) for w in r['watch']) / len(names):.2f}" for r in shown))

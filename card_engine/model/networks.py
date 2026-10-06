@@ -17,6 +17,8 @@ _OTHERS = torch.tensor([[side * 4 + j for j in range(4) if j != slot] + [(1 - si
                         for side in range(2) for slot in range(4)])
 STAT_PAIR_INPUTS = 2 + 7 * 5  # own normalized (HP, ATK); per other card 4 log ratios and its visibility
 
+STAT_PRIOR_LOGIT = 2.36  # ln(0.914 / 0.086): the stat favourite wins 91.4% of validation battles (StrategicConfig.stat_prior)
+
 SLOT_NAMES = (
     "BOS", "ally_red", "ally_blue", "ally_card_1", "ally_card_2",
     "ally_card_3", "ally_card_4", "enemy_red", "enemy_blue", "enemy_card_1",
@@ -189,11 +191,9 @@ class StrategicModel(nn.Module):
             for _ in range(c.layers)
         ])
         self.outcome_head = nn.Sequential(nn.LayerNorm(c.width), nn.Linear(c.width, len(OUTCOME_NAMES)))
-        if c.stat_prior:  # the log-odds of an upset, against the stat rule (stat_rule)
-            self.upset_head = nn.Sequential(nn.LayerNorm(c.width), nn.Linear(c.width, 1))
-            # It starts low (user, 2026-10-06): every battle begins on the stat rule, q = sigmoid(-3) ~ 0.05.
-            nn.init.zeros_(self.upset_head[-1].weight)
-            nn.init.constant_(self.upset_head[-1].bias, -3.0)
+        if c.stat_prior:  # the outcome head becomes a residual on the stat rule's log-odds, starting at 0
+            nn.init.zeros_(self.outcome_head[-1].weight)
+            nn.init.zeros_(self.outcome_head[-1].bias)
         # Residual stat MLP over every card token (user): the normalized (HP, ATK) are projected to the token
         # width, and that projection skips around the MLP to its output; the sum is added to the card token.
         # The projection and the MLP's output layer start at zero, so adding them to a trained model leaves
@@ -328,25 +328,24 @@ class StrategicModel(nn.Module):
         return (strength[:, 0] >= strength[:, 1]).to(card_stats.dtype), visible.all(-1).all(-1)
 
     def outcome(self, sequence: Tensor, rule: tuple[Tensor, Tensor] | None = None) -> Tensor:
-        """Logits (A win, B win) for an assembled sequence. With stat_prior and a stat rule (stat_rule) they are the
-        log-probabilities of rule + (1 - 2 * rule) * q, q = sigmoid(upset logit) the chance the stat favourite loses;
-        without a rule (a side unseen) the outcome head answers directly."""
+        """Logits (A win, B win) for an assembled sequence. With stat_prior and a stat rule (stat_rule), the A-win
+        log-odds is +-STAT_PRIOR_LOGIT by the rule plus the outcome head's residual; without a rule (a side unseen) the
+        head answers alone."""
         for block in self.blocks:
             sequence = block(sequence)
         logits = self.outcome_head(sequence[:, -1])
         if not self.config.stat_prior or rule is None:
             return logits
         favoured, usable = rule
-        upset = self.upset_head(sequence[:, -1]).float().squeeze(-1)
-        a_odds = torch.where(favoured > 0.5, -upset, upset)  # log-odds that A wins
-        prior = torch.stack([F.logsigmoid(a_odds), F.logsigmoid(-a_odds)], -1)
-        return torch.where(usable[:, None], prior, logits.float().log_softmax(-1))
+        offset = torch.where(usable, (2 * favoured - 1) * STAT_PRIOR_LOGIT, 0.0)  # + for A favoured, - for B
+        return logits.float() + torch.stack([offset / 2, -offset / 2], -1)
 
-    def upset_probability(self, sequence: Tensor) -> Tensor:
-        """q per battle: the chance the stat favourite loses (stat_prior runs)."""
+    def prior_residual(self, sequence: Tensor) -> Tensor:
+        """The network's residual on the stat rule's A-win log-odds per battle (stat_prior runs): 0 follows the rule."""
         for block in self.blocks:
             sequence = block(sequence)
-        return torch.sigmoid(self.upset_head(sequence[:, -1]).float().squeeze(-1))
+        logits = self.outcome_head(sequence[:, -1]).float()
+        return logits[:, 0] - logits[:, 1]
 
     def build_sequence(self, card_embeddings: Tensor, border_ids: Tensor,
                        red_support_ids: Tensor, blue_support_ids: Tensor, *,
