@@ -23,7 +23,7 @@ import numpy as np
 import torch
 
 from ..model import BattleModel, load_model_data
-from ..model.config import StrategicConfig
+from ..model.config import DescriptionConfig, StrategicConfig
 from ..model.checkpoint import load_checkpoint, save_checkpoint
 from .labels import FIELDS, BATTLE_FIELDS, GENERATION_SEEDS, SHARD_DIR, battle_arrays, possible_rows, shard_paths
 
@@ -527,7 +527,7 @@ def mix_shares(step, mix, mix_start=None, mix_until=None):
 
 
 def train(*, steps=None, batch_size=512, lr=3e-4, warmup=1000, weight_decay=0.05, dropout=0.1, freeze_language_at=None,
-          eval_every=1000, init_from=None, language_lr=None, mix=(0.05, 0.0, 0.0), layers=None, architecture=None, language_from=None,
+          eval_every=1000, init_from=None, language_lr=None, mix=(0.05, 0.0, 0.0), layers=None, architecture=None, language=None, language_from=None,
           mix_start=None, mix_until=None, ema_decay=0.999, pack_labels=False, bf16=False, lr_decay=None, lr_floor=0.05,
           watch=None, max_rows=None, eval_rows=None, field_generations=2,
           checkpoint_every=1000, reload_every=1000, device=None, run_dir=RUN_DIR, label_root=SHARD_DIR):
@@ -540,7 +540,8 @@ def train(*, steps=None, batch_size=512, lr=3e-4, warmup=1000, weight_decay=0.05
     the current step) does not resume momentum from before the freeze.
 
     A new run (random weights) takes `layers` strategic layers (default StrategicConfig's) and `architecture`, other
-    StrategicConfig fields (stat_tokens, stat_pairs, stat_width, pack_embedding, mutation_embedding). language_from: a model
+    StrategicConfig fields (stat_tokens, stat_pairs, stat_width, pack_embedding, mutation_embedding, stat_hidden_width),
+    and `language`, DescriptionConfig fields (width, layers, heads, feedforward_width) for its own description transformer. language_from: a model
     checkpoint whose description transformer (card text to card vectors) the new run starts from, frozen from the
     first step.
 
@@ -577,7 +578,8 @@ def train(*, steps=None, batch_size=512, lr=3e-4, warmup=1000, weight_decay=0.05
         state, warm_from = None, int(metadata["step"])
     else:
         strategic = StrategicConfig(**({"layers": layers} if layers else {}), **(architecture or {}))
-        model, state = BattleModel(strategic_config=strategic).to(device), None
+        description = DescriptionConfig(**(language or {}))
+        model, state = BattleModel(description_config=description, strategic_config=strategic).to(device), None
         if language_from is not None:
             source, _ = load_checkpoint(language_from, map_location=device)
             model.description.load_state_dict(source.description.state_dict())
@@ -831,6 +833,11 @@ if __name__ == "__main__":
                         help="new run: each card's stats as a token of its own beside the card's")
     parser.add_argument("--stat-pairs", action="store_true",
                         help="new run: the stat MLP compares each card's stats with each of the other 7 cards'")
+    parser.add_argument("--stat-hidden", type=int, default=3072,
+                        help="new run: the stat MLP's hidden width (768 keeps the stat path smaller than the text path)")
+    parser.add_argument("--language-width", type=int, default=128,
+                        help="new run: the description transformer's width (heads: width / 64, feed-forward: 4 x width)")
+    parser.add_argument("--language-layers", type=int, default=4, help="new run: the description transformer's layers")
     parser.add_argument("--no-pack-embedding", action="store_true", help="new run: no card-pack embedding")
     parser.add_argument("--no-mutation-embedding", action="store_true",
                         help="new run: no mutation embedding (mutations still set the card's stats)")
@@ -867,7 +874,11 @@ if __name__ == "__main__":
           weight_decay=parsed.weight_decay, dropout=parsed.dropout, freeze_language_at=parsed.freeze_language_at,
           eval_every=parsed.eval_every, init_from=parsed.init_from, language_lr=parsed.language_lr, mix=parsed.mix,
           layers=parsed.layers, architecture={"stat_width": parsed.stat_width, "stat_tokens": parsed.stat_tokens, "stat_pairs": parsed.stat_pairs,
-          "pack_embedding": not parsed.no_pack_embedding, "mutation_embedding": not parsed.no_mutation_embedding},
+          "pack_embedding": not parsed.no_pack_embedding, "mutation_embedding": not parsed.no_mutation_embedding,
+          "stat_hidden_width": parsed.stat_hidden},
+          language={"width": parsed.language_width, "layers": parsed.language_layers,
+                    "heads": max(1, parsed.language_width // 64) if parsed.language_width > 128 else 4,
+                    "feedforward_width": 4 * parsed.language_width},
           language_from=parsed.language_from, mix_start=parsed.mix_start, mix_until=parsed.mix_until, ema_decay=parsed.ema_decay, pack_labels=parsed.pack_labels,
           bf16=parsed.bf16, lr_decay=parsed.lr_decay, lr_floor=parsed.lr_floor, watch=parsed.watch or None, max_rows=parsed.max_rows, eval_rows=parsed.eval_rows,
           field_generations=parsed.field_generations,
