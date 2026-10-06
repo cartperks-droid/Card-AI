@@ -43,8 +43,10 @@ from .tablebase import Tablebase
 ROOT = Path(__file__).resolve().parents[2]
 SHARD_DIR = ROOT / "data" / "labels"
 FIELDS = ("cards", "borders", "mutations", "arts", "red", "red_tier", "blue", "blue_tier")
-# fixed_side: -1, or the side whose cards start at fixed_stats (HP, ATK); fixed_hp_mult: HP times each card's multiplier
-FIXED_FIELDS = ("fixed_side", "fixed_stats", "fixed_hp_mult")
+# fixed_side: -1, or the side whose cards start at fixed_stats (HP, ATK); fixed_hp_mult: HP times each card's multiplier.
+# hidden_side: -1, or the side the model cannot see (incomplete mode, training.incomplete): its fields hold
+# HIDDEN_TEAM, and the target is the visible team's mean result against a field of strong teams.
+BATTLE_FIELDS = ("fixed_side", "fixed_stats", "fixed_hp_mult", "hidden_side")
 
 
 AURA_TIERS = tuple(drago.AURA_BORDERS)  # support cards: Base, Platinum, Crystal, Ruby, Galaxy
@@ -237,6 +239,10 @@ def _worker(args):
 
 
 POD_SEEDS = 5_000_000  # the pod numbers from here up (docs/runpod.md); the Mac stays below
+# What an incomplete-mode row stores for its unseen side; the model never reads it (card_visible), only valid ids.
+HIDDEN_TEAM = {"cards": [1, 2, 3, 4], "borders": [1] * 4, "mutations": [0] * 4, "arts": [0] * 4,
+               "red": 0, "red_tier": 0, "blue": 0, "blue_tier": 0}
+GENERATION_SEEDS = 1_000_000  # incomplete-mode shards: hidden_<generation * this + n>, so the name gives the field
 
 
 def next_seed(existing, first_seed=None):
@@ -284,12 +290,12 @@ def load_shards(directory=STORE):
     for path in sorted(shard_paths(directory)):
         with np.load(path) as shard:
             arrays = {name: shard[name] for name in (*FIELDS, "probs", "exact")}
-            arrays.update(fixed_arrays(shard, len(arrays["probs"])))
+            arrays.update(battle_arrays(shard, len(arrays["probs"])))
             mask = valid_rows(arrays, str(shard["snapshot"]), current) & possible_rows(arrays["cards"])
         parts.append({k: v[mask] for k, v in arrays.items()})
     if not parts:
         raise FileNotFoundError(f"No label shards in {directory}")
-    return {name: np.concatenate([part[name] for part in parts]) for name in (*FIELDS, *FIXED_FIELDS, "probs", "exact")}
+    return {name: np.concatenate([part[name] for part in parts]) for name in (*FIELDS, *BATTLE_FIELDS, "probs", "exact")}
 
 
 def possible_rows(cards):
@@ -300,18 +306,21 @@ def possible_rows(cards):
 
 
 def shard_paths(directory):
-    """Every label shard: random battles (shard_*), fixed-stat battles (fixed_*) and hard examples (hard_*, training.hard);
-    partial files excluded."""
-    return [*Path(directory).glob("shard_*.npz"), *Path(directory).glob("fixed_*.npz"), *Path(directory).glob("hard_*.npz")]
+    """Every label shard: random battles (shard_*), fixed-stat battles (fixed_*), hard examples (hard_*, training.hard)
+    and incomplete-mode battles (hidden_*, training.incomplete); partial files excluded."""
+    return [path for kind in ("shard", "fixed", "hard", "hidden") for path in Path(directory).glob(f"{kind}_*.npz")]
 
 
-def fixed_arrays(shard, rows):
-    """A shard's fixed-stat fields; a random-battle shard has none (side -1), an older fixed shard no HP multiplier."""
+def battle_arrays(shard, rows):
+    """A shard's fixed-stat and hidden-side fields; a shard without them has none (side -1), an older fixed shard no
+    HP multiplier."""
+    hidden = {"hidden_side": shard["hidden_side"] if "hidden_side" in shard else np.full(rows, -1, dtype=np.int8)}
     if "fixed_side" not in shard:
         return {"fixed_side": np.full(rows, -1, dtype=np.int8), "fixed_stats": np.zeros((rows, 2), dtype=np.float32),
-                "fixed_hp_mult": np.zeros(rows, dtype=np.int8)}
+                "fixed_hp_mult": np.zeros(rows, dtype=np.int8), **hidden}
     return {"fixed_side": shard["fixed_side"], "fixed_stats": shard["fixed_stats"],
-            "fixed_hp_mult": shard["fixed_hp_mult"] if "fixed_hp_mult" in shard else np.zeros(rows, dtype=np.int8)}
+            "fixed_hp_mult": shard["fixed_hp_mult"] if "fixed_hp_mult" in shard else np.zeros(rows, dtype=np.int8),
+            **hidden}
 
 
 if __name__ == "__main__":

@@ -229,15 +229,28 @@ class SlotSpace:
         blue = self.model.support_vectors(1, rows["blue"][:, 0], rows["blue_tier"][:, 0])
         return tokens, stats, red, blue
 
-    def logits(self, a, b):
-        """Outcome logits with side A and side B each given as (card tokens, log stats, red, blue)."""
+    def logits(self, a, b, hidden=None):
+        """Outcome logits with side A and side B each given as (card tokens, log stats, red, blue). hidden: the side
+        the model is not shown (incomplete mode), whose tuple is then ignored: as in training, its cards, stats and
+        supports become the hidden stand-ins and MODE is 1."""
+        model = self.model
         cards = torch.stack([a[0], b[0]], 1)
         stats = torch.stack([a[1], b[1]], 1)
         visible = torch.ones(stats.shape[:3], dtype=torch.bool, device=self.device)
-        cards, stat_tokens = self.model.with_stats(cards, self.model.stat_inputs(stats.exp(), visible))
+        if hidden is not None:
+            visible[:, hidden] = False
+        stats = torch.where(visible[..., None], stats.exp(), 1.0)
+        cards, stat_tokens = model.with_stats(cards, model.stat_inputs(stats, visible))
         supports = [torch.stack([a[2], b[2]], 1), torch.stack([a[3], b[3]], 1)]
         mode = torch.zeros(cards.shape[0], dtype=torch.long, device=self.device)
-        return self.model.outcome(self.model.assemble(cards, supports, mode, stat_tokens))
+        if hidden is not None:
+            cards = torch.where(visible[..., None], cards, model.hidden_card)
+            if stat_tokens is not None:
+                stat_tokens = torch.where(visible[..., None], stat_tokens, model.hidden_stat)
+            seen = visible[:, :, 0, None]
+            supports = [torch.where(seen, part, model.hidden_support[index]) for index, part in enumerate(supports)]
+            mode = mode + 1
+        return model.outcome(model.assemble(cards, supports, mode, stat_tokens))
 
 
 @dataclass
@@ -250,6 +263,7 @@ class Settings:
     rechecks: int = 3  # extra ascent rounds (doubled penalty) while slots stay blurred
     nearest: int = 3  # decoding: k nearest entries per slot
     role: str = "attack"  # the ascended side attacks first ("attack") or defends ("defend")
+    incomplete: bool = False  # against the field the model cannot see (incomplete mode), not a named enemy
     noise_levels: int = 12  # annealing: the ascent runs in this many levels, fresh noise before each after the first
     # noise added before the second level, in units of each factor's spread (z). At floor 105, borderless, restricted
     # pool (2026-10-06): sigma 0.5-1 never left the stat-stacking peak, 2-4 reached high model scores, and 8 found the
@@ -280,10 +294,11 @@ def ascend(space, opponents, settings, generator, enemy_stats=None):
         log_red = torch.einsum("erk,nr->nek", space.log_red, red)
         stats = torch.einsum("nse,ek->nsk", p, space.log_base) + torch.einsum("nse,nek->nsk", p, log_red)
         ally = (vectors[0] + vectors[1] + vectors[2], stats, red @ space.red_vectors, blue @ space.blue_vectors)
+        hidden = (1 if settings.role == "attack" else 0) if settings.incomplete else None
         if settings.role == "attack":
-            objective = space.logits(ally, enemy).log_softmax(-1)[:, 0]
+            objective = space.logits(ally, enemy, hidden).log_softmax(-1)[:, 0]
         else:
-            objective = space.logits(enemy, ally).log_softmax(-1)[:, 1]
+            objective = space.logits(enemy, ally, hidden).log_softmax(-1)[:, 1]
         entropy = lambda q: -(q * q.clamp_min(1e-12).log()).sum(-1)
         # Commitment: the distance to each slot's nearest entry (an expected distance would settle between entries).
         commit = distance.amin(-1).mean(-1) + entropy(red) + entropy(blue)
@@ -385,15 +400,18 @@ def _key(team):
 
 
 def counters(space, enemy, *, count=32, restarts=64, settings=Settings(), seed=1, enemy_stats=None):
-    """The `count` best distinct ally teams against `enemy` in settings.role, by the classifier: [(team, win, blur)]."""
+    """The `count` best distinct ally teams against `enemy` in settings.role, by the classifier: [(team, win, blur)].
+    With settings.incomplete the teams are ascended against the unseen field instead (enemy: labels.HIDDEN_TEAM)."""
     generator = torch.Generator().manual_seed(seed)
     distance, red, blue, blur = ascend(space, [enemy] * restarts, settings, generator, enemy_stats)
     best = {}
     for teams, slot_blur in zip(decode_nearest(space, distance, red, blue, settings.nearest), blur.cpu().numpy()):
         if not teams:
             continue
-        wins = space.classifier.ally_win([(team, enemy) for team in teams], enemy_stats)
-        score = wins[:, ROLES.index(settings.role)]
+        if settings.incomplete:
+            score = space.classifier.field_win(teams, ROLES.index(settings.role))
+        else:
+            score = space.classifier.ally_win([(team, enemy) for team in teams], enemy_stats)[:, ROLES.index(settings.role)]
         top = int(score.argmax())
         key = _key(teams[top])
         if key not in best or score[top] > best[key][1]:

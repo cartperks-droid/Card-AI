@@ -45,8 +45,9 @@ class Classifier:
         with torch.no_grad():
             self.table = card_table(self.model, self.inputs.data.description_tokens)
 
-    def win_a(self, specs, batch=2048, fixed=None):
-        """P(side A wins) per spec. fixed: (side, (HP, ATK, HP multiplier applies)) sets that side's starting stats."""
+    def win_a(self, specs, batch=2048, fixed=None, hidden=None):
+        """P(side A wins) per spec. fixed: (side, (HP, ATK, HP multiplier applies)) sets that side's starting stats.
+        hidden: the side the model is not shown (incomplete mode: the field of strong teams, training.incomplete)."""
         out = []
         with torch.no_grad():
             for start in range(0, len(specs), batch):
@@ -56,6 +57,8 @@ class Classifier:
                     rows["fixed_side"] = torch.full((len(part),), fixed[0], device=self.device)
                     rows["fixed_stats"] = torch.tensor([fixed[1][:2]] * len(part), device=self.device)
                     rows["fixed_hp_mult"] = torch.full((len(part),), int(fixed[1][2]), device=self.device)
+                if hidden is not None:
+                    rows["hidden_side"] = torch.full((len(part),), hidden, device=self.device)
                 out.append(self.model(**self.inputs(rows, self.table)).softmax(-1)[:, 0].float().cpu().numpy())
         return np.concatenate(out) if out else np.zeros(0)
 
@@ -65,6 +68,14 @@ class Classifier:
         first = self.win_a([spec(ally, enemy) for ally, enemy in pairs], fixed=enemy_stats and (1, enemy_stats))
         second = 1 - self.win_a([spec(enemy, ally) for ally, enemy in pairs], fixed=enemy_stats and (0, enemy_stats))
         return np.stack([first, second], 1)
+
+
+    def field_win(self, teams, role):
+        """The incomplete-mode win chance of each team in a role (0 attack, 1 defend) against the field it cannot see."""
+        from .labels import HIDDEN_TEAM
+        if role == 0:
+            return self.win_a([spec(team, HIDDEN_TEAM) for team in teams], hidden=1)
+        return 1 - self.win_a([spec(HIDDEN_TEAM, team) for team in teams], hidden=0)
 
 
 def simulate(catalog, ally, enemy, seed=12345, enemy_stats=None):

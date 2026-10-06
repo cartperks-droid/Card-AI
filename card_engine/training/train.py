@@ -25,7 +25,7 @@ import torch
 from ..model import BattleModel, load_model_data
 from ..model.config import StrategicConfig
 from ..model.checkpoint import load_checkpoint, save_checkpoint
-from .labels import FIELDS, FIXED_FIELDS, SHARD_DIR, fixed_arrays, possible_rows, shard_paths
+from .labels import FIELDS, BATTLE_FIELDS, GENERATION_SEEDS, SHARD_DIR, battle_arrays, possible_rows, shard_paths
 
 RUN_DIR = Path(__file__).resolve().parents[2] / "data" / "training"
 VALIDATION_EVERY = 25  # shard seeds divisible by this are held out
@@ -80,21 +80,23 @@ def _read_shard(item):
     catalog, current, changes, rules, pool_cards = _READER
     with np.load(path) as shard:
         arrays = {key: shard[key] for key in (*FIELDS, "probs")}
-        arrays.update(fixed_arrays(shard, len(arrays["probs"])))
+        arrays.update(battle_arrays(shard, len(arrays["probs"])))
         snapshot_id = str(shard["snapshot"])
     mask = valid_rows(arrays, snapshot_id, current, catalog=catalog, changes=changes, pool_cards=pool_cards)
     finished = arrays["probs"][:, :2].sum(1)  # A win, B win (ties cannot happen; unfinished mass is dropped)
     keep = mask & (finished > 0) & possible_rows(arrays["cards"])
     rows = {key: arrays[key][keep].astype(np.int16) for key in FIELDS}
-    rows.update({key: arrays[key][keep] for key in FIXED_FIELDS})
+    rows.update({key: arrays[key][keep] for key in BATTLE_FIELDS})
     rows["target"] = (arrays["probs"][keep, :2] / finished[keep, None]).astype(np.float32)
     rows["hard"] = np.full(int(keep.sum()), path.name.startswith("hard_"), dtype=np.int8)
     rows["favourite"] = stat_favourite({key: torch.as_tensor(value) for key, value in rows.items()
                                         if key != "target"}).numpy().astype(np.int8)
+    hidden = rows["hidden_side"] >= 0  # one side unseen: no stat favourite, so never an upset
+    rows["favourite"][hidden] = rows["target"][hidden].argmax(-1)
     return path, (mtime, rules, int(path.stem.split("_")[1]) % VALIDATION_EVERY == 0, rows)
 
 
-ROW_KEYS = (*FIELDS, *FIXED_FIELDS, "target", "hard", "favourite")
+ROW_KEYS = (*FIELDS, *BATTLE_FIELDS, "target", "hard", "favourite")
 
 
 def _packs(directory):
@@ -194,7 +196,7 @@ def sample_validation(rows, limit):
     return {k: v[keep] for k, v in rows.items()}
 
 
-def load_split(directory, device, release=None, pack=False, max_rows=None):
+def load_split(directory, device, release=None, pack=False, max_rows=None, generations=2):
     """(train, validation) tensors of the rows still valid under the current rules (training.flags);
     validation = shards whose seed is divisible by VALIDATION_EVERY. Every row carries `hard` (1 for training.hard's
     hard-example battles); training draws a set share of each batch from them (train's mix).
@@ -210,7 +212,8 @@ def load_split(directory, device, release=None, pack=False, max_rows=None):
     reading only newer shards. On the pod, reading 76,657 small shard files took about 38 minutes whatever the CPU
     did (2026-10-05): its disk is slow per file, fast for large files.
 
-    max_rows: load about this many rows (capped_paths); the rest of the store stays on disk.
+    max_rows: load about this many rows (capped_paths); the rest of the store stays on disk. generations: the field
+    generations whose incomplete-mode shards count (newest_generations).
     """
     from ..catalog import load_catalog
     from .flags import entity_hashes, load_changes
@@ -220,6 +223,7 @@ def load_split(directory, device, release=None, pack=False, max_rows=None):
     if pack and not _SHARD_CACHE:
         _read_packs(directory, rules)
     paths, started = sorted(shard_paths(directory)), time.time()
+    paths = newest_generations(paths, generations)
     if max_rows is not None:
         paths = capped_paths(paths, max_rows)
     # A shard is written once under a new name (labels, hard: atomic renames, seeds never reused), so a cached shard
@@ -371,7 +375,7 @@ class Inputs:
 
     def __call__(self, rows, card_table):
         rows = {**{key: rows[key].long() for key in FIELDS},  # stored as int16
-                **{key: rows[key] for key in FIXED_FIELDS if key in rows}}
+                **{key: rows[key] for key in BATTLE_FIELDS if key in rows}}
         cards = rows["cards"]
         index = cards - 1
         identity = self.data.identity_keys[index]
@@ -381,6 +385,11 @@ class Inputs:
                         support_tiers=torch.stack([rows["red_tier"], rows["blue_tier"]], -1))
         if self.data.class_weights is not None:
             metadata["class_weights"] = self.data.class_weights[index]
+        if "hidden_side" in rows:  # incomplete mode: one side unseen, its cards and supports, and MODE says so
+            hidden = rows["hidden_side"].long()
+            seen = hidden[:, None] != torch.arange(2, device=hidden.device)  # [N, 2]
+            metadata.update(card_visible=seen[:, :, None].expand(-1, 2, 4), support_visible=seen[:, :, None].expand(-1, 2, 2),
+                            mode_ids=(hidden >= 0).long())
         metadata["card_stats"] = card_stats(rows, self.stat_tables)
         return dict(card_embeddings=card_table[index], **metadata)
 
@@ -479,31 +488,44 @@ def load_watch(path, device):
     return names, engine, rows
 
 
-MIX_KINDS = ("hard", "upset", "fixed")
+MIX_KINDS = ("hard", "upset", "fixed", "hidden")
 
 
 def mix_rows(rows):
     """Indices of the rows each batch takes a set share of (train's mix): hard examples; fixed-stat battles that are
-    not hard; upsets (the stat favourite lost) among the rest. A new model learns these first (user, 2026-10-04), so
-    "bigger stats win" is not learned before the abilities that overturn it."""
-    hard, fixed = rows["hard"] > 0, rows["fixed_side"] >= 0
-    upset = rows["favourite"].long() != rows["target"].argmax(-1)
+    not hard; upsets (the stat favourite lost) among the rest; incomplete-mode battles (training.incomplete), which
+    only their own share draws. A new model learns the first three first (user, 2026-10-04), so "bigger stats win"
+    is not learned before the abilities that overturn it."""
+    hidden = rows["hidden_side"] >= 0
+    hard, fixed = (rows["hard"] > 0) & ~hidden, (rows["fixed_side"] >= 0) & ~hidden
+    upset = (rows["favourite"].long() != rows["target"].argmax(-1)) & ~hidden
     return {"hard": hard.nonzero()[:, 0], "fixed": (fixed & ~hard).nonzero()[:, 0],
-            "upset": (upset & ~fixed & ~hard).nonzero()[:, 0]}
+            "upset": (upset & ~fixed & ~hard).nonzero()[:, 0], "hidden": hidden.nonzero()[:, 0], "is_hidden": hidden}
+
+
+def newest_generations(paths, keep):
+    """The paths without incomplete-mode shards of fields older than the newest `keep` generations: the hidden side
+    means the current field of strong teams (user, 2026-10-06), so labels against older fields stop counting."""
+    generations = {path: int(path.stem.split("_")[1]) // GENERATION_SEEDS for path in paths if path.name.startswith("hidden_")}
+    if not generations:
+        return paths
+    newest = max(generations.values())
+    return [path for path in paths if generations.get(path, newest) > newest - keep]
 
 
 def mix_shares(step, mix, mix_start=None, mix_until=None):
     """Each kind's share of the batch at a step: mix_start at step 0, moving linearly to mix at mix_until, then held."""
+    pad = lambda shares: (*shares, *(0.0,) * (len(MIX_KINDS) - len(shares)))  # three shares: no incomplete mode
     if mix_start is None or mix_until is None or step >= mix_until:
-        return tuple(mix)
+        return pad(tuple(mix))
     t = step / max(1, mix_until)
-    return tuple(a + (b - a) * t for a, b in zip(mix_start, mix))
+    return tuple(a + (b - a) * t for a, b in zip(pad(mix_start), pad(mix)))
 
 
 def train(*, steps=None, batch_size=512, lr=3e-4, warmup=1000, weight_decay=0.05, dropout=0.1, freeze_language_at=None,
           eval_every=1000, init_from=None, language_lr=None, mix=(0.05, 0.0, 0.0), layers=None, architecture=None, language_from=None,
           mix_start=None, mix_until=None, ema_decay=0.999, pack_labels=False, bf16=False, lr_decay=None, lr_floor=0.05,
-          watch=None, max_rows=None, eval_rows=None,
+          watch=None, max_rows=None, eval_rows=None, field_generations=2,
           checkpoint_every=1000, reload_every=1000, device=None, run_dir=RUN_DIR, label_root=SHARD_DIR):
     """Train in run_dir, resuming its model and optimizer if both are there. Otherwise init_from (a model checkpoint,
     e.g. one downloaded from another machine) gives the starting weights and step, with a fresh optimizer whose learning
@@ -589,7 +611,7 @@ def train(*, steps=None, batch_size=512, lr=3e-4, warmup=1000, weight_decay=0.05
     tokens = inputs.data.description_tokens
     from .flags import snapshot
     label_dir = latest_label_dir(label_root)
-    train_rows, val_rows = load_split(label_dir, device, pack=pack_labels, max_rows=max_rows)
+    train_rows, val_rows = load_split(label_dir, device, pack=pack_labels, max_rows=max_rows, generations=field_generations)
     if train_rows is None:
         raise SystemExit("No labels are valid under the current rules: see `python -m card_engine.training.flags status`")
     mixed = mix_rows(train_rows)  # recomputed on each reload
@@ -639,7 +661,8 @@ def train(*, steps=None, batch_size=512, lr=3e-4, warmup=1000, weight_decay=0.05
         while steps is None or step < steps:
             if step and step % reload_every == 0:  # new shards, or new rules
                 label_dir = latest_label_dir(label_root)
-                fresh = load_split(label_dir, device, release=release, pack=pack_labels, max_rows=max_rows)
+                fresh = load_split(label_dir, device, release=release, pack=pack_labels, max_rows=max_rows,
+                                   generations=field_generations)
                 if fresh[0] is None:  # every row held back (an undeclared engine change): keep the rows already loaded
                     print(json.dumps({"step": step, "labels_held_back": "no rows are valid under the current rules; "
                                       "training continues on the loaded rows until the change is declared (flags status)"}),
@@ -650,6 +673,12 @@ def train(*, steps=None, batch_size=512, lr=3e-4, warmup=1000, weight_decay=0.05
                     rules_id = snapshot()
             count = train_rows["target"].shape[0]
             picks = torch.randint(count, (batch_size,), generator=generator).to(device)
+            if len(mixed["hidden"]):  # uniform draws that hit incomplete-mode rows are drawn again (they only enter by
+                for _ in range(4):    # their own share); the leftovers are covered by the shares below
+                    again = mixed["is_hidden"][picks]
+                    if not bool(again.any()):
+                        break
+                    picks[again] = torch.randint(count, (int(again.sum()),), generator=generator).to(device)
             shares, start = mix_shares(step, mix, mix_start, mix_until), 0
             for kind, share in zip(MIX_KINDS, shares):  # set shares of the batch from each kind, no copies kept
                 pool, n = mixed[kind], int(round(batch_size * share))
@@ -687,12 +716,16 @@ def train(*, steps=None, batch_size=512, lr=3e-4, warmup=1000, weight_decay=0.05
                 last = now
                 if step % eval_every == 0 and val_rows is not None:
                     table = eval_table()
-                    scored = sample_validation(val_rows, eval_rows)
+                    sampled = sample_validation(val_rows, eval_rows)
+                    complete = sampled["hidden_side"] < 0  # incomplete mode is its own task: scored apart (val_hidden)
+                    scored = {k: v[complete] for k, v in sampled.items()}
                     record["val"] = {k: round(v, 4) for k, v in evaluate(model, inputs, table, scored).items()}
                     record["val_rows"] = int(scored["target"].shape[0])
-                    for name, subset in (("val_fixed", scored["fixed_side"] >= 0), ("val_hard", scored["hard"] > 0)):
-                        if bool(subset.any()):  # fixed-stat battles and hard examples on their own, apart from the mix
-                            part = {k: v[subset] for k, v in scored.items()}
+                    for name, source, subset in (("val_fixed", scored, scored["fixed_side"] >= 0),
+                                                 ("val_hard", scored, scored["hard"] > 0),
+                                                 ("val_hidden", sampled, ~complete)):
+                        if bool(subset.any()):  # fixed-stat, hard and incomplete-mode battles on their own
+                            part = {k: v[subset] for k, v in source.items()}
                             record[name] = {k: round(v, 4) for k, v in evaluate(model, inputs, table, part).items()}
                             record[f"{name}_rows"] = int(subset.sum())
                     if rules_id != probe_labels:  # new rules: new probes
@@ -763,11 +796,14 @@ if __name__ == "__main__":
     parser.add_argument("--freeze-language-at", type=int, help="step after which the description transformer is frozen; "
                         "a step past the current one unfreezes it until then")
     parser.add_argument("--language-lr", type=float, help="the description transformer's learning rate (default --lr)")
-    parser.add_argument("--mix", type=float, nargs=3, default=(0.05, 0.0, 0.0), metavar=("HARD", "UPSET", "FIXED"),
-                        help="shares of each batch drawn from hard examples (training.hard), upsets and fixed-stat "
-                        "battles; the rest uniformly from all rows")
-    parser.add_argument("--mix-start", type=float, nargs=3, metavar=("HARD", "UPSET", "FIXED"),
+    parser.add_argument("--mix", type=float, nargs="+", default=(0.05, 0.0, 0.0), metavar="SHARE",
+                        help="HARD UPSET FIXED [HIDDEN]: shares of each batch drawn from hard examples (training.hard), "
+                        "upsets, fixed-stat battles and incomplete-mode battles (training.incomplete, drawn only by "
+                        "their share); the rest uniformly from the others")
+    parser.add_argument("--mix-start", type=float, nargs="+", metavar="SHARE",
                         help="the shares at step 0, moving linearly to --mix at --mix-until (a curriculum)")
+    parser.add_argument("--field-generations", type=int, default=2,
+                        help="newest field generations whose incomplete-mode labels count (training.incomplete)")
     parser.add_argument("--mix-until", type=int, help="step at which the shares reach --mix")
     parser.add_argument("--layers", type=int, help="strategic transformer layers, for a run starting from random weights")
     parser.add_argument("--stat-width", type=int, default=0,
@@ -805,6 +841,9 @@ if __name__ == "__main__":
                         help="steps between evaluations; each scores the whole validation set, so it grows with the data")
     parser.add_argument("--run-dir", default=RUN_DIR, help="checkpoints and log; a new directory starts from random weights")
     parsed = parser.parse_args()
+    for shares in (parsed.mix, parsed.mix_start):
+        if shares is not None and len(shares) not in (3, 4):
+            parser.error("--mix and --mix-start take HARD UPSET FIXED [HIDDEN]")
     train(steps=parsed.steps, batch_size=parsed.batch_size, lr=parsed.lr, device=parsed.device, reload_every=parsed.reload_every,
           weight_decay=parsed.weight_decay, dropout=parsed.dropout, freeze_language_at=parsed.freeze_language_at,
           eval_every=parsed.eval_every, init_from=parsed.init_from, language_lr=parsed.language_lr, mix=parsed.mix,
@@ -812,4 +851,5 @@ if __name__ == "__main__":
           "pack_embedding": not parsed.no_pack_embedding, "mutation_embedding": not parsed.no_mutation_embedding},
           language_from=parsed.language_from, mix_start=parsed.mix_start, mix_until=parsed.mix_until, ema_decay=parsed.ema_decay, pack_labels=parsed.pack_labels,
           bf16=parsed.bf16, lr_decay=parsed.lr_decay, lr_floor=parsed.lr_floor, watch=parsed.watch or None, max_rows=parsed.max_rows, eval_rows=parsed.eval_rows,
+          field_generations=parsed.field_generations,
           run_dir=parsed.run_dir)

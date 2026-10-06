@@ -24,7 +24,8 @@ for r in [json.loads(l) for l in lines[-200 * count:] if '"val"' in l][-count:]:
     print(f"{r['step']:<10,} {r['train_rows']:<11,} {r.get('val_rows', 0):<9,} {int(v.get('upset_rows', 0)):<7,} "
           f"{v['accuracy']:.3f}  {v['baseline']:.3f}  {v['upset_accuracy']:.3f}  {v['kl']:.3f}  "
           f"{v['decisive_accuracy']:.3f}     {v['probabilistic_error']:.3f}     {t.get('accuracy', float('nan')):.3f}")
-for name, title in (("val_fixed", "fixed-stat battles only"), ("val_hard", "hard examples only (generator-proposed)")):
+for name, title in (("val_fixed", "fixed-stat battles only"), ("val_hard", "hard examples only (generator-proposed)"),
+                    ("val_hidden", "incomplete mode only (against the unseen field)")):
     subset = [json.loads(l) for l in lines[-200 * count:] if f'"{name}"' in l][-count:]
     if not subset:
         continue

@@ -54,6 +54,20 @@ Battles where the classifier and the engine disagree most (user, 2026-10-04).
 python -m card_engine.training.hard --shards 100 --workers 7
 ```
 
+## Incomplete mode (`training/incomplete.py`)
+PvP (user, 2026-10-06): you don't know who will attack you, and your attackers don't know your team. Building a team in incomplete mode is finding one that works against strong teams in general, so the unseen side means the **field**: strong teams the model itself generates, kept only if the engine confirms them. As the model gets stronger the field does too, and the hidden side's meaning moves with it (user: "the hidden slots meaning should change as the model gets stronger").
+- **Model input:** one side is not shown at all (`hidden_side`): its cards, stats and supports become the hidden stand-ins and MODE is 1. A visible attacker is side A against a hidden B; a visible defender is side B against a hidden A. The stored fields of the hidden side are `labels.HIDDEN_TEAM`, never read.
+- **The field** (`data/labels/field/field_<generation>.json`), by self-play: per role (attackers and defenders), `--candidates` (160) teams are scored by the engine against `--opponents` (24) of the previous generation's other role, and the best `--size` (48), each two places apart, are kept. Candidates: the previous field's members, the model's own proposals in incomplete mode (`generate.Settings.incomplete`: ascended against the unseen field), counters to a few rival members, one-change variants of members, and random teams. Generation 0 is scored against the generator's broadly ascended teams. Theoretical space: every border, mutation and support tier.
+- **Labels** (`hidden_<generation × 1,000,000 + n>.npz`), mined like hard examples: each round takes one role and 48 candidates (12 field members, 12 variants, 12 of the model's incomplete-mode proposals, the rest random), plays each against a fresh draw of 16 rival-field members, and the mean is the soft label. The model scores the same teams in incomplete mode; the 8 it gets most wrong (two places apart) and 4 others are kept. Any rules change invalidates these rows (`flags.valid_rows`: the field teams behind a target aren't named in the row).
+- **Training:** incomplete-mode rows enter batches only through their own share, `--mix HARD UPSET FIXED HIDDEN`; uniform draws skip them. Only the newest `--field-generations` (2) generations count, so labels against an outdated field drop out. Validation scores them apart (`val_hidden`, `perf.py`).
+- **Using it:** `Classifier.field_win(teams, role)` and the generator with `Settings(incomplete=True)` score or ascend a team against the unseen field.
+- **Loop:** train, then build the next generation with the newest weights, then mine labels against it, and repeat as the model improves.
+
+```sh
+python -m card_engine.training.incomplete field --checkpoint data/training_18t/ema.checkpoint --workers 6
+python -m card_engine.training.incomplete labels --shards 10 --checkpoint data/training_18t/ema.checkpoint --workers 6
+```
+
 ## Model inputs
 - **Supports:** tiers get their own embedding (`support_tiers [B,2,2]`, 1 base .. 5 Galaxy).
 - **Astraeus:** each art has its own permanent identity key (`data/annotations/card_keys.json`, keys 290-296).

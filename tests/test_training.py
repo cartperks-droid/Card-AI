@@ -189,8 +189,8 @@ class TrainingTests(unittest.TestCase):
         train_rows, _ = load_split(directory, "cpu")
         mixed = mix_rows(train_rows)
         self.assertEqual(set(torch.nonzero(train_rows["fixed_side"] >= 0)[:, 0].tolist()), set(mixed["fixed"].tolist()))
-        self.assertEqual([round(x, 6) for x in mix_shares(5, (0.1, 0.2, 0.3), (0.3, 0.4, 0.5), 10)], [0.2, 0.3, 0.4])
-        self.assertEqual(mix_shares(12, (0.1, 0.2, 0.3), (0.3, 0.4, 0.5), 10), (0.1, 0.2, 0.3))
+        self.assertEqual([round(x, 6) for x in mix_shares(5, (0.1, 0.2, 0.3), (0.3, 0.4, 0.5), 10)], [0.2, 0.3, 0.4, 0.0])
+        self.assertEqual(mix_shares(12, (0.1, 0.2, 0.3), (0.3, 0.4, 0.5), 10), (0.1, 0.2, 0.3, 0.0))
         source = BattleModel()
         save_checkpoint(source, Path(self.temp.name) / "source.checkpoint", metadata={"step": 7})
         run = Path(self.temp.name) / "fresh_run"
@@ -341,6 +341,22 @@ class TrainingTests(unittest.TestCase):
         visible[:, 1, 3] = False
         hidden = strategy.stat_inputs(stats, visible)
         self.assertTrue(bool((hidden[:, 0, 0, 2 + 6 * 5:] == 0).all()))  # nothing about an unseen card
+
+    def test_incomplete_mode_rows_hide_their_side_and_only_the_newest_fields_count(self):
+        from card_engine.training.labels import GENERATION_SEEDS, HIDDEN_TEAM
+        from card_engine.training.train import Inputs, newest_generations
+        names = [Path(f"hidden_{g * GENERATION_SEEDS + n:08d}.npz") for g in (0, 1, 2) for n in (1, 2)]
+        kept = newest_generations([Path("shard_00000001.npz"), *names], 2)
+        self.assertEqual({p.name for p in kept}, {"shard_00000001.npz", *(p.name for p in names[2:])})
+        team = {key: value[0] for key, value in labels.random_spec(random.Random(4), load_catalog()).items()}
+        rows = {key: torch.tensor([[team[key], HIDDEN_TEAM[key]], [HIDDEN_TEAM[key], team[key]]], dtype=torch.int16)
+                for key in labels.FIELDS}
+        rows["hidden_side"] = torch.tensor([1, 0], dtype=torch.int8)
+        metadata = Inputs("cpu")(rows, torch.zeros(289, 768))
+        self.assertEqual(metadata["card_visible"][0].tolist(), [[True] * 4, [False] * 4])
+        self.assertEqual(metadata["card_visible"][1].tolist(), [[False] * 4, [True] * 4])
+        self.assertEqual(metadata["support_visible"][1, 0].tolist(), [False, False])
+        self.assertEqual(metadata["mode_ids"].tolist(), [1, 1])
 
     def test_training_runs_and_resumes(self):
         root = Path(self.temp.name) / "labels"

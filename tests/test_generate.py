@@ -77,6 +77,30 @@ class GeneratorTests(unittest.TestCase):
             expected = classifier.win_a([spec(a, b) for a, b in zip(teams[:3], teams[3:])])
             np.testing.assert_allclose(logits.softmax(-1)[:, 0].numpy(), expected, atol=1e-5, err_msg=str(layout))
 
+    def test_incomplete_mode_slot_tokens_reproduce_the_classifier_against_the_unseen_field(self):
+        from card_engine.model.config import StrategicConfig
+        from card_engine.training.labels import HIDDEN_TEAM
+        for layout in ({}, {"stat_tokens": True, "stat_pairs": True}):
+            torch.manual_seed(5)
+            model = BattleModel(strategic_config=StrategicConfig(layers=2, **layout))
+            for name, parameter in model.named_parameters():
+                if "stat_" in name:
+                    torch.nn.init.normal_(parameter, std=0.02)
+            path = Path(self.temp.name) / "incomplete.checkpoint"
+            save_checkpoint(model, path)
+            classifier = Classifier(path, "cpu")
+            space = generate.SlotSpace(classifier, self.pool)
+            rng = np.random.default_rng(6)
+            teams = [generate.random_team(self.pool, rng) for _ in range(4)]
+            hidden = space.fixed([HIDDEN_TEAM] * 4)
+            with torch.no_grad():
+                attack = space.logits(space.fixed(teams), hidden, hidden=1).softmax(-1)[:, 0].numpy()
+                defend = space.logits(hidden, space.fixed(teams), hidden=0).softmax(-1)[:, 1].numpy()
+                other = space.logits(space.fixed(teams), space.fixed(teams[::-1]), hidden=1).softmax(-1)[:, 0].numpy()
+            np.testing.assert_allclose(attack, classifier.field_win(teams, 0), atol=1e-5, err_msg=str(layout))
+            np.testing.assert_allclose(defend, classifier.field_win(teams, 1), atol=1e-5, err_msg=str(layout))
+            np.testing.assert_allclose(other, attack, atol=1e-5)  # nothing of the hidden side's tuple gets through
+
     def test_fixed_enemy_stats_reach_the_classifier(self):
         rng = np.random.default_rng(5)
         allies = [generate.random_team(self.pool, rng) for _ in range(3)]

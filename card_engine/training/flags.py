@@ -148,7 +148,8 @@ def valid_rows(arrays, old_ident, current=None, catalog=None, changes=None, pool
         return np.ones(rows, dtype=bool)
     pool_cards = _pool_cards(catalog) if pool_cards is None else pool_cards
     cards = arrays["cards"].reshape(rows, -1)
-    bad = np.zeros(rows, dtype=bool)
+    # an incomplete-mode row's target is a mean over field teams it does not name: any change may move it
+    bad = np.asarray(arrays["hidden_side"]) >= 0 if "hidden_side" in arrays else np.zeros(rows, dtype=bool)
     for key in changed:
         kind, _, value = key.partition(":")
         if kind == "card":
