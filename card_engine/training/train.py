@@ -513,7 +513,7 @@ def train(*, steps=None, batch_size=512, lr=3e-4, warmup=1000, weight_decay=0.05
     rest = [p for p in model.parameters() if id(p) not in ids]
     optimizer = torch.optim.AdamW([{"params": rest, "base_lr": lr}, {"params": language, "base_lr": language_lr or lr}],
                                   lr=lr, weight_decay=weight_decay)
-    step, best = warm_from, None
+    step, best, watch_best = warm_from, None, {}
     if state is not None:
         saved = state["optimizer"]
         if len(saved["param_groups"]) == 2:
@@ -527,6 +527,7 @@ def train(*, steps=None, batch_size=512, lr=3e-4, warmup=1000, weight_decay=0.05
         for group, base in zip(optimizer.param_groups, (lr, language_lr or lr)):
             group["weight_decay"], group["base_lr"] = weight_decay, base
         step, best, warm_from = state["step"], state.get("best"), state.get("warm_from", 0)
+        watch_best = dict(state.get("watch_best") or {})
         if freeze_language_at is None:  # a restart keeps the run's freeze unless told otherwise (2026-10-05: one
             freeze_language_at = state.get("freeze_language_at")  # that left it out unfroze the deep run's encoder)
     inputs = Inputs(device)
@@ -663,6 +664,15 @@ def train(*, steps=None, batch_size=512, lr=3e-4, warmup=1000, weight_decay=0.05
                         model.train()
                         record["watch"] = [{"name": n, "engine": round(e, 3), "model": round(m, 3), "ema": round(a, 3)}
                                            for n, e, m, a in zip(names, engine, live, average)]
+                        # The weights closest to the engine on the watch list are kept apart (user, 2026-10-06: the
+                        # live weights hit 0.27 on Drago's Fate deck at step 33,000 and were overwritten at 34,000).
+                        for weights, predicted, name in ((model, live, "watch_best"), (ema, average, "watch_best_ema")):
+                            error = float(np.mean(np.abs(np.array(predicted) - np.array(engine))))
+                            if error < watch_best.get(name, float("inf")):
+                                watch_best[name] = error
+                                save_checkpoint(weights, run_dir / f"{name}.checkpoint",
+                                                metadata={"step": step, "labels": rules_id, "watch_error": round(error, 4)})
+                                record[name] = round(error, 4)
                     kl = record["val"]["kl"]
                     if best is None or kl < best["kl"] or best.get("labels") != rules_id:
                         best = {"kl": kl, "step": step, "labels": rules_id}
@@ -677,7 +687,7 @@ def train(*, steps=None, batch_size=512, lr=3e-4, warmup=1000, weight_decay=0.05
                                                          "objective": "A initiates; outcome frequencies"})
                 tmp = state_path.with_suffix(".tmp")
                 torch.save({"optimizer": optimizer.state_dict(), "step": step, "best": best, "warm_from": warm_from,
-                            "freeze_language_at": freeze_language_at}, tmp)
+                            "freeze_language_at": freeze_language_at, "watch_best": watch_best}, tmp)
                 tmp.replace(state_path)
     finally:
         log.close()
