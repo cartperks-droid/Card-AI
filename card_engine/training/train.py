@@ -501,7 +501,7 @@ def mix_shares(step, mix, mix_start=None, mix_until=None):
 
 
 def train(*, steps=None, batch_size=512, lr=3e-4, warmup=1000, weight_decay=0.05, dropout=0.1, freeze_language_at=None,
-          eval_every=1000, init_from=None, language_lr=None, mix=(0.05, 0.0, 0.0), layers=None, language_from=None,
+          eval_every=1000, init_from=None, language_lr=None, mix=(0.05, 0.0, 0.0), layers=None, architecture=None, language_from=None,
           mix_start=None, mix_until=None, ema_decay=0.999, pack_labels=False, bf16=False, lr_decay=None, lr_floor=0.05,
           watch=None, max_rows=None, eval_rows=None,
           checkpoint_every=1000, reload_every=1000, device=None, run_dir=RUN_DIR, label_root=SHARD_DIR):
@@ -513,7 +513,8 @@ def train(*, steps=None, batch_size=512, lr=3e-4, warmup=1000, weight_decay=0.05
     starts fresh whenever the saved optimizer has no such group, so unfreezing it later (a --freeze-language-at past
     the current step) does not resume momentum from before the freeze.
 
-    A new run (random weights) takes `layers` strategic layers (default StrategicConfig's). language_from: a model
+    A new run (random weights) takes `layers` strategic layers (default StrategicConfig's) and `architecture`, other
+    StrategicConfig fields (stat_width, pack_embedding, mutation_embedding). language_from: a model
     checkpoint whose description transformer (card text to card vectors) the new run starts from, frozen from the
     first step.
 
@@ -549,7 +550,7 @@ def train(*, steps=None, batch_size=512, lr=3e-4, warmup=1000, weight_decay=0.05
         model, metadata = load_checkpoint(init_from, map_location=device)
         state, warm_from = None, int(metadata["step"])
     else:
-        strategic = StrategicConfig(**({"layers": layers} if layers else {}))
+        strategic = StrategicConfig(**({"layers": layers} if layers else {}), **(architecture or {}))
         model, state = BattleModel(strategic_config=strategic).to(device), None
         if language_from is not None:
             source, _ = load_checkpoint(language_from, map_location=device)
@@ -769,6 +770,11 @@ if __name__ == "__main__":
                         help="the shares at step 0, moving linearly to --mix at --mix-until (a curriculum)")
     parser.add_argument("--mix-until", type=int, help="step at which the shares reach --mix")
     parser.add_argument("--layers", type=int, help="strategic transformer layers, for a run starting from random weights")
+    parser.add_argument("--stat-width", type=int, default=0,
+                        help="new run: the stats' own channels of each card token, beside the card's (0: added to it)")
+    parser.add_argument("--no-pack-embedding", action="store_true", help="new run: no card-pack embedding")
+    parser.add_argument("--no-mutation-embedding", action="store_true",
+                        help="new run: no mutation embedding (mutations still set the card's stats)")
     parser.add_argument("--language-from", help="model checkpoint whose description transformer a new run starts "
                         "from, frozen (default --freeze-language-at 0)")
     parser.add_argument("--watch", default=str(WATCH_FILE),
@@ -798,6 +804,8 @@ if __name__ == "__main__":
     train(steps=parsed.steps, batch_size=parsed.batch_size, lr=parsed.lr, device=parsed.device, reload_every=parsed.reload_every,
           weight_decay=parsed.weight_decay, dropout=parsed.dropout, freeze_language_at=parsed.freeze_language_at,
           eval_every=parsed.eval_every, init_from=parsed.init_from, language_lr=parsed.language_lr, mix=parsed.mix,
-          layers=parsed.layers, language_from=parsed.language_from, mix_start=parsed.mix_start, mix_until=parsed.mix_until, ema_decay=parsed.ema_decay, pack_labels=parsed.pack_labels,
+          layers=parsed.layers, architecture={"stat_width": parsed.stat_width,
+          "pack_embedding": not parsed.no_pack_embedding, "mutation_embedding": not parsed.no_mutation_embedding},
+          language_from=parsed.language_from, mix_start=parsed.mix_start, mix_until=parsed.mix_until, ema_decay=parsed.ema_decay, pack_labels=parsed.pack_labels,
           bf16=parsed.bf16, lr_decay=parsed.lr_decay, lr_floor=parsed.lr_floor, watch=parsed.watch or None, max_rows=parsed.max_rows, eval_rows=parsed.eval_rows,
           run_dir=parsed.run_dir)

@@ -60,6 +60,22 @@ class GeneratorTests(unittest.TestCase):
         expected = self.classifier.win_a([spec(a, b) for a, b in zip(teams[:3], teams[3:])])
         np.testing.assert_allclose(logits.softmax(-1)[:, 0].numpy(), expected, atol=1e-5)
 
+    def test_slot_tokens_reproduce_a_classifier_with_stats_beside_the_card(self):
+        from card_engine.model.config import StrategicConfig
+        torch.manual_seed(1)
+        model = BattleModel(strategic_config=StrategicConfig(layers=2, stat_width=64, pack_embedding=False,
+                                                             mutation_embedding=False))
+        path = Path(self.temp.name) / "layout.checkpoint"
+        save_checkpoint(model, path)
+        classifier = Classifier(path, "cpu")
+        space = generate.SlotSpace(classifier, self.pool)
+        rng = np.random.default_rng(4)
+        teams = [generate.random_team(self.pool, rng) for _ in range(6)]
+        with torch.no_grad():
+            logits = space.logits(space.fixed(teams[:3]), space.fixed(teams[3:]))
+        expected = classifier.win_a([spec(a, b) for a, b in zip(teams[:3], teams[3:])])
+        np.testing.assert_allclose(logits.softmax(-1)[:, 0].numpy(), expected, atol=1e-5)
+
     def test_fixed_enemy_stats_reach_the_classifier(self):
         rng = np.random.default_rng(5)
         allies = [generate.random_team(self.pool, rng) for _ in range(3)]

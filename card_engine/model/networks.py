@@ -157,12 +157,13 @@ class StrategicModel(nn.Module):
         self.config = config or StrategicConfig()
         c = self.config
         self.border_embedding = nn.Embedding(16, c.width)
-        self.mutation_embedding = nn.Embedding(len(c.mutation_names), c.width, padding_idx=0) if c.mutation_names else None
+        self.mutation_embedding = (nn.Embedding(len(c.mutation_names), c.width, padding_idx=0)
+                                   if c.mutation_names and c.mutation_embedding else None)
         self.red_support_embedding = nn.Embedding(28, c.width)
         self.blue_support_embedding = nn.Embedding(15, c.width)
         # Support border quality: tier 1 base .. 5 Galaxy, one table per colour (0 = unknown/absent).
         self.support_tier_embedding = nn.Embedding(2 * 5, c.width)
-        self.pack_embedding = nn.Embedding(14, c.width)
+        self.pack_embedding = nn.Embedding(14, c.width) if c.pack_embedding else None
         self.class_embedding = nn.Embedding(len(c.class_names), c.width) if c.class_names else None
         # Row 0 means "no identity" (hidden or unknown). Zero-initialised: a new card starts
         # from its description alone and learns card-specific interactions over training.
@@ -188,16 +189,28 @@ class StrategicModel(nn.Module):
         # The projection and the MLP's output layer start at zero, so adding them to a trained model leaves
         # its predictions unchanged until training puts the stats to use (the skip still passes gradient).
         # Registered last: these parameters come after all others (training.add_stat_mlp relies on this).
-        self.stat_projection = nn.Linear(2, c.width)
-        self.stat_mlp = nn.Sequential(nn.Linear(c.width, c.stat_hidden_width), nn.GELU(),
-                                      nn.Linear(c.stat_hidden_width, c.width))
-        for layer in (self.stat_projection, self.stat_mlp[-1]):
-            nn.init.zeros_(layer.weight)
-            nn.init.zeros_(layer.bias)
+        stat_width = c.stat_width or c.width
+        self.stat_projection = nn.Linear(2, stat_width)
+        self.stat_mlp = nn.Sequential(nn.Linear(stat_width, c.stat_hidden_width), nn.GELU(),
+                                      nn.Linear(c.stat_hidden_width, stat_width))
+        if c.stat_width:  # stats in their own channels: the card is projected onto the others, each part normalised
+            self.card_projection = nn.Linear(c.width, c.width - c.stat_width)
+            self.card_norm = nn.LayerNorm(c.width - c.stat_width)
+            self.stat_norm = nn.LayerNorm(c.stat_width)
+        else:  # added to the card: starting at zero leaves a trained model unchanged (add_stat_mlp)
+            for layer in (self.stat_projection, self.stat_mlp[-1]):
+                nn.init.zeros_(layer.weight)
+                nn.init.zeros_(layer.bias)
 
     def stat_vectors(self, normalized: Tensor) -> Tensor:
         projected = self.stat_projection(normalized)
         return projected + self.stat_mlp(projected)
+
+    def with_stats(self, cards: Tensor, normalized: Tensor) -> Tensor:
+        """Card tokens [..., W] with their normalized stats [..., 2]: beside the card (stat_width) or added to it."""
+        if self.config.stat_width:
+            return torch.cat([self.card_norm(self.card_projection(cards)), self.stat_norm(self.stat_vectors(normalized))], -1)
+        return cards + self.stat_vectors(normalized)
 
     @staticmethod
     def normalized_stats(card_stats: Tensor, visible: Tensor) -> Tensor:
@@ -229,7 +242,7 @@ class StrategicModel(nn.Module):
                   class_weights: Tensor | None = None, identity_keys: Tensor | None = None) -> Tensor:
         """The card-determined part of a card token: description + pack + classes + identity (ids already checked)."""
         cards = card_embeddings
-        if pack_ids is not None:
+        if pack_ids is not None and self.pack_embedding is not None:
             cards = cards + torch.where(pack_ids[..., None].gt(0), self.pack_embedding(pack_ids.clamp_min(1) - 1), 0.0)
         if class_weights is not None:
             cards = cards + class_weights @ self.class_embedding.weight
@@ -315,6 +328,8 @@ class StrategicModel(nn.Module):
         else:
             identity_keys = None
         cards = self.card_part(cards, pack_ids, class_weights, identity_keys)
+        if card_stats is None and c.stat_width:
+            raise ValueError("A model with stat_width needs card_stats")
         if card_stats is not None:
             if (not isinstance(card_stats, Tensor) or tuple(card_stats.shape) != (batch, 2, 4, 2)
                     or card_stats.device != device or card_stats.dtype != cards.dtype):
@@ -322,7 +337,7 @@ class StrategicModel(nn.Module):
             if not bool((torch.where(cv[..., None], card_stats, 1.0) > 0).all()):
                 raise ValueError("Visible card stats must be positive")
             normalized = self.normalized_stats(torch.where(cv[..., None], card_stats, 1.0), cv)
-            cards = cards + self.stat_vectors(normalized)
+            cards = self.with_stats(cards, normalized)
         # Replace the entire identity+border+pack+class representation, not only identity.
         cards = torch.where(cv[..., None], cards, self.hidden_card)
         supports = []

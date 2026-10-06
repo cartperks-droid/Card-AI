@@ -277,6 +277,32 @@ class TrainingTests(unittest.TestCase):
                 torch.nn.init.zeros_(layer.weight)
             torch.testing.assert_close(model.strategy(**common, card_stats=stats), model.strategy(**common))
 
+    def test_stats_beside_the_card_stay_bounded_and_the_run_keeps_its_layout(self):
+        from card_engine.model.checkpoint import load_checkpoint
+        from card_engine.model.config import StrategicConfig
+        strategy = BattleModel(strategic_config=StrategicConfig(layers=1, stat_width=64, pack_embedding=False,
+                                                                mutation_embedding=False)).strategy.eval()
+        cards = torch.randn(2, 2, 4, 768)
+        small, huge = torch.tensor([[0.1, 0.1]]), torch.tensor([[9.0, 9.0]])  # log-stat gaps of e^0.1 and e^9 (8,100x)
+        with torch.no_grad():
+            parts = [strategy.with_stats(cards, gap.expand(2, 2, 4, 2)) for gap in (small, huge)]
+        for part in parts:  # each part normalised on its own: the stats cannot outgrow the card
+            self.assertEqual(part.shape[-1], 768)
+            self.assertLess(float(part[..., 704:].norm(dim=-1).max()), 9.0)
+        torch.testing.assert_close(parts[0][..., :704], parts[1][..., :704])  # the card's channels ignore the stats
+        root = Path(self.temp.name) / "layout"
+        directory = root / "store"
+        directory.mkdir(parents=True)
+        labels._worker((1, 6, str(directory), snapshot(), False, Path(self.temp.name) / "tb7"))
+        labels._worker((2, 6, str(directory), snapshot(), True))
+        run = Path(self.temp.name) / "layout_run"
+        train(steps=2, batch_size=4, warmup=1, eval_every=100, checkpoint_every=2, device="cpu", run_dir=run,
+              label_root=root, layers=1, architecture={"stat_width": 64, "pack_embedding": False, "mutation_embedding": False})
+        model, _ = load_checkpoint(run / "model.checkpoint")
+        config = model.strategy.config
+        self.assertEqual((config.stat_width, config.pack_embedding, config.mutation_embedding), (64, False, False))
+        self.assertIsNone(model.strategy.pack_embedding)
+
     def test_training_runs_and_resumes(self):
         root = Path(self.temp.name) / "labels"
         directory = root / "store"

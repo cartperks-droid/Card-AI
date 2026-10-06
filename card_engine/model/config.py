@@ -55,6 +55,14 @@ class StrategicConfig:
     identity_l2: float = 1e-3
     # GELU upscale width of the residual MLP that adds each card's normalized (HP, ATK) to its token.
     stat_hidden_width: int = 3072
+    # Stats beside the card, not on it (user, 2026-10-06): > 0 gives the stats their own last stat_width channels of
+    # each card token and the card (description, identity, classes, border, ...) a projection onto the rest, each part
+    # layer-normalised on its own, so a huge stat gap cannot drown out the abilities. 0 adds both in one space.
+    stat_width: int = 0
+    # The engine reads a card's pack and mutation weather only for its stats and the stat supports that boost it,
+    # all inside the card's stats already (2026-10-06): without these embeddings neither can stand in for identity.
+    pack_embedding: bool = True
+    mutation_embedding: bool = True
 
     def __post_init__(self):
         _positive(self.width, self.layers, self.heads, self.attention_width,
@@ -63,6 +71,8 @@ class StrategicConfig:
             raise ValueError("Internal attention width must be divisible by heads")
         if not 0 <= self.dropout < 1:
             raise ValueError("Dropout must be in [0, 1)")
+        if type(self.stat_width) is not int or not 0 <= self.stat_width < self.width:
+            raise ValueError("stat_width must be an integer in [0, width)")
         if (type(self.identity_capacity) is not int or self.identity_capacity < 0 or not 0 <= self.identity_dropout < 1
                 or not self.identity_l2 >= 0):
             raise ValueError("identity_capacity must be a nonnegative integer and identity_dropout in [0, 1)")
