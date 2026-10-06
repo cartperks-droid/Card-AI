@@ -2,6 +2,7 @@
 
     python3 scripts/perf.py                                   # the pod run, as pod_sync.sh brings it down
     python3 scripts/perf.py data/training/log.jsonl 12        # another log, last 12 evaluations
+    python3 scripts/perf.py data/training_18p.out              # a trainer's printed output works too
 
 val_rows and upsets are the validation set's size and its upset slice: when new shards change them, the
 metrics move with the data, not the model.
@@ -14,6 +15,8 @@ from pathlib import Path
 path = sys.argv[1] if len(sys.argv) > 1 else "data/training_pod/log.jsonl"
 count = int(sys.argv[2]) if len(sys.argv) > 2 else 6
 lines = open(path).readlines() if Path(path).exists() else []
+# A trainer's .out file (its printed output) works too: only its log records are read.
+lines = [l for l in lines if l.startswith('{"step"') and '"loss"' in l]
 if not lines:
     raise SystemExit(f"{path} is empty: the trainer is still loading its labels (see its .out file)")
 last = json.loads(lines[-1])
