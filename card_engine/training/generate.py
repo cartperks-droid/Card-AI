@@ -250,8 +250,11 @@ class Settings:
     rechecks: int = 3  # extra ascent rounds (doubled penalty) while slots stay blurred
     nearest: int = 3  # decoding: k nearest entries per slot
     role: str = "attack"  # the ascended side attacks first ("attack") or defends ("defend")
-    noise_levels: int = 6  # annealing: the ascent runs in this many levels, fresh noise before each after the first
-    sigma_max: float = 0.5  # noise added before the second level, in units of each factor's spread (z)
+    noise_levels: int = 12  # annealing: the ascent runs in this many levels, fresh noise before each after the first
+    # noise added before the second level, in units of each factor's spread (z). At floor 105, borderless, restricted
+    # pool (2026-10-06): sigma 0.5-1 never left the stat-stacking peak, 2-4 reached high model scores, and 8 found the
+    # first team the engine lets win (0.108) where 4's best five all lost.
+    sigma_max: float = 8.0
     sigma_min: float = 0.02  # noise before the last level; levels between are geometric
 
 
