@@ -317,8 +317,9 @@ def possible_rows(cards):
 
 def shard_paths(directory):
     """Every label shard: random battles (shard_*), fixed-stat battles (fixed_*), hard examples (hard_*, training.hard)
-    and incomplete-mode battles (hidden_*, training.incomplete); partial files excluded."""
-    return [path for kind in ("shard", "fixed", "hard", "hidden") for path in Path(directory).glob(f"{kind}_*.npz")]
+    incomplete-mode battles (hidden_*, training.incomplete) and the annealed search's own winners (found_*,
+    training.hard --select engine); partial files excluded."""
+    return [path for kind in ("shard", "fixed", "hard", "hidden", "found") for path in Path(directory).glob(f"{kind}_*.npz")]
 
 
 def battle_arrays(shard, rows):

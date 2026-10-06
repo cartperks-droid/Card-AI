@@ -88,7 +88,9 @@ def _read_shard(item):
     rows = {key: arrays[key][keep].astype(np.int16) for key in FIELDS}
     rows.update({key: arrays[key][keep] for key in BATTLE_FIELDS})
     rows["target"] = (arrays["probs"][keep, :2] / finished[keep, None]).astype(np.float32)
-    rows["hard"] = np.full(int(keep.sum()), path.name.startswith("hard_"), dtype=np.int8)
+    # 1: hard examples (the model's disagreements); 2: found by the annealed search (training.hard --select engine)
+    rows["hard"] = np.full(int(keep.sum()), 1 if path.name.startswith("hard_") else 2 if path.name.startswith("found_") else 0,
+                           dtype=np.int8)
     rows["favourite"] = stat_favourite({key: torch.as_tensor(value) for key, value in rows.items()
                                         if key != "target"}).numpy().astype(np.int8)
     hidden = rows["hidden_side"] >= 0  # one side unseen: no stat favourite, so never an upset
@@ -173,8 +175,8 @@ def capped_paths(paths, max_rows):
     rows come to about max_rows (2,000 per shard, 1,600 per hard shard). The share is fixed at the first call, so a
     reload only adds shards, never swaps them (2026-10-06: loading the pod's and the Mac's 165M rows crashed the
     Mac)."""
-    hard = [path for path in paths if path.name.startswith("hard_")]
-    rest = [path for path in paths if not path.name.startswith("hard_")]
+    hard = [path for path in paths if path.name.startswith(("hard_", "found_"))]
+    rest = [path for path in paths if not path.name.startswith(("hard_", "found_"))]
     if not _CAP:
         _CAP.update(share=min(1.0, max(0, max_rows - 1600 * len(hard)) / max(1, 2000 * len(rest))),
                     first={path.name for path in rest})
@@ -488,7 +490,7 @@ def load_watch(path, device):
     return names, engine, rows
 
 
-MIX_KINDS = ("hard", "upset", "fixed", "hidden")
+MIX_KINDS = ("hard", "upset", "fixed", "hidden", "found")
 
 
 def mix_rows(rows):
@@ -497,10 +499,12 @@ def mix_rows(rows):
     only their own share draws. A new model learns the first three first (user, 2026-10-04), so "bigger stats win"
     is not learned before the abilities that overturn it."""
     hidden = rows["hidden_side"] >= 0
-    hard, fixed = (rows["hard"] > 0) & ~hidden, (rows["fixed_side"] >= 0) & ~hidden
-    upset = (rows["favourite"].long() != rows["target"].argmax(-1)) & ~hidden
+    found = rows["hard"] == 2  # the annealed search's winners and gap ladder, their own share
+    hard, fixed = (rows["hard"] == 1) & ~hidden, (rows["fixed_side"] >= 0) & ~hidden & ~found
+    upset = (rows["favourite"].long() != rows["target"].argmax(-1)) & ~hidden & ~found
     return {"hard": hard.nonzero()[:, 0], "fixed": (fixed & ~hard).nonzero()[:, 0],
-            "upset": (upset & ~fixed & ~hard).nonzero()[:, 0], "hidden": hidden.nonzero()[:, 0], "is_hidden": hidden}
+            "upset": (upset & ~fixed & ~hard).nonzero()[:, 0], "hidden": hidden.nonzero()[:, 0],
+            "found": found.nonzero()[:, 0], "is_hidden": hidden}
 
 
 def newest_generations(paths, keep):
@@ -735,7 +739,8 @@ def train(*, steps=None, batch_size=512, lr=3e-4, warmup=1000, weight_decay=0.05
                     record["val"] = {k: round(v, 4) for k, v in evaluate(model, inputs, table, scored).items()}
                     record["val_rows"] = int(scored["target"].shape[0])
                     for name, source, subset in (("val_fixed", scored, scored["fixed_side"] >= 0),
-                                                 ("val_hard", scored, scored["hard"] > 0),
+                                                 ("val_hard", scored, scored["hard"] == 1),
+                                                 ("val_found", scored, scored["hard"] == 2),
                                                  ("val_hidden", sampled, ~complete)):
                         if bool(subset.any()):  # fixed-stat, hard and incomplete-mode battles on their own
                             part = {k: v[subset] for k, v in source.items()}
@@ -750,7 +755,7 @@ def train(*, steps=None, batch_size=512, lr=3e-4, warmup=1000, weight_decay=0.05
                                       "weight_norm": round(weight_norm(model), 2)}
                     with torch.no_grad():
                         ema_table = card_table(ema, tokens)
-                    hard = val_rows["hard"] > 0
+                    hard = val_rows["hard"] == 1
                     record["ema"] = {}
                     if val_probe is not None:
                         record["ema"]["val_probe"] = {k: round(v, 4) for k, v in evaluate(ema, inputs, ema_table, val_probe).items()
@@ -810,9 +815,10 @@ if __name__ == "__main__":
                         "a step past the current one unfreezes it until then")
     parser.add_argument("--language-lr", type=float, help="the description transformer's learning rate (default --lr)")
     parser.add_argument("--mix", type=float, nargs="+", default=(0.05, 0.0, 0.0), metavar="SHARE",
-                        help="HARD UPSET FIXED [HIDDEN]: shares of each batch drawn from hard examples (training.hard), "
-                        "upsets, fixed-stat battles and incomplete-mode battles (training.incomplete, drawn only by "
-                        "their share); the rest uniformly from the others")
+                        help="HARD UPSET FIXED [HIDDEN [FOUND]]: shares of each batch drawn from hard examples "
+                        "(training.hard), upsets, fixed-stat battles, incomplete-mode battles (training.incomplete, "
+                        "drawn only by their share) and the annealed search's finds (hard.py --select engine); the "
+                        "rest uniformly from the others")
     parser.add_argument("--mix-start", type=float, nargs="+", metavar="SHARE",
                         help="the shares at step 0, moving linearly to --mix at --mix-until (a curriculum)")
     parser.add_argument("--field-generations", type=int, default=2,
@@ -855,8 +861,8 @@ if __name__ == "__main__":
     parser.add_argument("--run-dir", default=RUN_DIR, help="checkpoints and log; a new directory starts from random weights")
     parsed = parser.parse_args()
     for shares in (parsed.mix, parsed.mix_start):
-        if shares is not None and len(shares) not in (3, 4):
-            parser.error("--mix and --mix-start take HARD UPSET FIXED [HIDDEN]")
+        if shares is not None and len(shares) not in (3, 4, 5):
+            parser.error("--mix and --mix-start take HARD UPSET FIXED [HIDDEN [FOUND]]")
     train(steps=parsed.steps, batch_size=parsed.batch_size, lr=parsed.lr, device=parsed.device, reload_every=parsed.reload_every,
           weight_decay=parsed.weight_decay, dropout=parsed.dropout, freeze_language_at=parsed.freeze_language_at,
           eval_every=parsed.eval_every, init_from=parsed.init_from, language_lr=parsed.language_lr, mix=parsed.mix,

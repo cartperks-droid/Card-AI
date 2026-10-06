@@ -276,7 +276,8 @@ def run(shards, *, rounds=40, workers=None, checkpoint=None, out_dir=STORE, firs
     from .flags import snapshot
     out_dir = Path(out_dir)
     out_dir.mkdir(parents=True, exist_ok=True)
-    existing = {int(p.stem.split("_")[1]) for p in out_dir.glob("hard_*.npz")}
+    kind = "hard" if select == "model" else "found"  # the engine's own picks are their own kind (train.py --mix)
+    existing = {int(p.stem.split("_")[1]) for p in out_dir.glob(f"{kind}_*.npz")}
     seed = next_seed(existing, first_seed)
     catalog = load_catalog()
     # An executor, not multiprocessing.Pool: a worker the OS kills (memory pressure) raises BrokenProcessPool and
@@ -295,7 +296,7 @@ def run(shards, *, rounds=40, workers=None, checkpoint=None, out_dir=STORE, firs
             arrays, probs, exact, extra, gap_all, gap_kept, best = hard_shard(classifier, catalog, seed, rounds, pool,
                                                                               candidates, keep, keep_random,
                                                                               generator_every, prior)
-            target = out_dir / f"hard_{seed:08d}.npz"
+            target = out_dir / f"{kind}_{seed:08d}.npz"
             tmp = target.with_name(f"partial_{target.name}")
             np.savez_compressed(tmp, probs=probs, exact=exact, snapshot=np.array(snapshot(catalog)), **arrays, **extra)
             os.replace(tmp, target)

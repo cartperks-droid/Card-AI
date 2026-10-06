@@ -189,8 +189,8 @@ class TrainingTests(unittest.TestCase):
         train_rows, _ = load_split(directory, "cpu")
         mixed = mix_rows(train_rows)
         self.assertEqual(set(torch.nonzero(train_rows["fixed_side"] >= 0)[:, 0].tolist()), set(mixed["fixed"].tolist()))
-        self.assertEqual([round(x, 6) for x in mix_shares(5, (0.1, 0.2, 0.3), (0.3, 0.4, 0.5), 10)], [0.2, 0.3, 0.4, 0.0])
-        self.assertEqual(mix_shares(12, (0.1, 0.2, 0.3), (0.3, 0.4, 0.5), 10), (0.1, 0.2, 0.3, 0.0))
+        self.assertEqual([round(x, 6) for x in mix_shares(5, (0.1, 0.2, 0.3), (0.3, 0.4, 0.5), 10)], [0.2, 0.3, 0.4, 0.0, 0.0])
+        self.assertEqual(mix_shares(12, (0.1, 0.2, 0.3), (0.3, 0.4, 0.5), 10), (0.1, 0.2, 0.3, 0.0, 0.0))
         source = BattleModel()
         save_checkpoint(source, Path(self.temp.name) / "source.checkpoint", metadata={"step": 7})
         run = Path(self.temp.name) / "fresh_run"
@@ -357,6 +357,23 @@ class TrainingTests(unittest.TestCase):
         self.assertEqual(metadata["card_visible"][1].tolist(), [[False] * 4, [True] * 4])
         self.assertEqual(metadata["support_visible"][1, 0].tolist(), [False, False])
         self.assertEqual(metadata["mode_ids"].tolist(), [1, 1])
+
+    def test_found_shards_are_their_own_kind(self):
+        import numpy as np
+        root = Path(self.temp.name) / "found"
+        directory = root / "store"
+        directory.mkdir(parents=True)
+        labels._worker((1, 6, str(directory), snapshot(), False, Path(self.temp.name) / "tb8"))
+        labels._worker((2, 6, str(directory), snapshot(), True))
+        with np.load(directory / "fixed_00000002.npz") as shard:  # stands in for a found shard
+            np.savez(directory / "found_00000003.npz", **{k: shard[k] for k in shard.files})
+        from card_engine.training.train import mix_rows
+        train_rows, _ = load_split(directory, "cpu")
+        mixed = mix_rows(train_rows)
+        self.assertEqual((len(mixed["found"]), len(mixed["hard"])), (6, 0))
+        self.assertFalse(set(mixed["found"].tolist()) & set(mixed["fixed"].tolist()))
+        train(steps=2, batch_size=8, warmup=1, eval_every=100, checkpoint_every=2, device="cpu",
+              run_dir=Path(self.temp.name) / "found_run", label_root=root, mix=(0.0, 0.0, 0.0, 0.0, 0.5))
 
     def test_training_runs_and_resumes(self):
         root = Path(self.temp.name) / "labels"

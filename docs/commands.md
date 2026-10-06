@@ -104,6 +104,11 @@ The current run (18 layers, stat tokens with pair comparisons, curriculum). The 
 python3 -m card_engine.training.train --run-dir data/training_18t --layers 18 --stat-tokens --stat-pairs --no-pack-embedding --no-mutation-embedding --language-from data/training_deep/watch_best_ema.checkpoint --batch-size 512 --lr 3e-4 --weight-decay 0.05 --dropout 0.1 --mix-start 0.03 0.45 0.45 --mix-until 60000 --mix 0.03 0.1 0.1 --max-rows 60000000 --eval-rows 100000 --eval-every 2000 2>&1 | tee -a data/training_18t.out
 ```
 
+Battles found by the annealed search (`hard.py --select engine`, `found_*` shards) get the fifth share; incomplete mode is the fourth (0 until it has labels):
+```
+--mix-start 0.03 0.42 0.42 0 0.06 --mix 0.03 0.1 0.1 0 0.06
+```
+
 Once incomplete-mode labels exist, add their share as a fourth number:
 ```
 --mix-start 0.03 0.45 0.45 0.03 --mix 0.03 0.1 0.1 0.05
