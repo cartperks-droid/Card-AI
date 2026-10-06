@@ -657,6 +657,7 @@ def train(*, steps=None, batch_size=512, lr=3e-4, warmup=1000, weight_decay=0.05
             torch.mps.empty_cache()
     generator = torch.Generator(device="cpu").manual_seed(step)
     started, last = time.time(), time.time()
+    losses = []  # this interval's batch losses, kept on the device (no sync per step); logged as their mean
     try:
         while steps is None or step < steps:
             if step and step % reload_every == 0:  # new shards, or new rules
@@ -698,6 +699,7 @@ def train(*, steps=None, batch_size=512, lr=3e-4, warmup=1000, weight_decay=0.05
             with torch.autocast(str(device).split(":")[0], dtype=torch.bfloat16, enabled=bf16):
                 logits = model(**inputs(batch, table))
             loss = -(batch["target"] * logits.float().log_softmax(-1)).sum(-1).mean()
+            losses.append(loss.detach())
             total = loss + model.strategy.identity_penalty()
             optimizer.zero_grad(set_to_none=True)
             total.backward()
@@ -709,7 +711,9 @@ def train(*, steps=None, batch_size=512, lr=3e-4, warmup=1000, weight_decay=0.05
             step += 1
             if step % 100 == 0:
                 now = time.time()
-                record = {"step": step, "loss": round(loss.item(), 4), "steps_per_s": round(100 / (now - last), 2),
+                interval_loss = float(torch.stack(losses).mean())  # one batch's loss swings with its mix of rows
+                losses.clear()
+                record = {"step": step, "loss": round(interval_loss, 4), "steps_per_s": round(100 / (now - last), 2),
                           "train_rows": count, "labels": rules_id, "lr": float(f"{optimizer.param_groups[0]['lr']:.3g}")}
                 if mix_start is not None and mix_until is not None and step <= mix_until:
                     record["mix"] = [round(share, 3) for share in shares]

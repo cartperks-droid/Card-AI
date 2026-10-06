@@ -79,7 +79,7 @@ python -m card_engine.training.incomplete labels --shards 10 --checkpoint data/t
 - **Adding the stat input to a run that predates it:** stop every trainer on the run first, then run `python -m card_engine.training.add_stat_mlp`. It adds the projection and MLP at zero, so predictions are unchanged at first, and keeps Adam's state. The originals are kept as `*.pre-stat-mlp`. Files already upgraded are skipped, so it is safe to run again. The script is one-off: delete it once the run is migrated.
 
 ## Training (`card_engine/training/train.py`)
-- **Loss:** soft cross-entropy on the outcome frequencies, plus the identity L2 penalty.
+- **Loss:** soft cross-entropy on the outcome frequencies, plus the identity L2 penalty. The log's `loss` is the mean over the 100 steps before it (2026-10-06: one batch's loss swung ±0.02 with its mix of rows).
 - **Optimiser:** AdamW at 3e-4 with 1,000 warm-up steps, on the GPU (MPS).
 - **Description encoder:** each step encodes all 289 descriptions once, so it trains end to end.
 - **Validation:** shards whose seed is divisible by 25 are held out. Fixed-stat validation battles are also scored on their own (`val_fixed` in the log; `scripts/perf.py` prints them).
