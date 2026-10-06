@@ -180,6 +180,7 @@ def main(argv=None):
     group.add_argument("--all", action="store_true")
     group.add_argument("--none", action="store_true")
     p.add_argument("--supports", nargs="*", default=[], help="e.g. red27 blue8 (every tier)")
+    p.add_argument("--mutations", nargs="*", default=[], help="mutation names whose stats changed, e.g. Eclipse")
     p.add_argument("--note", required=True)
     p.add_argument("--from-snapshot", help="snapshot id to declare from (default: the newest with a different core)")
     args = parser.parse_args(argv)
@@ -222,6 +223,10 @@ def main(argv=None):
         color = "red" if s.startswith("red") else "blue"
         sid = int(s[len(color):])
         affects += [f"support:{color}{sid}:{t}" for t in range(1, 6)]
+    for name in args.mutations:
+        if name not in MUTATION_NAMES:
+            raise SystemExit(f"Unknown mutation {name!r}; one of {', '.join(MUTATION_NAMES[1:])}")
+        affects.append(f"mutation:{MUTATION_NAMES.index(name)}")
     changes.append({"from_core": load_snapshot(old_ident)["core"], "to_core": current["core"], "all": bool(args.all),
                     "affects": affects, "note": args.note})
     CHANGES_FILE.parent.mkdir(parents=True, exist_ok=True)

@@ -14,7 +14,7 @@
 import { createInterface } from 'node:readline'
 import { solve, startState } from './search'
 import { createTwoSidedState } from './vendor/CardRngExpansionDepths/src/engine/battle-v2.label'
-import { getAttack, getHealth } from './vendor/CardRngExpansionDepths/src/engine/stats'
+import { getAttack, getHealth } from './vendor/CardRngExpansionDepths/src/engine/stats.label'
 import { getAura, getSkillAuraValue, statAuraPercentForCard } from './vendor/CardRngExpansionDepths/src/engine/auras.label'
 import cards from './vendor/CardRngExpansionDepths/src/data/cards'
 

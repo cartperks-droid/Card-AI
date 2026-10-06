@@ -3,6 +3,9 @@
 These factors are simple exact candidates within the observed rounding bounds.
 They are not a proof of unique values. Weather cards retain their separate
 weather multiplier and are ineligible for mutations.
+
+These are the observed factors, kept as evidence. The battle engine reads DaddyDrago's (stats.label.ts), where Eclipse is
+x5 since the game's combat changes (user, 2026-10-06: "Eclipse x5"); the Eclipse observations here predate them.
 """
 
 import argparse

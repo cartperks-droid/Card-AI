@@ -8,7 +8,7 @@ import { dirname } from 'node:path'
 import cards from './vendor/CardRngExpansionDepths/src/data/cards'
 import { cardAge } from './vendor/CardRngExpansionDepths/src/data/ages'
 import { AVIAN_CARDS, DEMON_CARDS, DRAGON_CARDS, IMP_BOOSTED_CARDS, RNG_ABILITIES, UNDEAD_CARDS } from './vendor/CardRngExpansionDepths/src/engine/combat-data'
-import { getAttack, getHealth, getPower, rarityWithBorders } from './vendor/CardRngExpansionDepths/src/engine/stats'
+import { getAttack, getHealth, getPower, rarityWithBorders } from './vendor/CardRngExpansionDepths/src/engine/stats.label'
 import { TOY_CARD_NAMES } from './vendor/CardRngExpansionDepths/src/engine/auras.label'
 import { CONSTELLAR_ABILITIES, DODGE_ABILITIES, FULLY_SUPPORTED, NUWA_CREATABLE_POOL, PANDORA_ABILITY_POOL, RANDOM_CARD_POOL }
   from './vendor/CardRngExpansionDepths/src/engine/battle-v2.label'
