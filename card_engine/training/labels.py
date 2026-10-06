@@ -112,11 +112,14 @@ def stat_ignoring_cards(catalog):
 TOWER_SHARE = 1 / 3  # fixed-stat battles that are tower floors (module docstring)
 
 
+PRIOR = 0.5  # chance a leaning side's card comes from STAT_IGNORING, a prior the user means to drop (--prior 0)
+
+
 def _lean_on_stat_ignoring(rng, catalog, spec, side):
-    """Each of a side's cards becomes, with probability 1/2, one whose ability ignores raw stats."""
+    """Each of a side's cards becomes, with probability PRIOR, one whose ability ignores raw stats."""
     pool = stat_ignoring_cards(catalog)
     for slot in range(4):
-        if rng.random() < 0.5:
+        if rng.random() < PRIOR:
             card = rng.choice(pool)
             while card in SINGLE_COPY and card in spec["cards"][side]:
                 card = rng.choice(pool)
@@ -252,9 +255,15 @@ def next_seed(existing, first_seed=None):
     return max(own) + 1 if own else (first_seed if first_seed is not None else 1)
 
 
-def generate(shards, *, rows=2000, workers=None, first_seed=None, out_dir=STORE, fixed=False):
+def _set_prior(prior):
+    global PRIOR
+    PRIOR = prior
+
+
+def generate(shards, *, rows=2000, workers=None, first_seed=None, out_dir=STORE, fixed=False, prior=None):
     """Write `shards` new shards (seeds continue after those on disk) with a process pool, stamped with the
-    current rules snapshot (training.flags). fixed: fixed-stat battles (fixed_<seed>.npz, their own seeds)."""
+    current rules snapshot (training.flags). fixed: fixed-stat battles (fixed_<seed>.npz, their own seeds). prior:
+    the leaning sides' chance per card of a STAT_IGNORING card (default PRIOR)."""
     from .flags import snapshot
     out_dir = Path(out_dir)
     out_dir.mkdir(parents=True, exist_ok=True)
@@ -270,7 +279,8 @@ def generate(shards, *, rows=2000, workers=None, first_seed=None, out_dir=STORE,
     started = time.time()
     # An executor, not multiprocessing.Pool: a worker the OS kills raises BrokenProcessPool and ends the run (a shell
     # loop restarts it; unfinished shards are redone), where Pool waited forever for the lost shard.
-    with ProcessPoolExecutor(workers, mp_context=mp.get_context("spawn")) as pool:
+    with ProcessPoolExecutor(workers, mp_context=mp.get_context("spawn"), initializer=_set_prior,
+                             initargs=(PRIOR if prior is None else prior,)) as pool:
         exact_total = 0
         for done, future in enumerate(as_completed([pool.submit(_worker, job) for job in jobs]), 1):
             name, count, exact = future.result()
@@ -330,8 +340,10 @@ if __name__ == "__main__":
     parser.add_argument("--rows", type=int, default=2000)
     parser.add_argument("--workers", type=int)
     parser.add_argument("--first-seed", type=int, help="number shards on from here (the pod's range); default: below POD_SEEDS")
+    parser.add_argument("--prior", type=float, default=PRIOR,
+                        help="fixed-stat battles: chance a leaning side's card comes from the stat-ignoring list (0: none)")
     parser.add_argument("--fixed", action="store_true", help="fixed-stat battles (every card on one side at the same "
                         "stats, up to 10,000x the other side's), written as fixed_<seed>.npz")
     parsed = parser.parse_args()
     print(generate(parsed.shards, rows=parsed.rows, workers=parsed.workers, first_seed=parsed.first_seed,
-                   fixed=parsed.fixed))
+                   fixed=parsed.fixed, prior=parsed.prior))

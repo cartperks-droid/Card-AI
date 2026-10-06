@@ -33,3 +33,5 @@ These are open rule and class questions, most important first. The daily task pi
 - 2026-10-02 **Undead** (user scan): War and Bloody Mary are undead, Marrowclaw is not. All 25 are now confirmed.
 - 2026-10-02 **Border rarities:** combined borders multiply (RuPl 1e7, GaCrPl 1e12). Evidence: the user's deck screenshots and the stats-sorted order.
 - 2026-10-02 **Sable** takes the enemy card in play's ability *and disables it* on that card. Kernel 0.55.
+
+- **Floor 105 Impossible, engine-discovered deck** (2026-10-06, a prediction, not an observation): the annealed search (`training/hard.py`, no stat-ignoring prior) found Parallax / Legends / Sarimanok / Robin Hood, borderless, red Dinosaur King and blue Fate at base tier, winning every time in the engine (exact). Sarimanok is marked "expires" in DaddyDrago's data. If someone can run it in-game, a loss there would point to an engine rule to fix.

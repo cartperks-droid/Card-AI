@@ -127,10 +127,10 @@ def build_field(classifier, pool, *, size=48, candidates=160, opponents=24, seed
         pool_teams = list(elites)
         pool_teams += proposals(classifier, role, candidates // 4, seed + 10 + role,
                                 against=rng.sample(rivals, min(4, len(rivals))))
-        pool_teams += [mutate(rng, catalog, rng.choice(elites), list(ALL_BORDERS), True, True)
+        pool_teams += [mutate(rng, catalog, rng.choice(elites), list(ALL_BORDERS), True, True, prior=0.0)
                        for _ in range(candidates // 4)] if elites else []
         while len(pool_teams) < candidates:
-            pool_teams.append(draw_candidate(rng, catalog, list(ALL_BORDERS), True, True))
+            pool_teams.append(draw_candidate(rng, catalog, list(ALL_BORDERS), True, True, prior=0.0))
         teams = list({_team_key(t): t for t in pool_teams}.values())
         sample = rng.sample(rivals, min(opponents, len(rivals)))  # one draw for every candidate: comparable scores
         scores = team_scores(pool, teams, role, [sample] * len(teams), seed * 1_000_003 + role * 500_000)
@@ -157,7 +157,7 @@ def hidden_shard(classifier, field, pool, seed, *, rounds=40, opponents=16, keep
         role = rng.randrange(2)
         own, rivals = field[ROLES[role]], field[ROLES[1 - role]]
         teams = rng.sample(own, min(12, len(own)))
-        teams += [mutate(rng, catalog, rng.choice(own), list(ALL_BORDERS), True, True) for _ in range(12)]
+        teams += [mutate(rng, catalog, rng.choice(own), list(ALL_BORDERS), True, True, prior=0.0) for _ in range(12)]
         teams += rng.sample(made[role], min(12, len(made[role])))
         while len(teams) < 48:
             teams.append({key: value[0] for key, value in random_spec(rng, catalog).items()})
