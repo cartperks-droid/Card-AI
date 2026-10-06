@@ -250,7 +250,8 @@ class SlotSpace:
             seen = visible[:, :, 0, None]
             supports = [torch.where(seen, part, model.hidden_support[index]) for index, part in enumerate(supports)]
             mode = mode + 1
-        return model.outcome(model.assemble(cards, supports, mode, stat_tokens))
+        rule = model.stat_rule(stats, visible) if model.config.stat_prior else None
+        return model.outcome(model.assemble(cards, supports, mode, stat_tokens), rule)
 
 
 @dataclass

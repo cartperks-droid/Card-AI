@@ -189,6 +189,12 @@ class StrategicModel(nn.Module):
             for _ in range(c.layers)
         ])
         self.outcome_head = nn.Sequential(nn.LayerNorm(c.width), nn.Linear(c.width, len(OUTCOME_NAMES)))
+        if c.stat_prior:  # the weight of the network's own answer against the stat rule (stat_rule)
+            self.gate_head = nn.Sequential(nn.LayerNorm(c.width), nn.Linear(c.width, 1))
+            # It starts low (user, 2026-10-06): every battle begins on the stat rule, w = sigmoid(-3) ~ 0.05, and
+            # rises where the rule fails; not 0, which would leave the network's own answer without a gradient.
+            nn.init.zeros_(self.gate_head[-1].weight)
+            nn.init.constant_(self.gate_head[-1].bias, -3.0)
         # Residual stat MLP over every card token (user): the normalized (HP, ATK) are projected to the token
         # width, and that projection skips around the MLP to its output; the sum is added to the card token.
         # The projection and the MLP's output layer start at zero, so adding them to a trained model leaves
@@ -313,11 +319,35 @@ class StrategicModel(nn.Module):
         stats = stats.flatten(1, 2) + self.stat_position_embedding(torch.arange(8, device=cards.device))[None]
         return torch.cat([sequence[:, :-2], stats, sequence[:, -2:]], dim=1)
 
-    def outcome(self, sequence: Tensor) -> Tensor:
-        """Logits (A win, B win) for an assembled sequence."""
+    @staticmethod
+    def stat_rule(card_stats: Tensor, visible: Tensor | None = None) -> tuple[Tensor, Tensor]:
+        """(rule, usable) per battle: rule 1.0 when side A's total sqrt(HP x ATK) is at least side B's (the stat
+        favourite, as training.train.stat_favourite), else 0.0; usable when every card is seen."""
+        if visible is None:
+            visible = torch.ones(card_stats.shape[:3], dtype=torch.bool, device=card_stats.device)
+        strength = torch.where(visible, (card_stats[..., 0] * card_stats[..., 1]).clamp_min(0).sqrt(), 0.0).sum(-1)
+        return (strength[:, 0] >= strength[:, 1]).to(card_stats.dtype), visible.all(-1).all(-1)
+
+    def outcome(self, sequence: Tensor, rule: tuple[Tensor, Tensor] | None = None) -> Tensor:
+        """Logits (A win, B win) for an assembled sequence. With stat_prior and a stat rule (stat_rule) they are the
+        log-probabilities of w * p + (1 - w) * rule, mixed in log space so a wrong rule never gives log 0."""
         for block in self.blocks:
             sequence = block(sequence)
-        return self.outcome_head(sequence[:, -1])
+        logits = self.outcome_head(sequence[:, -1])
+        if not self.config.stat_prior or rule is None:
+            return logits
+        favoured, usable = rule
+        own = logits.float().log_softmax(-1)
+        gate = self.gate_head(sequence[:, -1]).float().squeeze(-1)
+        rule_log = torch.stack([favoured, 1 - favoured], -1).float().log()  # 0 or -inf
+        mixed = torch.logaddexp(F.logsigmoid(gate)[:, None] + own, F.logsigmoid(-gate)[:, None] + rule_log)
+        return torch.where(usable[:, None], mixed, own)
+
+    def override_weight(self, sequence: Tensor) -> Tensor:
+        """w per battle: how much the network's own answer counts against the stat rule (stat_prior runs)."""
+        for block in self.blocks:
+            sequence = block(sequence)
+        return torch.sigmoid(self.gate_head(sequence[:, -1]).float().squeeze(-1))
 
     def build_sequence(self, card_embeddings: Tensor, border_ids: Tensor,
                        red_support_ids: Tensor, blue_support_ids: Tensor, *,
@@ -400,8 +430,12 @@ class StrategicModel(nn.Module):
                 red_support_ids: Tensor, blue_support_ids: Tensor, **metadata) -> Tensor:
         """Return logits ordered (A win, B win), not calibrated probabilities."""
         # Full strategic context is visible to PREDICT; lineup positions never move.
-        return self.outcome(self.build_sequence(card_embeddings, border_ids, red_support_ids,
-                                                blue_support_ids, **metadata))
+        sequence = self.build_sequence(card_embeddings, border_ids, red_support_ids, blue_support_ids, **metadata)
+        rule = None
+        if self.config.stat_prior and metadata.get("card_stats") is not None:
+            visible = metadata.get("card_visible")
+            rule = self.stat_rule(metadata["card_stats"], None if visible is None else visible.bool())
+        return self.outcome(sequence, rule)
 
     def probabilities(self, *args, **kwargs) -> Tensor:
         return self(*args, **kwargs).softmax(-1)
