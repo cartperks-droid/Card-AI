@@ -54,6 +54,7 @@ typedef struct {
   double index;
   int border;                 // border id 1-16 (1 = none); his border list order
   double power, hp, maxHp, damage;
+  double hpTaken;  // HP the card lost to the latest hit (Ruler of Humans; codemod.mjs)
   unsigned char entered, dead, boss;
   int identity;               // identityOverride: definition index, or NOCARD
   int abilityOverride;        // ability id, AO_NULL or AO_UNDEFINED

@@ -50,6 +50,14 @@ const leftovers = (src.match(new RegExp(`${R}|${N}`, 'g')) || [])
 if (leftovers.length) throw new Error(`codemod: ${leftovers.length} random draws left unconverted: ${leftovers.join(', ')}`)
 src = src.replace('/*RAND*/', randBody)
 
+// Rule corrections from the user's in-game evidence (docs/simulator_questions.md); his engine is otherwise unchanged.
+// Ruler of Humans (Supreme Ozzy) adds 1.25x the HP it actually loses, not the whole hit (user, 2026-10-06: Heaven's
+// Armor hit a Dinosaur King Crystal Ozzy with 8,933 HP for 163,840; every ally gained exactly 1.25 x 8,933).
+exact("  const appliedHpDamage = Math.min(hpTarget.hp, damage)\n  hpTarget.hp -= appliedHpDamage\n",
+      "  const appliedHpDamage = Math.min(hpTarget.hp, damage)\n  hpTarget.hp -= appliedHpDamage\n  ;(target as any).hpTaken = hpTarget === target ? appliedHpDamage : 0\n")
+exact("if (alive(ally)) ally.damage += damage * 1.25",
+      "if (alive(ally)) ally.damage += ((target as any).hpTaken ?? damage) * 1.25")
+
 // The runtime carries the chance source; a battle may arrive with a prebuilt (two-sided) state.
 exact('  rng: SeededRng\n', '  rng: SeededRng\n  chance: any\n')
 // Ability lookups (user: precomputed entries, as a chess engine's lookup tables): an entry holds a card's ability, its

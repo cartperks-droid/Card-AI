@@ -1051,7 +1051,7 @@ static void target_retro(Runtime *rt, int attacker, int target, double damage) {
   Card *a = CARD(attacker), *t = CARD(target);
   switch (name) {
     case A_RULER_OF_HUMANS:
-      for (int i = 0; i < S->nteam[t->team]; i++) { int ally = S->team[t->team][i]; if (alive(rt, ally)) CARD(ally)->damage += damage * 1.25; }
+      for (int i = 0; i < S->nteam[t->team]; i++) { int ally = S->team[t->team][i]; if (alive(rt, ally)) CARD(ally)->damage += t->hpTaken * 1.25; }
       break;
     case A_RESTORATION: if (t->hp > 0) t->hp += damage * 0.7; break;
     case A_RAGE: if (t->hp > 0) t->damage *= 1.25; break;
@@ -1373,6 +1373,7 @@ static double deal_damage_(Runtime *rt, int attacker, int original_target, doubl
   if (has_ability(rt, attacker, A_DEFRAUD)) damage = jmin(damage, h->hp * 0.5);
   double applied = jmin(h->hp, damage);
   h->hp -= applied;
+  CARD(target)->hpTaken = hp_target == target ? applied : 0;  // codemod.mjs: Ruler of Humans counts HP lost
 
   double mirror_knight = S->boosts[h->team].mirrorKnight;
   if (applied > 0 && attacker != hp_target && truthy(mirror_knight) && alive(rt, attacker)) {
