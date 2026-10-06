@@ -181,6 +181,19 @@ def capped_paths(paths, max_rows):
     return sorted(hard + kept)
 
 
+def sample_validation(rows, limit):
+    """At most `limit` validation rows to score (a fixed draw per validation size), every hard example among them:
+    scoring 830k rows through 18 layers on the Mac took longer than 1,000 training steps (2026-10-06)."""
+    count = rows["target"].shape[0]
+    if limit is None or count <= limit:
+        return rows
+    draw = torch.randperm(count, generator=torch.Generator().manual_seed(count))[:limit].to(rows["target"].device)
+    keep = torch.zeros(count, dtype=torch.bool, device=draw.device)
+    keep[draw] = True
+    keep |= rows["hard"] > 0
+    return {k: v[keep] for k, v in rows.items()}
+
+
 def load_split(directory, device, release=None, pack=False, max_rows=None):
     """(train, validation) tensors of the rows still valid under the current rules (training.flags);
     validation = shards whose seed is divisible by VALIDATION_EVERY. Every row carries `hard` (1 for training.hard's
@@ -490,7 +503,7 @@ def mix_shares(step, mix, mix_start=None, mix_until=None):
 def train(*, steps=None, batch_size=512, lr=3e-4, warmup=1000, weight_decay=0.05, dropout=0.1, freeze_language_at=None,
           eval_every=1000, init_from=None, language_lr=None, mix=(0.05, 0.0, 0.0), layers=None, language_from=None,
           mix_start=None, mix_until=None, ema_decay=0.999, pack_labels=False, bf16=False, lr_decay=None, lr_floor=0.05,
-          watch=None, max_rows=None,
+          watch=None, max_rows=None, eval_rows=None,
           checkpoint_every=1000, reload_every=1000, device=None, run_dir=RUN_DIR, label_root=SHARD_DIR):
     """Train in run_dir, resuming its model and optimizer if both are there. Otherwise init_from (a model checkpoint,
     e.g. one downloaded from another machine) gives the starting weights and step, with a fresh optimizer whose learning
@@ -673,11 +686,12 @@ def train(*, steps=None, batch_size=512, lr=3e-4, warmup=1000, weight_decay=0.05
                 last = now
                 if step % eval_every == 0 and val_rows is not None:
                     table = eval_table()
-                    record["val"] = {k: round(v, 4) for k, v in evaluate(model, inputs, table, val_rows).items()}
-                    record["val_rows"] = int(val_rows["target"].shape[0])
-                    for name, subset in (("val_fixed", val_rows["fixed_side"] >= 0), ("val_hard", val_rows["hard"] > 0)):
+                    scored = sample_validation(val_rows, eval_rows)
+                    record["val"] = {k: round(v, 4) for k, v in evaluate(model, inputs, table, scored).items()}
+                    record["val_rows"] = int(scored["target"].shape[0])
+                    for name, subset in (("val_fixed", scored["fixed_side"] >= 0), ("val_hard", scored["hard"] > 0)):
                         if bool(subset.any()):  # fixed-stat battles and hard examples on their own, apart from the mix
-                            part = {k: v[subset] for k, v in val_rows.items()}
+                            part = {k: v[subset] for k, v in scored.items()}
                             record[name] = {k: round(v, 4) for k, v in evaluate(model, inputs, table, part).items()}
                             record[f"{name}_rows"] = int(subset.sum())
                     if rules_id != probe_labels:  # new rules: new probes
@@ -769,6 +783,8 @@ if __name__ == "__main__":
                         "slow per file, like the pod's)")
     parser.add_argument("--max-rows", type=int, help="load about this many rows: every hard example and a fixed "
                         "random share of the other shards (for a machine whose memory cannot hold the whole store)")
+    parser.add_argument("--eval-rows", type=int, help="score at most this many validation rows at each evaluation "
+                        "(a random draw, plus every hard example); default all")
     parser.add_argument("--ema-decay", type=float, default=0.999,
                         help="decay of the weight average saved as ema.checkpoint (about 1 / (1 - decay) steps)")
     parser.add_argument("--init-from", help="model checkpoint to start from when the run directory has no trainer state "
@@ -783,5 +799,5 @@ if __name__ == "__main__":
           weight_decay=parsed.weight_decay, dropout=parsed.dropout, freeze_language_at=parsed.freeze_language_at,
           eval_every=parsed.eval_every, init_from=parsed.init_from, language_lr=parsed.language_lr, mix=parsed.mix,
           layers=parsed.layers, language_from=parsed.language_from, mix_start=parsed.mix_start, mix_until=parsed.mix_until, ema_decay=parsed.ema_decay, pack_labels=parsed.pack_labels,
-          bf16=parsed.bf16, lr_decay=parsed.lr_decay, lr_floor=parsed.lr_floor, watch=parsed.watch or None, max_rows=parsed.max_rows,
+          bf16=parsed.bf16, lr_decay=parsed.lr_decay, lr_floor=parsed.lr_floor, watch=parsed.watch or None, max_rows=parsed.max_rows, eval_rows=parsed.eval_rows,
           run_dir=parsed.run_dir)
