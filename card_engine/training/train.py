@@ -544,7 +544,8 @@ def mix_shares(step, mix, mix_start=None, mix_until=None):
 def train(*, steps=None, batch_size=512, lr=3e-4, warmup=1000, weight_decay=0.05, dropout=0.1, freeze_language_at=None,
           eval_every=1000, init_from=None, language_lr=None, mix=(0.05, 0.0, 0.0), layers=None, architecture=None, language=None, language_from=None,
           mix_start=None, mix_until=None, ema_decay=0.999, pack_labels=False, bf16=False, lr_decay=None, lr_floor=0.05,
-          watch=None, max_rows=None, eval_rows=None, field_generations=2, plateau_drift=2.0, plateau_evals=2,
+          watch=None, max_rows=None, eval_rows=None, field_generations=2, language_after_plateau=False, language_steps=None,
+          plateau_drift=2.0, plateau_evals=2,
           checkpoint_every=1000, reload_every=1000, device=None, run_dir=RUN_DIR, label_root=SHARD_DIR):
     """Train in run_dir, resuming its model and optimizer if both are there. Otherwise init_from (a model checkpoint,
     e.g. one downloaded from another machine) gives the starting weights and step, with a fresh optimizer whose learning
@@ -554,11 +555,14 @@ def train(*, steps=None, batch_size=512, lr=3e-4, warmup=1000, weight_decay=0.05
     starts fresh whenever the saved optimizer has no such group, so unfreezing it later (a --freeze-language-at past
     the current step) does not resume momentum from before the freeze.
 
-    plateau_drift, plateau_evals: once frozen, the description transformer trains again when the stat MLP plateaus
-    (user, 2026-10-06): its weights' net displacement over each evaluation interval, divided by the length of the path
-    they took and by that ratio for pure noise (drift_floor), is logged as "stat_drift" (about 1: the MLP only wanders;
-    much more: it is still learning). plateau_evals intervals in a row, all after the freeze, at or under plateau_drift
-    unfreeze it for the rest of the run ("language_unfrozen" in the log, kept across restarts); 0 keeps it frozen.
+    language_after_plateau (new run; user, 2026-10-06): the description transformer's last layer starts at zero and
+    stays frozen, so the strategic transformer runs without card text (every card vector 0) until the stat MLP has
+    absorbed the stat prior; then the description transformer learns, from zero; language_steps: it then learns this
+    many steps and freezes for good (None: it keeps learning). The stat MLP's drift, its weights' net displacement over
+    each evaluation interval divided by the length of the path they took and by that ratio for pure noise
+    (drift_floor), is logged as "stat_drift" (about 1: the MLP only wanders; much more: it is still learning).
+    plateau_evals intervals in a row at or under plateau_drift start the description transformer ("language_started"
+    in the log). Both are kept across restarts.
 
     A new run (random weights) takes `layers` strategic layers (default StrategicConfig's) and `architecture`, other
     StrategicConfig fields (stat_tokens, stat_pairs, stat_width, pack_embedding, mutation_embedding, stat_hidden_width),
@@ -605,6 +609,11 @@ def train(*, steps=None, batch_size=512, lr=3e-4, warmup=1000, weight_decay=0.05
             source, _ = load_checkpoint(language_from, map_location=device)
             model.description.load_state_dict(source.description.state_dict())
             del source
+        if language_after_plateau:  # the strategic transformer runs without card text until the language side starts
+            # (user, 2026-10-06): a zero last layer makes every card vector 0, and the language side grows from there
+            last = model.description.projection[-1]
+            torch.nn.init.zeros_(last.weight)
+            torch.nn.init.zeros_(last.bias)
     if language_from is not None and freeze_language_at is None:
         freeze_language_at = 0  # the borrowed language side stays as it was trained
     set_dropout(model, dropout)
@@ -617,7 +626,8 @@ def train(*, steps=None, batch_size=512, lr=3e-4, warmup=1000, weight_decay=0.05
     rest = [p for p in model.parameters() if id(p) not in ids]
     optimizer = torch.optim.AdamW([{"params": rest, "base_lr": lr}, {"params": language, "base_lr": language_lr or lr}],
                                   lr=lr, weight_decay=weight_decay)
-    step, best, watch_best, unfrozen_at = warm_from, None, {}, None
+    step, best, watch_best = warm_from, None, {}
+    waiting = language_after_plateau  # the description transformer waits for the stat MLP's plateau
     if state is not None:
         saved = state["optimizer"]
         if len(saved["param_groups"]) == 2:
@@ -632,7 +642,8 @@ def train(*, steps=None, batch_size=512, lr=3e-4, warmup=1000, weight_decay=0.05
             group["weight_decay"], group["base_lr"] = weight_decay, base
         step, best, warm_from = state["step"], state.get("best"), state.get("warm_from", 0)
         watch_best = dict(state.get("watch_best") or {})
-        unfrozen_at = state.get("language_unfrozen_at")
+        waiting = state.get("language_waiting", False)
+        language_steps = language_steps if language_steps is not None else state.get("language_steps")
         if freeze_language_at is None:  # a restart keeps the run's freeze unless told otherwise (2026-10-05: one
             freeze_language_at = state.get("freeze_language_at")  # that left it out unfroze the deep run's encoder)
     inputs = Inputs(device)
@@ -667,7 +678,7 @@ def train(*, steps=None, batch_size=512, lr=3e-4, warmup=1000, weight_decay=0.05
 
     def current_table():
         nonlocal frozen_table
-        if freeze_language_at is not None and step >= freeze_language_at and unfrozen_at is None:
+        if waiting or (freeze_language_at is not None and step >= freeze_language_at):
             if frozen_table is None:
                 freeze_language(model)
                 with torch.no_grad():
@@ -692,7 +703,7 @@ def train(*, steps=None, batch_size=512, lr=3e-4, warmup=1000, weight_decay=0.05
                 rows.clear()
         if device == "mps":
             torch.mps.empty_cache()
-    # The stat MLP's drift over each evaluation interval (its plateau unfreezes the description transformer)
+    # The stat MLP's drift over each evaluation interval (its plateau starts the waiting description transformer)
     stat_parameters = [*model.strategy.stat_projection.parameters(), *model.strategy.stat_mlp.parameters()]
     flat = lambda: torch.nn.utils.parameters_to_vector(stat_parameters).detach().clone()
     window_start, previous, path, window_steps, flat_evals = flat(), flat(), torch.zeros((), device=device), 0, 0
@@ -765,12 +776,13 @@ def train(*, steps=None, batch_size=512, lr=3e-4, warmup=1000, weight_decay=0.05
                 if step % eval_every == 0:
                     drift = float((previous - window_start).norm() / path.clamp_min(1e-12)) / drift_floor(window_steps)
                     record["stat_drift"] = round(drift, 2)
-                    frozen = frozen_table is not None and step - window_steps >= freeze_language_at
-                    flat_evals = flat_evals + 1 if frozen and drift <= plateau_drift else 0
-                    if plateau_evals and flat_evals >= plateau_evals:
+                    flat_evals = flat_evals + 1 if waiting and drift <= plateau_drift else 0
+                    if waiting and flat_evals >= max(1, plateau_evals):
                         unfreeze_language(model, optimizer)
-                        frozen_table, unfrozen_at = None, step
-                        record["language_unfrozen"] = True
+                        frozen_table, waiting, flat_evals = None, False, 0
+                        if language_steps:
+                            freeze_language_at = step + language_steps
+                        record["language_started"] = True
                     window_start, path, window_steps = previous.clone(), torch.zeros((), device=device), 0
                 if step % eval_every == 0 and val_rows is not None:
                     table = eval_table()
@@ -844,7 +856,7 @@ def train(*, steps=None, batch_size=512, lr=3e-4, warmup=1000, weight_decay=0.05
                 tmp = state_path.with_suffix(".tmp")
                 torch.save({"optimizer": optimizer.state_dict(), "step": step, "best": best, "warm_from": warm_from,
                             "freeze_language_at": freeze_language_at, "watch_best": watch_best,
-                            "language_unfrozen_at": unfrozen_at}, tmp)
+                            "language_waiting": waiting, "language_steps": language_steps}, tmp)
                 tmp.replace(state_path)
     finally:
         log.close()
@@ -861,10 +873,15 @@ if __name__ == "__main__":
     parser.add_argument("--dropout", type=float, default=0.1, help="at the GELU upscale only")
     parser.add_argument("--freeze-language-at", type=int, help="step after which the description transformer is frozen; "
                         "a step past the current one unfreezes it until then")
+    parser.add_argument("--language-after-plateau", action="store_true",
+                        help="new run: the description transformer stays frozen at its fresh initialisation until the "
+                        "stat MLP plateaus (it has absorbed the stat prior), then learns")
+    parser.add_argument("--language-steps", type=int,
+                        help="with --language-after-plateau: steps it learns before freezing for good (default: no freeze)")
     parser.add_argument("--plateau-drift", type=float, default=2.0,
-                        help="the frozen description transformer trains again once the stat MLP's drift (stat_drift in "
-                        "the log; about 1 is noise) stays at or under this for --plateau-evals evaluations")
-    parser.add_argument("--plateau-evals", type=int, default=2, help="evaluations in a row (0: never unfreeze)")
+                        help="the stat MLP has plateaued when its drift (stat_drift in the log; about 1 is noise) stays "
+                        "at or under this for --plateau-evals evaluations")
+    parser.add_argument("--plateau-evals", type=int, default=2, help="evaluations in a row")
     parser.add_argument("--language-lr", type=float, help="the description transformer's learning rate (default --lr)")
     parser.add_argument("--mix", type=float, nargs="+", default=(0.05, 0.0, 0.0), metavar="SHARE",
                         help="HARD UPSET FIXED [HIDDEN [FOUND]]: shares of each batch drawn from hard examples "
@@ -941,4 +958,5 @@ if __name__ == "__main__":
           language_from=parsed.language_from, mix_start=parsed.mix_start, mix_until=parsed.mix_until, ema_decay=parsed.ema_decay, pack_labels=parsed.pack_labels,
           bf16=parsed.bf16, lr_decay=parsed.lr_decay, lr_floor=parsed.lr_floor, watch=parsed.watch or None, max_rows=parsed.max_rows, eval_rows=parsed.eval_rows,
           field_generations=parsed.field_generations, plateau_drift=parsed.plateau_drift, plateau_evals=parsed.plateau_evals,
+          language_after_plateau=parsed.language_after_plateau, language_steps=parsed.language_steps,
           run_dir=parsed.run_dir)

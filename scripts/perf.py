@@ -6,8 +6,8 @@
 
 val_rows and upsets are the validation set's size and its upset slice: when new shards change them, the
 metrics move with the data, not the model.
-stat_drift: the stat MLP's progress over the interval; about 1 means it only wanders (a plateau), and the frozen
-description transformer trains again after two such intervals.
+stat_drift: the stat MLP's progress over the interval; about 1 means it only wanders (a plateau). With
+--language-after-plateau the description transformer starts learning after two such intervals.
 """
 
 import json
@@ -29,7 +29,7 @@ for r in [json.loads(l) for l in lines[-200 * count:] if '"val"' in l][-count:]:
     print(f"{r['step']:<10,} {r['train_rows']:<11,} {r.get('val_rows', 0):<9,} {int(v.get('upset_rows', 0)):<7,} "
           f"{v['accuracy']:.3f}  {v['baseline']:.3f}  {v['upset_accuracy']:.3f}  {v['kl']:.3f}  "
           f"{v['decisive_accuracy']:.3f}     {v['probabilistic_error']:.3f}     {t.get('accuracy', float('nan')):.3f}      {r.get('stat_drift', float('nan')):.2f}"
-          + ("  language unfrozen" if r.get("language_unfrozen") else ""))
+          + ("  language started" if r.get("language_started") else ""))
 for name, title in (("val_fixed", "fixed-stat battles only"), ("val_hard", "hard examples only (generator-proposed)"),
                     ("val_hidden", "incomplete mode only (against the unseen field)"),
                     ("val_found", "found by the annealed search only (hard.py --select engine)")):
