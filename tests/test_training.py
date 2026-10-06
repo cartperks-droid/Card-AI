@@ -285,7 +285,7 @@ class TrainingTests(unittest.TestCase):
         cards = torch.randn(2, 2, 4, 768)
         small, huge = torch.tensor([[0.1, 0.1]]), torch.tensor([[9.0, 9.0]])  # log-stat gaps of e^0.1 and e^9 (8,100x)
         with torch.no_grad():
-            parts = [strategy.with_stats(cards, gap.expand(2, 2, 4, 2)) for gap in (small, huge)]
+            parts = [strategy.with_stats(cards, gap.expand(2, 2, 4, 2))[0] for gap in (small, huge)]
         for part in parts:  # each part normalised on its own: the stats cannot outgrow the card
             self.assertEqual(part.shape[-1], 768)
             self.assertLess(float(part[..., 704:].norm(dim=-1).max()), 9.0)
@@ -302,6 +302,28 @@ class TrainingTests(unittest.TestCase):
         config = model.strategy.config
         self.assertEqual((config.stat_width, config.pack_embedding, config.mutation_embedding), (64, False, False))
         self.assertIsNone(model.strategy.pack_embedding)
+
+    def test_stat_tokens_sit_beside_the_cards_and_hidden_cards_hide_their_stats(self):
+        from card_engine.model.config import StrategicConfig
+        torch.manual_seed(2)
+        strategy = BattleModel(strategic_config=StrategicConfig(layers=1, stat_tokens=True)).strategy.eval()
+        common = dict(card_embeddings=torch.randn(2, 2, 4, 768), border_ids=torch.ones(2, 2, 4, dtype=torch.long),
+                      red_support_ids=torch.zeros(2, 2, dtype=torch.long), blue_support_ids=torch.zeros(2, 2, dtype=torch.long))
+        stats = torch.rand(2, 2, 4, 2) * 1e4 + 1
+        with torch.no_grad():
+            sequence = strategy.build_sequence(**common, card_stats=stats)
+            self.assertEqual(sequence.shape[1], 23)  # 15 slots and 8 stat tokens, MODE and PREDICT last
+            torch.testing.assert_close(sequence[:, 3:7], strategy.build_sequence(**common, card_stats=stats * 3)[:, 3:7])
+            self.assertFalse(torch.allclose(strategy(**common, card_stats=stats),
+                                            strategy(**common, card_stats=stats.flip(2))))  # whose stats is which matters
+            hidden = torch.ones(2, 2, 4, dtype=torch.bool)
+            hidden[:, 1, 2] = False
+            changed = stats.clone()
+            changed[:, 1, 2] *= 50
+            torch.testing.assert_close(strategy.build_sequence(**common, card_stats=stats, card_visible=hidden)[:, 15 + 6],
+                                       strategy.build_sequence(**common, card_stats=changed, card_visible=hidden)[:, 15 + 6])
+        with self.assertRaises(ValueError):
+            StrategicConfig(stat_tokens=True, stat_width=64)
 
     def test_training_runs_and_resumes(self):
         root = Path(self.temp.name) / "labels"

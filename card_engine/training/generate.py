@@ -234,10 +234,10 @@ class SlotSpace:
         cards = torch.stack([a[0], b[0]], 1)
         stats = torch.stack([a[1], b[1]], 1)
         visible = torch.ones(stats.shape[:3], dtype=torch.bool, device=self.device)
-        cards = self.model.with_stats(cards, self.model.normalized_stats(stats.exp(), visible))
+        cards, stat_tokens = self.model.with_stats(cards, self.model.normalized_stats(stats.exp(), visible))
         supports = [torch.stack([a[2], b[2]], 1), torch.stack([a[3], b[3]], 1)]
         mode = torch.zeros(cards.shape[0], dtype=torch.long, device=self.device)
-        return self.model.outcome(self.model.assemble(cards, supports, mode))
+        return self.model.outcome(self.model.assemble(cards, supports, mode, stat_tokens))
 
 
 @dataclass

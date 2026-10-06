@@ -59,6 +59,9 @@ class StrategicConfig:
     # each card token and the card (description, identity, classes, border, ...) a projection onto the rest, each part
     # layer-normalised on its own, so a huge stat gap cannot drown out the abilities. 0 adds both in one space.
     stat_width: int = 0
+    # Stats as tokens of their own (user, 2026-10-06: "two inks overlapping" are hard to read): each card's stats
+    # become a second token beside its card token, with its own position, and attention relates the two.
+    stat_tokens: bool = False
     # The engine reads a card's pack and mutation weather only for its stats and the stat supports that boost it,
     # all inside the card's stats already (2026-10-06): without these embeddings neither can stand in for identity.
     pack_embedding: bool = True
@@ -73,6 +76,8 @@ class StrategicConfig:
             raise ValueError("Dropout must be in [0, 1)")
         if type(self.stat_width) is not int or not 0 <= self.stat_width < self.width:
             raise ValueError("stat_width must be an integer in [0, width)")
+        if self.stat_tokens and self.stat_width:
+            raise ValueError("Stats go in their own tokens or in their own channels, not both")
         if (type(self.identity_capacity) is not int or self.identity_capacity < 0 or not 0 <= self.identity_dropout < 1
                 or not self.identity_l2 >= 0):
             raise ValueError("identity_capacity must be a nonnegative integer and identity_dropout in [0, 1)")

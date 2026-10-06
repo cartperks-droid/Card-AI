@@ -197,6 +197,10 @@ class StrategicModel(nn.Module):
             self.card_projection = nn.Linear(c.width, c.width - c.stat_width)
             self.card_norm = nn.LayerNorm(c.width - c.stat_width)
             self.stat_norm = nn.LayerNorm(c.stat_width)
+        elif c.stat_tokens:  # a stat token per card: its own positions, and a stand-in for unseen cards' stats
+            self.stat_position_embedding = nn.Embedding(8, c.width)
+            self.hidden_stat = nn.Parameter(torch.empty(c.width))
+            nn.init.normal_(self.hidden_stat, std=0.02)
         else:  # added to the card: starting at zero leaves a trained model unchanged (add_stat_mlp)
             for layer in (self.stat_projection, self.stat_mlp[-1]):
                 nn.init.zeros_(layer.weight)
@@ -206,11 +210,14 @@ class StrategicModel(nn.Module):
         projected = self.stat_projection(normalized)
         return projected + self.stat_mlp(projected)
 
-    def with_stats(self, cards: Tensor, normalized: Tensor) -> Tensor:
-        """Card tokens [..., W] with their normalized stats [..., 2]: beside the card (stat_width) or added to it."""
+    def with_stats(self, cards: Tensor, normalized: Tensor) -> tuple[Tensor, Tensor | None]:
+        """(card tokens, stat tokens or None) from card tokens [..., W] and their normalized stats [..., 2]: stats as
+        tokens of their own (stat_tokens), in the card token's own channels (stat_width), or added to it."""
+        if self.config.stat_tokens:
+            return cards, self.stat_vectors(normalized)
         if self.config.stat_width:
-            return torch.cat([self.card_norm(self.card_projection(cards)), self.stat_norm(self.stat_vectors(normalized))], -1)
-        return cards + self.stat_vectors(normalized)
+            return torch.cat([self.card_norm(self.card_projection(cards)), self.stat_norm(self.stat_vectors(normalized))], -1), None
+        return cards + self.stat_vectors(normalized), None
 
     @staticmethod
     def normalized_stats(card_stats: Tensor, visible: Tensor) -> Tensor:
@@ -267,8 +274,9 @@ class StrategicModel(nn.Module):
             values = values + torch.where(tiers[..., None].gt(0), self.support_tier_embedding(index * 5 + tiers.clamp_min(1) - 1), 0.0)
         return torch.where(ids[..., None].gt(0), values, 0.0)
 
-    def assemble(self, cards: Tensor, supports: list[Tensor], mode_ids: Tensor) -> Tensor:
-        """The token sequence from final card tokens [B, 2, 4, W] and support tokens (red, blue) [B, 2, W]."""
+    def assemble(self, cards: Tensor, supports: list[Tensor], mode_ids: Tensor, stats: Tensor | None = None) -> Tensor:
+        """The token sequence from final card tokens [B, 2, 4, W] and support tokens (red, blue) [B, 2, W]; stat
+        tokens [B, 2, 4, W] (stat_tokens) go before MODE and PREDICT, each at its card's own stat position."""
         batch = cards.shape[0]
         sequence = torch.cat([
             self.bos.expand(batch, 1, -1),
@@ -276,7 +284,11 @@ class StrategicModel(nn.Module):
             supports[0][:, 1:2], supports[1][:, 1:2], cards[:, 1],
             self.mode_embedding(mode_ids)[:, None], self.predict.expand(batch, 1, -1),
         ], dim=1)
-        return sequence + self.position_embedding(torch.arange(len(SLOT_NAMES), device=cards.device))[None]
+        sequence = sequence + self.position_embedding(torch.arange(len(SLOT_NAMES), device=cards.device))[None]
+        if stats is None:
+            return sequence
+        stats = stats.flatten(1, 2) + self.stat_position_embedding(torch.arange(8, device=cards.device))[None]
+        return torch.cat([sequence[:, :-2], stats, sequence[:, -2:]], dim=1)
 
     def outcome(self, sequence: Tensor) -> Tensor:
         """Logits (A win, B win) for an assembled sequence."""
@@ -328,7 +340,8 @@ class StrategicModel(nn.Module):
         else:
             identity_keys = None
         cards = self.card_part(cards, pack_ids, class_weights, identity_keys)
-        if card_stats is None and c.stat_width:
+        stat_tokens = None
+        if card_stats is None and (c.stat_width or c.stat_tokens):
             raise ValueError("A model with stat_width needs card_stats")
         if card_stats is not None:
             if (not isinstance(card_stats, Tensor) or tuple(card_stats.shape) != (batch, 2, 4, 2)
@@ -337,9 +350,11 @@ class StrategicModel(nn.Module):
             if not bool((torch.where(cv[..., None], card_stats, 1.0) > 0).all()):
                 raise ValueError("Visible card stats must be positive")
             normalized = self.normalized_stats(torch.where(cv[..., None], card_stats, 1.0), cv)
-            cards = self.with_stats(cards, normalized)
+            cards, stat_tokens = self.with_stats(cards, normalized)
         # Replace the entire identity+border+pack+class representation, not only identity.
         cards = torch.where(cv[..., None], cards, self.hidden_card)
+        if stat_tokens is not None:
+            stat_tokens = torch.where(cv[..., None], stat_tokens, self.hidden_stat)
         supports = []
         for index, (ids, embedding, count, name) in enumerate((
                 (red_support_ids, self.red_support_embedding, 28, "red_support_ids"),
@@ -356,7 +371,7 @@ class StrategicModel(nn.Module):
         if mode_ids.device != device:
             raise ValueError("mode_ids must be on the input device")
         _range(mode_ids, "mode_ids", 0, 1)
-        return self.assemble(cards, supports, mode_ids)
+        return self.assemble(cards, supports, mode_ids, stat_tokens)
 
     def forward(self, card_embeddings: Tensor, border_ids: Tensor,
                 red_support_ids: Tensor, blue_support_ids: Tensor, **metadata) -> Tensor:

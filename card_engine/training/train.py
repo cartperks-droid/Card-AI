@@ -514,7 +514,7 @@ def train(*, steps=None, batch_size=512, lr=3e-4, warmup=1000, weight_decay=0.05
     the current step) does not resume momentum from before the freeze.
 
     A new run (random weights) takes `layers` strategic layers (default StrategicConfig's) and `architecture`, other
-    StrategicConfig fields (stat_width, pack_embedding, mutation_embedding). language_from: a model
+    StrategicConfig fields (stat_tokens, stat_width, pack_embedding, mutation_embedding). language_from: a model
     checkpoint whose description transformer (card text to card vectors) the new run starts from, frozen from the
     first step.
 
@@ -772,6 +772,8 @@ if __name__ == "__main__":
     parser.add_argument("--layers", type=int, help="strategic transformer layers, for a run starting from random weights")
     parser.add_argument("--stat-width", type=int, default=0,
                         help="new run: the stats' own channels of each card token, beside the card's (0: added to it)")
+    parser.add_argument("--stat-tokens", action="store_true",
+                        help="new run: each card's stats as a token of its own beside the card's")
     parser.add_argument("--no-pack-embedding", action="store_true", help="new run: no card-pack embedding")
     parser.add_argument("--no-mutation-embedding", action="store_true",
                         help="new run: no mutation embedding (mutations still set the card's stats)")
@@ -804,7 +806,7 @@ if __name__ == "__main__":
     train(steps=parsed.steps, batch_size=parsed.batch_size, lr=parsed.lr, device=parsed.device, reload_every=parsed.reload_every,
           weight_decay=parsed.weight_decay, dropout=parsed.dropout, freeze_language_at=parsed.freeze_language_at,
           eval_every=parsed.eval_every, init_from=parsed.init_from, language_lr=parsed.language_lr, mix=parsed.mix,
-          layers=parsed.layers, architecture={"stat_width": parsed.stat_width,
+          layers=parsed.layers, architecture={"stat_width": parsed.stat_width, "stat_tokens": parsed.stat_tokens,
           "pack_embedding": not parsed.no_pack_embedding, "mutation_embedding": not parsed.no_mutation_embedding},
           language_from=parsed.language_from, mix_start=parsed.mix_start, mix_until=parsed.mix_until, ema_decay=parsed.ema_decay, pack_labels=parsed.pack_labels,
           bf16=parsed.bf16, lr_decay=parsed.lr_decay, lr_floor=parsed.lr_floor, watch=parsed.watch or None, max_rows=parsed.max_rows, eval_rows=parsed.eval_rows,
