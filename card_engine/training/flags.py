@@ -200,6 +200,13 @@ def main(argv=None):
                      + ", ".join(sorted(changed)[:8]) + (" ..." if len(changed) > 8 else ""))
             print(f"{ident}: {rows} rows, {state}")
         return
+    # The fingerprint is the built engine's: declared before setup.sh, it names a half-built core, and the real one
+    # stays undeclared (2026-10-06: 160M rows held back).
+    built = [path.stat().st_mtime for path in (ROOT / "sim_c" / "build").glob("libcardsim.*")]
+    sources = [ROOT / "sim_js" / name for name in ("codemod.mjs", "gen_tables.ts", "ENGINE_COMMIT")]
+    sources += [*(ROOT / "sim_c").glob("*.c"), *(ROOT / "sim_c").glob("*.h")]
+    if not built or any(path.stat().st_mtime > max(built) for path in sources if path.exists()):
+        raise SystemExit("The engine build is older than its sources: run `bash sim_js/setup.sh` first, then declare")
     # default: the last engine version declared to (declarations chain), else the stored labels with the most rows
     changes = load_changes()
     last = changes[-1]["to_core"] if changes else None
