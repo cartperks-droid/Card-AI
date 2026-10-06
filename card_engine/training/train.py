@@ -164,7 +164,7 @@ def _save_pack(tmp, rules, items):
 def load_split(directory, device, release=None, pack=False):
     """(train, validation) tensors of the rows still valid under the current rules (training.flags);
     validation = shards whose seed is divisible by VALIDATION_EVERY. Every row carries `hard` (1 for training.hard's
-    hard-example battles); training draws a set share of each batch from them (train's hard_fraction).
+    hard-example battles); training draws a set share of each batch from them (train's mix).
 
     Every row also carries `favourite`, the stat favourite (stat_favourite): upsets are rows it did not win.
     Shards are read and checked once, then cached: a reload reads only new shards (by name: a shard file is never
@@ -442,16 +442,30 @@ def load_watch(path, device):
     return names, engine, rows
 
 
-def focus_rows(rows):
-    """Indices of the rows a new model learns first (user, 2026-10-04): upsets (the stat favourite lost), fixed-stat
-    battles and hard examples, so "bigger stats win" is not learned before the abilities that overturn it."""
+MIX_KINDS = ("hard", "upset", "fixed")
+
+
+def mix_rows(rows):
+    """Indices of the rows each batch takes a set share of (train's mix): hard examples; fixed-stat battles that are
+    not hard; upsets (the stat favourite lost) among the rest. A new model learns these first (user, 2026-10-04), so
+    "bigger stats win" is not learned before the abilities that overturn it."""
+    hard, fixed = rows["hard"] > 0, rows["fixed_side"] >= 0
     upset = rows["favourite"].long() != rows["target"].argmax(-1)
-    return (upset | (rows["fixed_side"] >= 0) | (rows["hard"] > 0)).nonzero()[:, 0]
+    return {"hard": hard.nonzero()[:, 0], "fixed": (fixed & ~hard).nonzero()[:, 0],
+            "upset": (upset & ~fixed & ~hard).nonzero()[:, 0]}
+
+
+def mix_shares(step, mix, mix_start=None, mix_until=None):
+    """Each kind's share of the batch at a step: mix_start at step 0, moving linearly to mix at mix_until, then held."""
+    if mix_start is None or mix_until is None or step >= mix_until:
+        return tuple(mix)
+    t = step / max(1, mix_until)
+    return tuple(a + (b - a) * t for a, b in zip(mix_start, mix))
 
 
 def train(*, steps=None, batch_size=512, lr=3e-4, warmup=1000, weight_decay=0.05, dropout=0.1, freeze_language_at=None,
-          eval_every=1000, init_from=None, language_lr=None, hard_fraction=0.05, layers=None, language_from=None,
-          focus_until=None, ema_decay=0.999, pack_labels=False, bf16=False, lr_decay=None, lr_floor=0.05,
+          eval_every=1000, init_from=None, language_lr=None, mix=(0.05, 0.0, 0.0), layers=None, language_from=None,
+          mix_start=None, mix_until=None, ema_decay=0.999, pack_labels=False, bf16=False, lr_decay=None, lr_floor=0.05,
           watch=None,
           checkpoint_every=1000, reload_every=1000, device=None, run_dir=RUN_DIR, label_root=SHARD_DIR):
     """Train in run_dir, resuming its model and optimizer if both are there. Otherwise init_from (a model checkpoint,
@@ -464,8 +478,11 @@ def train(*, steps=None, batch_size=512, lr=3e-4, warmup=1000, weight_decay=0.05
 
     A new run (random weights) takes `layers` strategic layers (default StrategicConfig's). language_from: a model
     checkpoint whose description transformer (card text to card vectors) the new run starts from, frozen from the
-    first step. focus_until: until this step every batch is drawn from focus_rows (upsets, fixed-stat battles, hard
-    examples); after it, from all rows, where those are already a large share.
+    first step.
+
+    mix: (hard, upset, fixed) shares of each batch, drawn from those rows (mix_rows); the rest is drawn uniformly
+    from all rows. mix_start: the shares at step 0, moving linearly to mix at step mix_until (the curriculum: a new
+    model starts on the battles abilities decide, then moves toward the natural mix). No copies are kept.
 
     lr_decay: (first, last) steps of a cosine decay of the learning rate to lr_floor times its value, held after
     last (user, 2026-10-05: a fixed rate keeps the weights swinging, so the last part of a model's fit never comes).
@@ -537,7 +554,7 @@ def train(*, steps=None, batch_size=512, lr=3e-4, warmup=1000, weight_decay=0.05
     train_rows, val_rows = load_split(label_dir, device, pack=pack_labels)
     if train_rows is None:
         raise SystemExit("No labels are valid under the current rules: see `python -m card_engine.training.flags status`")
-    hard_rows, focus = train_rows["hard"].nonzero()[:, 0], focus_rows(train_rows)  # recomputed on each reload
+    mixed = mix_rows(train_rows)  # recomputed on each reload
     rules_id = snapshot()  # the current rules; probes and the best checkpoint reset when it changes
     watched = load_watch(watch, device) if watch else None
     # Grokking probes: fixed subsets of the training and validation rows, so the curves stay comparable
@@ -591,15 +608,17 @@ def train(*, steps=None, batch_size=512, lr=3e-4, warmup=1000, weight_decay=0.05
                           flush=True)
                 else:
                     train_rows, val_rows = fresh
-                    hard_rows, focus = train_rows["hard"].nonzero()[:, 0], focus_rows(train_rows)
+                    mixed = mix_rows(train_rows)
                     rules_id = snapshot()
             count = train_rows["target"].shape[0]
             picks = torch.randint(count, (batch_size,), generator=generator).to(device)
-            n = int(round(batch_size * hard_fraction)) if hard_fraction and len(hard_rows) else 0
-            if n:  # a set share of the batch from hard examples, no copies kept
-                picks[:n] = hard_rows[torch.randint(len(hard_rows), (n,), generator=generator).to(device)]
-            if focus_until is not None and step < focus_until and len(focus):  # the focus phase: no ordinary rows
-                picks[n:] = focus[torch.randint(len(focus), (batch_size - n,), generator=generator).to(device)]
+            shares, start = mix_shares(step, mix, mix_start, mix_until), 0
+            for kind, share in zip(MIX_KINDS, shares):  # set shares of the batch from each kind, no copies kept
+                pool, n = mixed[kind], int(round(batch_size * share))
+                if n and len(pool):
+                    n = min(n, batch_size - start)
+                    picks[start:start + n] = pool[torch.randint(len(pool), (n,), generator=generator).to(device)]
+                    start += n
             batch = {k: v[picks] for k, v in train_rows.items()}
             scale = min(1.0, (step - warm_from + 1) / warmup)
             if lr_decay is not None:  # cosine from 1 at the first step to lr_floor at the last, then held
@@ -625,8 +644,8 @@ def train(*, steps=None, batch_size=512, lr=3e-4, warmup=1000, weight_decay=0.05
                 now = time.time()
                 record = {"step": step, "loss": round(loss.item(), 4), "steps_per_s": round(100 / (now - last), 2),
                           "train_rows": count, "labels": rules_id, "lr": float(f"{optimizer.param_groups[0]['lr']:.3g}")}
-                if focus_until is not None and step <= focus_until:
-                    record["focus_rows"] = len(focus)
+                if mix_start is not None and mix_until is not None and step <= mix_until:
+                    record["mix"] = [round(share, 3) for share in shares]
                 last = now
                 if step % eval_every == 0 and val_rows is not None:
                     table = eval_table()
@@ -705,13 +724,15 @@ if __name__ == "__main__":
     parser.add_argument("--freeze-language-at", type=int, help="step after which the description transformer is frozen; "
                         "a step past the current one unfreezes it until then")
     parser.add_argument("--language-lr", type=float, help="the description transformer's learning rate (default --lr)")
-    parser.add_argument("--hard-fraction", type=float, default=0.05,
-                        help="share of each batch drawn from hard examples (training.hard); the rest uniformly from all rows")
+    parser.add_argument("--mix", type=float, nargs=3, default=(0.05, 0.0, 0.0), metavar=("HARD", "UPSET", "FIXED"),
+                        help="shares of each batch drawn from hard examples (training.hard), upsets and fixed-stat "
+                        "battles; the rest uniformly from all rows")
+    parser.add_argument("--mix-start", type=float, nargs=3, metavar=("HARD", "UPSET", "FIXED"),
+                        help="the shares at step 0, moving linearly to --mix at --mix-until (a curriculum)")
+    parser.add_argument("--mix-until", type=int, help="step at which the shares reach --mix")
     parser.add_argument("--layers", type=int, help="strategic transformer layers, for a run starting from random weights")
     parser.add_argument("--language-from", help="model checkpoint whose description transformer a new run starts "
                         "from, frozen (default --freeze-language-at 0)")
-    parser.add_argument("--focus-until", type=int, help="step until which batches hold only upsets, fixed-stat "
-                        "battles and hard examples (a new model's first data)")
     parser.add_argument("--watch", default=str(WATCH_FILE),
                         help="named battles scored at every evaluation beside the engine (JSON; '' for none)")
     parser.add_argument("--lr-decay", type=int, nargs=2, metavar=("FIRST", "LAST"),
@@ -734,7 +755,7 @@ if __name__ == "__main__":
     parsed = parser.parse_args()
     train(steps=parsed.steps, batch_size=parsed.batch_size, lr=parsed.lr, device=parsed.device, reload_every=parsed.reload_every,
           weight_decay=parsed.weight_decay, dropout=parsed.dropout, freeze_language_at=parsed.freeze_language_at,
-          eval_every=parsed.eval_every, init_from=parsed.init_from, language_lr=parsed.language_lr, hard_fraction=parsed.hard_fraction,
-          layers=parsed.layers, language_from=parsed.language_from, focus_until=parsed.focus_until, ema_decay=parsed.ema_decay, pack_labels=parsed.pack_labels,
+          eval_every=parsed.eval_every, init_from=parsed.init_from, language_lr=parsed.language_lr, mix=parsed.mix,
+          layers=parsed.layers, language_from=parsed.language_from, mix_start=parsed.mix_start, mix_until=parsed.mix_until, ema_decay=parsed.ema_decay, pack_labels=parsed.pack_labels,
           bf16=parsed.bf16, lr_decay=parsed.lr_decay, lr_floor=parsed.lr_floor, watch=parsed.watch or None,
           run_dir=parsed.run_dir)

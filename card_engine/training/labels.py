@@ -9,12 +9,15 @@ Each shard records the rules snapshot (training.flags), so rows go stale when th
 Fixed-stat battles (--fixed; user, 2026-10-04): battle modes where every enemy card has the same stats, borders
 ignored; the general problem, not one mode (user). One side, A or B at random, is borderless and starts all four
 cards at one (HP, ATK): the opponent's geometric-mean stats times a level, with the HP/ATK balance moved by
-10^U(-0.5, 0.5). Half the battles draw the level from 10^U(-2, 4); the other half are big gaps, 10^U(1, 4.5), where
+10^U(-0.5, 0.5). A third are tower floors instead (2026-10-06: the cheese decks' battles, a floor's fixed team,
+stats and HP multiplier, had appeared only in hard examples): side B is the floor (tower.draw_floor, weighted toward
+the top and the hardest difficulties) and each of side A's cards leans on stat-ignoring abilities as below. Of the
+rest, half draw the level from 10^U(-2, 4); the other half are big gaps, 10^U(1, 4.5), where
 each of the weaker side's cards is, with probability 1/2, one whose ability ignores raw stats (STAT_IGNORING:
 damage scaled to the enemy's HP, kills, revives, shared damage), so that wins against huge stats appear at all (user,
 2026-10-04: floor 105 Impossible is about 2,700x a borderless deck). The first fixed shards spread the level only
 10^U(-1.5, 1.5); they stay valid. Rows store fixed_side, fixed_stats (HP, ATK) and
-fixed_hp_mult (0 here; tower floors set it in predict and generate). They go to fixed_<seed>.npz, never to the
+fixed_hp_mult (set on tower floors whose HP takes each card's multiplier). They go to fixed_<seed>.npz, never to the
 tablebase (its key has no stats); trainers that predate them only read shard_*.npz.
 """
 
@@ -104,23 +107,43 @@ def stat_ignoring_cards(catalog):
     return _STAT_IGNORING_CARDS
 
 
+TOWER_SHARE = 1 / 3  # fixed-stat battles that are tower floors (module docstring)
+
+
+def _lean_on_stat_ignoring(rng, catalog, spec, side):
+    """Each of a side's cards becomes, with probability 1/2, one whose ability ignores raw stats."""
+    pool = stat_ignoring_cards(catalog)
+    for slot in range(4):
+        if rng.random() < 0.5:
+            card = rng.choice(pool)
+            while card in SINGLE_COPY and card in spec["cards"][side]:
+                card = rng.choice(pool)
+            spec["cards"][side][slot] = card
+            spec["mutations"][side][slot] = 0
+            spec["arts"][side][slot] = rng.randint(1, len(ASTRAEUS_ARTS)) if card == ASTRAEUS else 0
+
+
 def fixed_battle(rng, catalog, spec):
     """Turns a random spec into a fixed-stat battle: (side, (HP, ATK, HP multiplier applies)); that side's borders
-    become none. Half are big gaps, the weaker side leaning on stat-ignoring abilities (module docstring)."""
+    become none. A third are tower floors, the rest half big gaps (module docstring); in both of those the other side
+    leans on stat-ignoring abilities."""
+    if rng.random() < TOWER_SHARE:
+        floor, level = tower.draw_floor(rng)
+        team = tower.fixed_team(catalog, floor)  # None: the game draws the floor's team, so the random cards stay
+        for key in FIELDS:
+            spec[key][1] = team[key] if team is not None else spec[key][1]
+        spec["mutations"][1] = [0] * 4
+        for key in ("red", "red_tier", "blue", "blue_tier"):  # tower enemies have no supports (as in training.hard)
+            spec[key][1] = 0
+        _lean_on_stat_ignoring(rng, catalog, spec, 0)
+        spec["borders"][1] = [1] * 4
+        return 1, tower.stats(floor, level)
     base = _base_stats(catalog)
     side = rng.randrange(2)
     other = 1 - side
     big = rng.random() < 0.5
     if big:
-        pool = stat_ignoring_cards(catalog)
-        for slot in range(4):
-            if rng.random() < 0.5:
-                card = rng.choice(pool)
-                while card in SINGLE_COPY and card in spec["cards"][other]:
-                    card = rng.choice(pool)
-                spec["cards"][other][slot] = card
-                spec["mutations"][other][slot] = 0
-                spec["arts"][other][slot] = rng.randint(1, len(ASTRAEUS_ARTS)) if card == ASTRAEUS else 0
+        _lean_on_stat_ignoring(rng, catalog, spec, other)
     logs = np.log([base[c, b, m] for c, b, m in zip(spec["cards"][other], spec["borders"][other], spec["mutations"][other])])
     level = 10 ** (rng.uniform(1, 4.5) if big else rng.uniform(-2, 4))
     balance = 10 ** rng.uniform(-0.5, 0.5)

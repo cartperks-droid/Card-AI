@@ -57,6 +57,13 @@ def stats(floor, level):
     return float(p), float(math.ceil(p / 2)), level in ("Normal", "Impossible")
 
 
+def draw_floor(rng):
+    """A random floor and difficulty, weighted toward the top, where cheese decks matter (2026-10-05: uniform floors
+    made floor 105 Impossible about 1 enemy in 500): floor = ceil(105 * u^(1/3)) puts a quarter on floors 95-105."""
+    floor = max(1, math.ceil(FLOORS * rng.random() ** (1 / 3)))
+    return floor, rng.choices(list(DIFFICULTIES), weights=(1, 1, 2, 3, 3))[0]
+
+
 def fixed_team(catalog, floor):
     """The floor's fixed enemy team as a side, or None when the game draws it."""
     if floor not in FIXED_TEAMS:

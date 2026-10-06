@@ -176,24 +176,27 @@ class TrainingTests(unittest.TestCase):
         self.assertEqual(len(train_rows["hard"]), int(train_rows["target"].shape[0]))  # no copies
         run = Path(self.temp.name) / "hardmix_run"
         train(steps=2, batch_size=4, warmup=1, eval_every=100, checkpoint_every=2, device="cpu", run_dir=run,
-              label_root=root, hard_fraction=0.5)
+              label_root=root, mix=(0.5, 0.0, 0.0))
 
-    def test_fresh_deeper_run_borrows_the_language_side_and_starts_on_focus_rows(self):
+    def test_fresh_deeper_run_borrows_the_language_side_and_starts_on_its_curriculum(self):
         from card_engine.model.checkpoint import load_checkpoint, save_checkpoint
-        from card_engine.training.train import focus_rows
+        from card_engine.training.train import mix_rows, mix_shares
         root = Path(self.temp.name) / "fresh"
         directory = root / "store"
         directory.mkdir(parents=True)
         labels._worker((1, 6, str(directory), snapshot(), False, Path(self.temp.name) / "tb5"))
         labels._worker((2, 6, str(directory), snapshot(), True))
         train_rows, _ = load_split(directory, "cpu")
-        focus = focus_rows(train_rows)
-        self.assertTrue(set(torch.nonzero(train_rows["fixed_side"] >= 0)[:, 0].tolist()) <= set(focus.tolist()))
+        mixed = mix_rows(train_rows)
+        self.assertEqual(set(torch.nonzero(train_rows["fixed_side"] >= 0)[:, 0].tolist()), set(mixed["fixed"].tolist()))
+        self.assertEqual([round(x, 6) for x in mix_shares(5, (0.1, 0.2, 0.3), (0.3, 0.4, 0.5), 10)], [0.2, 0.3, 0.4])
+        self.assertEqual(mix_shares(12, (0.1, 0.2, 0.3), (0.3, 0.4, 0.5), 10), (0.1, 0.2, 0.3))
         source = BattleModel()
         save_checkpoint(source, Path(self.temp.name) / "source.checkpoint", metadata={"step": 7})
         run = Path(self.temp.name) / "fresh_run"
         train(steps=2, batch_size=4, warmup=1, eval_every=100, checkpoint_every=2, device="cpu", run_dir=run,
-              label_root=root, layers=2, language_from=Path(self.temp.name) / "source.checkpoint", focus_until=1)
+              label_root=root, layers=2, language_from=Path(self.temp.name) / "source.checkpoint",
+              mix=(0.1, 0.2, 0.3), mix_start=(0.2, 0.4, 0.4), mix_until=1)
         model, metadata = load_checkpoint(run / "model.checkpoint")
         self.assertEqual((len(model.strategy.blocks), metadata["step"]), (2, 2))
         ema, ema_meta = load_checkpoint(run / "ema.checkpoint")  # the weight average, beside the live weights

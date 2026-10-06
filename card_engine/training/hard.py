@@ -26,14 +26,13 @@ mutations none or random; supports base or random tier, none 10% of the time).
 Shards (hard_<seed>.npz, their own seed sequence) hold the label fields plus model_win, the model's win chance at
 mining time; each prints the mean gap over every team evaluated and over the kept ones, and the mean best engine win
 chance the search reached. The trainer repeats hard rows
-(--hard-fraction of each batch) and scores validation's separately (val_hard).
+(a share of each batch: train.py --mix) and scores validation's separately (val_hard).
 
     python -m card_engine.training.hard --shards 100 --workers 7
 """
 
 import argparse
 import json
-import math
 import multiprocessing as mp
 import os
 import random
@@ -58,11 +57,7 @@ BORDER_SETS = ((1,), (1, 2, 3), tuple(range(1, 17)))  # borderless, up to Crysta
 def draw_enemy(rng, catalog):
     """(enemy side, fixed stats (HP, ATK, HP multiplier applies))."""
     if rng.random() < 0.5:
-        # Weighted toward the top floors and hardest difficulties, where cheese decks matter (2026-10-05: uniform
-        # floors made floor 105 Impossible about 1 enemy in 500, and the deep model rated Drago's decks there 0.02):
-        # floor = ceil(105 * u^(1/3)) puts a quarter of tower enemies on floors 95-105.
-        floor = max(1, math.ceil(tower.FLOORS * rng.random() ** (1 / 3)))
-        level = rng.choices(list(tower.DIFFICULTIES), weights=(1, 1, 2, 3, 3))[0]
+        floor, level = tower.draw_floor(rng)  # the deep model rated Drago's decks 0.02 under uniform floors
         team = tower.fixed_team(catalog, floor)
         stats = tower.stats(floor, level)
     else:
