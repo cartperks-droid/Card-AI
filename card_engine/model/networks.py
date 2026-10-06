@@ -189,12 +189,11 @@ class StrategicModel(nn.Module):
             for _ in range(c.layers)
         ])
         self.outcome_head = nn.Sequential(nn.LayerNorm(c.width), nn.Linear(c.width, len(OUTCOME_NAMES)))
-        if c.stat_prior:  # the weight of the network's own answer against the stat rule (stat_rule)
-            self.gate_head = nn.Sequential(nn.LayerNorm(c.width), nn.Linear(c.width, 1))
-            # It starts low (user, 2026-10-06): every battle begins on the stat rule, w = sigmoid(-3) ~ 0.05, and
-            # rises where the rule fails; not 0, which would leave the network's own answer without a gradient.
-            nn.init.zeros_(self.gate_head[-1].weight)
-            nn.init.constant_(self.gate_head[-1].bias, -3.0)
+        if c.stat_prior:  # the log-odds of an upset, against the stat rule (stat_rule)
+            self.upset_head = nn.Sequential(nn.LayerNorm(c.width), nn.Linear(c.width, 1))
+            # It starts low (user, 2026-10-06): every battle begins on the stat rule, q = sigmoid(-3) ~ 0.05.
+            nn.init.zeros_(self.upset_head[-1].weight)
+            nn.init.constant_(self.upset_head[-1].bias, -3.0)
         # Residual stat MLP over every card token (user): the normalized (HP, ATK) are projected to the token
         # width, and that projection skips around the MLP to its output; the sum is added to the card token.
         # The projection and the MLP's output layer start at zero, so adding them to a trained model leaves
@@ -330,24 +329,24 @@ class StrategicModel(nn.Module):
 
     def outcome(self, sequence: Tensor, rule: tuple[Tensor, Tensor] | None = None) -> Tensor:
         """Logits (A win, B win) for an assembled sequence. With stat_prior and a stat rule (stat_rule) they are the
-        log-probabilities of w * p + (1 - w) * rule, mixed in log space so a wrong rule never gives log 0."""
+        log-probabilities of rule + (1 - 2 * rule) * q, q = sigmoid(upset logit) the chance the stat favourite loses;
+        without a rule (a side unseen) the outcome head answers directly."""
         for block in self.blocks:
             sequence = block(sequence)
         logits = self.outcome_head(sequence[:, -1])
         if not self.config.stat_prior or rule is None:
             return logits
         favoured, usable = rule
-        own = logits.float().log_softmax(-1)
-        gate = self.gate_head(sequence[:, -1]).float().squeeze(-1)
-        rule_log = torch.stack([favoured, 1 - favoured], -1).float().log()  # 0 or -inf
-        mixed = torch.logaddexp(F.logsigmoid(gate)[:, None] + own, F.logsigmoid(-gate)[:, None] + rule_log)
-        return torch.where(usable[:, None], mixed, own)
+        upset = self.upset_head(sequence[:, -1]).float().squeeze(-1)
+        a_odds = torch.where(favoured > 0.5, -upset, upset)  # log-odds that A wins
+        prior = torch.stack([F.logsigmoid(a_odds), F.logsigmoid(-a_odds)], -1)
+        return torch.where(usable[:, None], prior, logits.float().log_softmax(-1))
 
-    def override_weight(self, sequence: Tensor) -> Tensor:
-        """w per battle: how much the network's own answer counts against the stat rule (stat_prior runs)."""
+    def upset_probability(self, sequence: Tensor) -> Tensor:
+        """q per battle: the chance the stat favourite loses (stat_prior runs)."""
         for block in self.blocks:
             sequence = block(sequence)
-        return torch.sigmoid(self.gate_head(sequence[:, -1]).float().squeeze(-1))
+        return torch.sigmoid(self.upset_head(sequence[:, -1]).float().squeeze(-1))
 
     def build_sequence(self, card_embeddings: Tensor, border_ids: Tensor,
                        red_support_ids: Tensor, blue_support_ids: Tensor, *,

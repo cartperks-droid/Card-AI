@@ -375,7 +375,7 @@ class TrainingTests(unittest.TestCase):
         train(steps=2, batch_size=8, warmup=1, eval_every=100, checkpoint_every=2, device="cpu",
               run_dir=Path(self.temp.name) / "found_run", label_root=root, mix=(0.0, 0.0, 0.0, 0.0, 0.5))
 
-    def test_the_stat_rule_is_a_fixed_expert_the_network_overrides(self):
+    def test_the_stat_rule_is_the_prior_and_the_network_predicts_upsets(self):
         from card_engine.model.config import StrategicConfig
         torch.manual_seed(4)
         strategy = BattleModel(strategic_config=StrategicConfig(layers=1, stat_prior=True)).strategy.eval()
@@ -387,16 +387,14 @@ class TrainingTests(unittest.TestCase):
         stats[2, 1] *= 100
         with torch.no_grad():
             probs = strategy(**common, card_stats=stats).softmax(-1)[:, 0]
-            sequence = strategy.build_sequence(**common, card_stats=stats)
-            own = strategy.outcome(sequence).softmax(-1)[:, 0]
-            w = strategy.override_weight(sequence)
-        self.assertTrue(bool((w < 0.06).all()))  # it starts on the rule
-        torch.testing.assert_close(probs[0], w[0] * own[0] + (1 - w[0]))
-        torch.testing.assert_close(probs[1], w[1] * own[1])
+            q = strategy.upset_probability(strategy.build_sequence(**common, card_stats=stats))
+        self.assertTrue(bool((q < 0.06).all()))  # it starts on the rule
+        torch.testing.assert_close(probs[0], 1 - q[0])  # A favoured: A wins unless upset
+        torch.testing.assert_close(probs[1], q[1])  # B favoured: A wins only by an upset
         loss = -strategy(**common, card_stats=stats)[1].log_softmax(-1)[0]  # the rule says B; the target says A
         self.assertTrue(bool(torch.isfinite(loss)))
         hidden = torch.ones(3, 2, 4, dtype=torch.bool)
-        hidden[2, 1] = False  # a side unseen: no rule, the network's own answer
+        hidden[2, 1] = False  # a side unseen: no rule, the outcome head answers
         with torch.no_grad():
             seen = strategy(**common, card_stats=stats, card_visible=hidden).softmax(-1)[2, 0]
             alone = strategy.outcome(strategy.build_sequence(**common, card_stats=stats, card_visible=hidden)).softmax(-1)[2, 0]

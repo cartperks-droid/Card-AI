@@ -772,13 +772,13 @@ def train(*, steps=None, batch_size=512, lr=3e-4, warmup=1000, weight_decay=0.05
                         with torch.no_grad():
                             live = model.eval()(**inputs(rows, table)).float().softmax(-1)[:, 0].tolist()
                             average = ema(**inputs(rows, ema_table)).float().softmax(-1)[:, 0].tolist()
-                            overrides = None
-                            if ema.strategy.config.stat_prior:  # how far the averaged weights trust abilities over stats
-                                overrides = ema.strategy.override_weight(
+                            upsets = None
+                            if ema.strategy.config.stat_prior:  # the averaged weights' chance the stat favourite loses
+                                upsets = ema.strategy.upset_probability(
                                     ema.strategy.build_sequence(**inputs(rows, ema_table))).tolist()
                         model.train()
-                        if overrides is not None:
-                            record["watch_override"] = [round(w, 3) for w in overrides]
+                        if upsets is not None:
+                            record["watch_upset"] = [round(q, 3) for q in upsets]
                         record["watch"] = [{"name": n, "engine": round(e, 3), "model": round(m, 3), "ema": round(a, 3)}
                                            for n, e, m, a in zip(names, engine, live, average)]
                         # The weights closest to the engine on the watch list are kept apart (user, 2026-10-06: the
@@ -840,8 +840,8 @@ if __name__ == "__main__":
     parser.add_argument("--stat-pairs", action="store_true",
                         help="new run: the stat MLP compares each card's stats with each of the other 7 cards'")
     parser.add_argument("--stat-prior", action="store_true",
-                        help="new run: the stat rule (the larger total sqrt(HP x ATK) wins) as a fixed expert, mixed "
-                        "with the network's answer by a learned weight")
+                        help="new run: the stat rule (the larger total sqrt(HP x ATK) wins) as the prior; the network "
+                        "predicts the chance of an upset")
     parser.add_argument("--stat-hidden", type=int, default=3072,
                         help="new run: the stat MLP's hidden width (768 keeps the stat path smaller than the text path)")
     parser.add_argument("--language-width", type=int, default=128,
