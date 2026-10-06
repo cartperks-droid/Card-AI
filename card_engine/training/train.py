@@ -10,6 +10,7 @@ Checkpoints hold the model (model.checkpoint) plus optimizer/step state for exac
 
 import copy
 import functools
+import hashlib
 import json
 import math
 import multiprocessing as mp
@@ -161,7 +162,26 @@ def _save_pack(tmp, rules, items):
                  **{key: np.concatenate([entry[3][key] for _, entry in items]) for key in ROW_KEYS})
 
 
-def load_split(directory, device, release=None, pack=False):
+_CAP = {}  # a capped load's share of the store's first shards, and their names, set at the first load
+
+
+def capped_paths(paths, max_rows):
+    """Every hard-example shard, every shard written since the first call (new labels, such as the tower floors'),
+    and a share of the others, picked by a hash of their names (so validation keeps its share) and sized so the
+    rows come to about max_rows (2,000 per shard, 1,600 per hard shard). The share is fixed at the first call, so a
+    reload only adds shards, never swaps them (2026-10-06: loading the pod's and the Mac's 165M rows crashed the
+    Mac)."""
+    hard = [path for path in paths if path.name.startswith("hard_")]
+    rest = [path for path in paths if not path.name.startswith("hard_")]
+    if not _CAP:
+        _CAP.update(share=min(1.0, max(0, max_rows - 1600 * len(hard)) / max(1, 2000 * len(rest))),
+                    first={path.name for path in rest})
+    kept = [path for path in rest if path.name not in _CAP["first"]
+            or int(hashlib.md5(path.name.encode()).hexdigest()[:8], 16) < _CAP["share"] * 2 ** 32]
+    return sorted(hard + kept)
+
+
+def load_split(directory, device, release=None, pack=False, max_rows=None):
     """(train, validation) tensors of the rows still valid under the current rules (training.flags);
     validation = shards whose seed is divisible by VALIDATION_EVERY. Every row carries `hard` (1 for training.hard's
     hard-example battles); training draws a set share of each batch from them (train's mix).
@@ -176,6 +196,8 @@ def load_split(directory, device, release=None, pack=False):
     the label root's packs/ folder, and later loads (a restart) start from the packs written under the current rules,
     reading only newer shards. On the pod, reading 76,657 small shard files took about 38 minutes whatever the CPU
     did (2026-10-05): its disk is slow per file, fast for large files.
+
+    max_rows: load about this many rows (capped_paths); the rest of the store stays on disk.
     """
     from ..catalog import load_catalog
     from .flags import entity_hashes, load_changes
@@ -185,6 +207,8 @@ def load_split(directory, device, release=None, pack=False):
     if pack and not _SHARD_CACHE:
         _read_packs(directory, rules)
     paths, started = sorted(shard_paths(directory)), time.time()
+    if max_rows is not None:
+        paths = capped_paths(paths, max_rows)
     # A shard is written once under a new name (labels, hard: atomic renames, seeds never reused), so a cached shard
     # under the current rules is not opened or even dated again; on the pod's slow disk dating 76k files every
     # reload left the GPU idle.
@@ -466,7 +490,7 @@ def mix_shares(step, mix, mix_start=None, mix_until=None):
 def train(*, steps=None, batch_size=512, lr=3e-4, warmup=1000, weight_decay=0.05, dropout=0.1, freeze_language_at=None,
           eval_every=1000, init_from=None, language_lr=None, mix=(0.05, 0.0, 0.0), layers=None, language_from=None,
           mix_start=None, mix_until=None, ema_decay=0.999, pack_labels=False, bf16=False, lr_decay=None, lr_floor=0.05,
-          watch=None,
+          watch=None, max_rows=None,
           checkpoint_every=1000, reload_every=1000, device=None, run_dir=RUN_DIR, label_root=SHARD_DIR):
     """Train in run_dir, resuming its model and optimizer if both are there. Otherwise init_from (a model checkpoint,
     e.g. one downloaded from another machine) gives the starting weights and step, with a fresh optimizer whose learning
@@ -551,7 +575,7 @@ def train(*, steps=None, batch_size=512, lr=3e-4, warmup=1000, weight_decay=0.05
     tokens = inputs.data.description_tokens
     from .flags import snapshot
     label_dir = latest_label_dir(label_root)
-    train_rows, val_rows = load_split(label_dir, device, pack=pack_labels)
+    train_rows, val_rows = load_split(label_dir, device, pack=pack_labels, max_rows=max_rows)
     if train_rows is None:
         raise SystemExit("No labels are valid under the current rules: see `python -m card_engine.training.flags status`")
     mixed = mix_rows(train_rows)  # recomputed on each reload
@@ -601,7 +625,7 @@ def train(*, steps=None, batch_size=512, lr=3e-4, warmup=1000, weight_decay=0.05
         while steps is None or step < steps:
             if step and step % reload_every == 0:  # new shards, or new rules
                 label_dir = latest_label_dir(label_root)
-                fresh = load_split(label_dir, device, release=release, pack=pack_labels)
+                fresh = load_split(label_dir, device, release=release, pack=pack_labels, max_rows=max_rows)
                 if fresh[0] is None:  # every row held back (an undeclared engine change): keep the rows already loaded
                     print(json.dumps({"step": step, "labels_held_back": "no rows are valid under the current rules; "
                                       "training continues on the loaded rows until the change is declared (flags status)"}),
@@ -743,6 +767,8 @@ if __name__ == "__main__":
     parser.add_argument("--pack-labels", action="store_true",
                         help="keep the checked labels in large pack files too, so a restart reads few files (for disks "
                         "slow per file, like the pod's)")
+    parser.add_argument("--max-rows", type=int, help="load about this many rows: every hard example and a fixed "
+                        "random share of the other shards (for a machine whose memory cannot hold the whole store)")
     parser.add_argument("--ema-decay", type=float, default=0.999,
                         help="decay of the weight average saved as ema.checkpoint (about 1 / (1 - decay) steps)")
     parser.add_argument("--init-from", help="model checkpoint to start from when the run directory has no trainer state "
@@ -757,5 +783,5 @@ if __name__ == "__main__":
           weight_decay=parsed.weight_decay, dropout=parsed.dropout, freeze_language_at=parsed.freeze_language_at,
           eval_every=parsed.eval_every, init_from=parsed.init_from, language_lr=parsed.language_lr, mix=parsed.mix,
           layers=parsed.layers, language_from=parsed.language_from, mix_start=parsed.mix_start, mix_until=parsed.mix_until, ema_decay=parsed.ema_decay, pack_labels=parsed.pack_labels,
-          bf16=parsed.bf16, lr_decay=parsed.lr_decay, lr_floor=parsed.lr_floor, watch=parsed.watch or None,
+          bf16=parsed.bf16, lr_decay=parsed.lr_decay, lr_floor=parsed.lr_floor, watch=parsed.watch or None, max_rows=parsed.max_rows,
           run_dir=parsed.run_dir)
