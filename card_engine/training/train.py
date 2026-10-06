@@ -603,8 +603,8 @@ def train(*, steps=None, batch_size=512, lr=3e-4, warmup=1000, weight_decay=0.05
             batch = {k: v[picks] for k, v in train_rows.items()}
             scale = min(1.0, (step - warm_from + 1) / warmup)
             if lr_decay is not None:  # cosine from 1 at the first step to lr_floor at the last, then held
-                first, last = lr_decay
-                progress = min(1.0, max(0.0, (step - first) / max(1, last - first)))
+                decay_from, decay_to = lr_decay  # not `last`: that is the rate clock (it read 0.0 steps/s)
+                progress = min(1.0, max(0.0, (step - decay_from) / max(1, decay_to - decay_from)))
                 scale *= lr_floor + (1 - lr_floor) * 0.5 * (1 + math.cos(math.pi * progress))
             for group in optimizer.param_groups:
                 group["lr"] = group["base_lr"] * scale
