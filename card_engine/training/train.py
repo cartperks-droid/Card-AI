@@ -335,8 +335,8 @@ def fit_stat_prior(rows, inputs, sample=1_000_000, seed=0):
     complete = (rows["hidden_side"] < 0).nonzero().squeeze(1)
     order = torch.randperm(len(complete), generator=torch.Generator().manual_seed(seed))[:sample]
     part = {key: value[complete[order.to(complete.device)]] for key, value in rows.items()}
-    delta = StrategicModel.stat_rule(card_stats(part, inputs.stat_tables).double())[0].cpu()
-    return fit_prior(delta, part["target"][:, 0].double().cpu())
+    delta = StrategicModel.stat_rule(card_stats(part, inputs.stat_tables).cpu().double())[0]
+    return fit_prior(delta, part["target"][:, 0].cpu().double())  # on the CPU: MPS has no float64
 
 
 def fit_prior(delta, target):
