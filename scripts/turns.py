@@ -31,7 +31,7 @@ for entry in json.loads(watch.read_text()):
     ally = parse_side(catalog, entry["ally"], entry.get("red"), entry.get("blue"))
     floor, level = entry["tower"]
     enemy = tower.fixed_team(catalog, int(floor))
-    enemy.update(borders=[1] * 4, mutations=[0] * 4, red=0, red_tier=0, blue=0, blue_tier=0)
+    enemy.update(borders=[tower.enemy_border(catalog, level)] * 4, mutations=[0] * 4, red=0, red_tier=0, blue=0, blue_tier=0)
     stats = tower.stats(int(floor), tower.difficulty(level))
     model = classifier.ally_win([(ally, enemy)], stats)[0]
     engine, exact = simulate(catalog, ally, enemy, enemy_stats=stats)

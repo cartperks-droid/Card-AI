@@ -15,6 +15,8 @@ DaddyDrago's Card RNG Expansion Depths calculator (github.com/daddydrag0/CardRng
 | Rule | Ours | His |
 |---|---|---|
 | Both sides wiped out | attacker (A) loses | draw |
+| Achlys, Divine Mist | strips the facing enemy's border multiplier (user) | rebuilds it from its card, wiping tower stats (corrected in our copy, 2026-10-07) |
+| Tower enemy borders | Hard Platinum, Extreme Crystal, Hell Galaxy (user) | none (corrected in our copy, 2026-10-07) |
 | Endless battle | 100 turns without a death: both front cards fall (user-confirmed 2026-10-02) | 150 turns without a death, then the same; the battle is a draw at his 2,000-turn cap (corrected to 100 in our copy, 2026-10-07) |
 
 ## Rarities adopted from his data (2026-10-03)

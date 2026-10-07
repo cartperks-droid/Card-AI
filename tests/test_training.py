@@ -271,7 +271,9 @@ class TrainingTests(unittest.TestCase):
                 battles.append(labels.fixed_battle(rng, catalog, spec))
                 specs.append(spec)
         self.assertEqual({side for side, _ in battles}, {0, 1})
-        self.assertTrue(all(spec["borders"][side] == [1] * 4 for spec, (side, _) in zip(specs, battles)))
+        borders = {tower.enemy_border(catalog, level) for level in tower.DIFFICULTIES}  # none, or a difficulty's
+        self.assertTrue(all(len(set(spec["borders"][side])) == 1 and spec["borders"][side][0] in borders
+                            for spec, (side, _) in zip(specs, battles)))
         shu = labels.random_spec(rng, catalog)  # floor 95 Impossible: Shu and Sekhmet carry 1.7x HP
         shu["cards"][1], shu["arts"][1] = tower.fixed_team(catalog, 95)["cards"], [0] * 4
         shu["borders"][1], shu["mutations"][1] = [1] * 4, [0] * 4

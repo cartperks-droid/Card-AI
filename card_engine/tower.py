@@ -2,7 +2,8 @@
 
 Every enemy card on a floor has the same power: ceil(2 sqrt((6000 + floor^3 * 50) / 2) * 4^(difficulty id - 1)), with
 ids Normal 1, Hard 2, Extreme 3, Hell 5, Impossible 6. A card starts at HP = power (times its HP multiplier on Normal
-and Impossible) and ATK = ceil(power / 2); enemies are borderless, unmutated and have no supports. Every fifth floor
+and Impossible) and ATK = ceil(power / 2); enemies are unmutated and have no supports. Their borders follow the
+difficulty (ENEMY_BORDERS): they set no stats, which the floor fixes, but border effects read them. Every fifth floor
 has a fixed team; the others are drawn by the game. The player attacks first.
 """
 
@@ -11,6 +12,11 @@ import math
 from .teams import ASTRAEUS, ASTRAEUS_ARTS, side
 
 DIFFICULTIES = {"Normal": 1, "Hard": 2, "Extreme": 3, "Hell": 5, "Impossible": 6}
+# Enemy borders by difficulty (user, 2026-10-07: Hard enemies have a Platinum border, Extreme a Crystal one, Hell a
+# Galaxy one; his tower.ts names "bordered Tower difficulties" but his simulator builds every enemy borderless). They
+# change no stats, which the floor fixes, but Achlys's Divine Mist strips them and rarity comparisons count them. Normal
+# and Impossible are borderless (his tower.ts keeps their cards' HP multipliers, unlike the bordered difficulties).
+ENEMY_BORDERS = {"Hard": "Pl", "Extreme": "Cr", "Hell": "Ga"}
 FLOORS = 105
 # His names (depths-ui.js TOWER_FIXED); floor 65's four Astraeus are Virgo, Scorpio, Taurus and Gemini.
 FIXED_TEAMS = {
@@ -86,7 +92,8 @@ def add_arguments(parser):
 
 def enemy(catalog, args, parser):
     """(enemy side or None, fixed stats or None) from --enemy, --enemy-red, --enemy-blue, --enemy-stats and --tower. A
-    fixed-stat enemy is borderless: the mode sets its stats; tower enemies are also unmutated and without supports."""
+    fixed-stat enemy is borderless, a tower enemy carries its difficulty's border (enemy_border): the mode sets their
+    stats; tower enemies are also unmutated and without supports."""
     from .teams import fixed_stats, parse_side
     if args.tower and args.enemy_stats:
         parser.error("give --tower or --enemy-stats, not both")
@@ -103,8 +110,14 @@ def enemy(catalog, args, parser):
                 parser.error(f"floor {floor} has no fixed team: give the four enemies with --enemy")
         team.update(mutations=[0] * 4, red=0, red_tier=0, blue=0, blue_tier=0)
     if fixed is not None and team is not None:
-        team["borders"] = [1] * 4
+        team["borders"] = [enemy_border(catalog, level) if args.tower else 1] * 4
     return team, fixed
+
+
+def enemy_border(catalog, level):
+    """The border id of a difficulty's enemies (ENEMY_BORDERS; 1 = none)."""
+    code = ENEMY_BORDERS.get(difficulty(level))
+    return 1 if code is None else next(b for b in range(1, 17) if catalog.border(b).code == code)
 
 
 def engine_stats(catalog, cards, fixed):

@@ -141,7 +141,7 @@ def fixed_battle(rng, catalog, spec):
         for key in ("red", "red_tier", "blue", "blue_tier"):  # tower enemies have no supports (as in training.hard)
             spec[key][1] = 0
         _lean_on_stat_ignoring(rng, catalog, spec, 0)
-        spec["borders"][1] = [1] * 4
+        spec["borders"][1] = [tower.enemy_border(catalog, level)] * 4
         return 1, tower.stats(floor, level)
     base = _base_stats(catalog)
     side = rng.randrange(2)

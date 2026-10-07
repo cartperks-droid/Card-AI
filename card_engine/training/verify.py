@@ -27,6 +27,7 @@ from pathlib import Path
 import numpy as np
 import torch
 
+from .. import tower
 from ..catalog import load_catalog
 from ..model.checkpoint import load_checkpoint
 from ..mutations import MUTATION_NAMES
@@ -139,7 +140,8 @@ def tower_suite(rng, catalog, n, difficulty, aura_tier, pool_name="restricted"):
                 if all(cards.count(c) <= 1 for c in single):
                     break
             blue = rng.choice(data["cheese_blue_supports"])
-            specs.append({"cards": [cards, enemy], "borders": [[1] * 4, [1] * 4], "mutations": [[0] * 4, [0] * 4],
+            enemy_border = tower.enemy_border(catalog, difficulty)
+            specs.append({"cards": [cards, enemy], "borders": [[1] * 4, [enemy_border] * 4], "mutations": [[0] * 4, [0] * 4],
                           "arts": [[rng.randint(1, len(ASTRAEUS_ARTS)) if c == ASTRAEUS else 0 for c in cards], enemy_arts],
                           "red": [0, 0], "red_tier": [0, 0], "blue": [blue, 0], "blue_tier": [aura_tier if blue else 0, 0]})
             enemy_stats.append(stats)

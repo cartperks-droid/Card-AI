@@ -81,7 +81,8 @@ def main():
         if enemy is None:
             parser.error(f"floor {floor} has no fixed team (fixed floors are every fifth)")
         stats = tower.stats(int(floor), tower.difficulty(level))
-        enemy.update(borders=[1] * 4, mutations=[0] * 4, red=0, red_tier=0, blue=0, blue_tier=0)
+        enemy.update(borders=[tower.enemy_border(catalog, level)] * 4, mutations=[0] * 4, red=0, red_tier=0, blue=0,
+                     blue_tier=0)
         floors.append((text, enemy, stats, tower.engine_stats(catalog, enemy["cards"], stats)))
     borders, mutations, tiers = masks(args.borders, args.mutations, args.support_tiers)
     space = SlotSpace(Classifier(args.checkpoint, args.device),

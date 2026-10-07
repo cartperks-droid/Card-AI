@@ -103,6 +103,15 @@ exact("    const copied = [...runtime.state.fallen[card.team]].reverse()\n      
 exact("    if (turnsWithoutDeaths >= 150) {", "    if (turnsWithoutDeaths >= 100) {")
 exact("Expansion 150-turn no-progress resolution", "Expansion 100-turn no-progress resolution")
 
+// Achlys's Divine Mist strips borders, not stats (user, 2026-10-07: "Achyls resets borders not stats"): his engine
+// rebuilt the enemy from its card definition, which also wiped a tower floor's fixed stats, so Achyls teams beat floors
+// 95-105. Now the enemy's power, ATK and HP scale by its borderless over its bordered stats: a borderless card (every
+// tower enemy) keeps its stats; a bordered one loses exactly its border's multiplier and keeps every other boost.
+exact("        const hp = getHealth(enemy.definition, [])\n        enemy.power = getPower(enemy.definition, [])\n        enemy.damage = getAttack(enemy.definition, [])\n        enemy.maxHp = hp\n        enemy.hp = hp\n",
+      "        const ratio = getPower(enemy.definition, []) / getPower(enemy.definition, enemy.borders)\n"
+      + "        if (ratio > 0 && Number.isFinite(ratio)) {\n"
+      + "          enemy.power *= ratio\n          enemy.damage *= ratio\n          enemy.maxHp *= ratio\n          enemy.hp *= ratio\n        }\n")
+
 // The runtime carries the chance source; a battle may arrive with a prebuilt (two-sided) state.
 exact('  rng: SeededRng\n', '  rng: SeededRng\n  chance: any\n')
 // Ability lookups (user: precomputed entries, as a chess engine's lookup tables): an entry holds a card's ability, its

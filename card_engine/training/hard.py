@@ -62,19 +62,21 @@ def draw_enemy(rng, catalog, floor=None):
     """(enemy side, fixed stats (HP, ATK, HP multiplier applies)). floor: (floor, difficulty) for every enemy, its fixed
     team or random enemies on a floor without one (2026-10-07: floor 105 Impossible fields part of the cheese deck
     itself, Judgment Day, so its wins come from cross-side interactions only its own battles teach)."""
+    border = 1  # tower enemies carry their difficulty's border (tower.enemy_border)
     if floor is not None:
         level = tower.difficulty(floor[1])
-        team, stats = tower.fixed_team(catalog, floor[0]), tower.stats(floor[0], level)
+        team, stats, border = tower.fixed_team(catalog, floor[0]), tower.stats(floor[0], level), tower.enemy_border(catalog, level)
     elif rng.random() < 0.5:
         floor, level = tower.draw_floor(rng)  # the deep model rated Drago's decks 0.02 under uniform floors
         team = tower.fixed_team(catalog, floor)
-        stats = tower.stats(floor, level)
+        stats, border = tower.stats(floor, level), tower.enemy_border(catalog, level)
     else:
         team, hp = None, 10 ** rng.uniform(2, 7.5)
         stats = (hp, hp / 2 * 10 ** rng.uniform(-0.5, 0.5), False)
     if team is None:
         cards = [rng.choice(catalog.cards).id for _ in range(4)]
         team = side([(card, 1, 0, rng.randint(1, len(ASTRAEUS_ARTS)) if card == ASTRAEUS else 0) for card in cards])
+    team["borders"] = [border] * 4
     return team, stats
 
 

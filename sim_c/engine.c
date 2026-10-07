@@ -526,11 +526,14 @@ static void on_entry_(Runtime *rt, int c) {
       break;
     case A_DIVINE_MIST:
       if (chance_roll(rt, team, CMP_LT, 0.7)) {
-        double hp = DEF_HEALTH[e->def][1];
-        e->power = DEF_POWER[e->def][1];
-        e->damage = DEF_ATTACK[e->def][1];
-        e->maxHp = hp;
-        e->hp = hp;
+        // borders only, not stats (user, 2026-10-07; codemod.mjs): a borderless card, every tower enemy, keeps its stats
+        double ratio = DEF_POWER[e->def][1] / DEF_POWER[e->def][e->border];
+        if (ratio > 0 && isfinite(ratio)) {
+          e->power *= ratio;
+          e->damage *= ratio;
+          e->maxHp *= ratio;
+          e->hp *= ratio;
+        }
       }
       break;
     case A_CHIMERIC: boost_stats(rt, c, 4); break;
