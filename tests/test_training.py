@@ -522,6 +522,11 @@ class TrainingTests(unittest.TestCase):
         events = [(r["step"], k) for r in records for k in ("language_thawed", "language_refrozen") if r.get(k)]
         self.assertEqual(events, [(300, "language_thawed"), (400, "language_refrozen"), (700, "language_thawed")])
         self.assertTrue(records[-1]["language_done"])
+        done = {k: v.clone() for k, v in load_checkpoint(plateau / "model.checkpoint")[0].description.state_dict().items()}
+        train(steps=900, plateau_spread=-1, learning_rise=1e9, language_budget=300, **spells)  # a larger budget reopens it
+        self.assertEqual(phase(), {"frozen": False, "since": 800, "thawed": 150, "done": False})
+        reopened = load_checkpoint(plateau / "model.checkpoint")[0].description.state_dict()
+        self.assertFalse(all(torch.equal(done[k], reopened[k]) for k in done))  # learning again
         # a new machine: continue from the downloaded model with a fresh optimizer, keeping the step
         moved = Path(self.temp.name) / "moved"
         train(steps=8, batch_size=4, warmup=1, eval_every=100, checkpoint_every=2, device="cpu", run_dir=moved, label_root=root,

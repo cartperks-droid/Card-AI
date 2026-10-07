@@ -606,7 +606,8 @@ def train(*, steps=None, batch_size=512, lr=3e-4, warmup=1000, weight_decay=0.05
     the stat prior. It then thaws and freezes in turns, by the stat MLP: a frozen spell lasts at least frozen_min
     steps and ends when the MLP has stopped learning; a thawed spell lasts at least thaw_min steps and ends at an
     evaluation where the MLP is learning again. Once its thawed steps reach language_budget in all, it freezes for the
-    rest of the run ("language_thawed", "language_refrozen", "language_done" in the log; kept across restarts).
+    rest of the run; a restart with a larger language_budget reopens the spells, thawed at once ("language_thawed",
+    "language_refrozen", "language_done" and "language_reopened" in the log; kept across restarts).
     The stat MLP's drift, its weights' net displacement over each evaluation interval divided by the length of the path
     they took and by that ratio for Adam's noise (drift_floor), is logged as "stat_drift". Its scale is the run's own,
     not that ratio's (the 10s run, 2026-10-07: 1.01 at step 2,000, 0.56, then 0.40-0.46 from step 6,000; below the
@@ -697,6 +698,13 @@ def train(*, steps=None, batch_size=512, lr=3e-4, warmup=1000, weight_decay=0.05
         step, best, warm_from = state["step"], state.get("best"), state.get("warm_from", 0)
         watch_best = dict(state.get("watch_best") or {})
         spells = state.get("language_spells")
+        if spells is not None and spells["done"] and language_budget > spells["thawed"]:
+            # A larger budget reopens the spells, thawed at once (user, 2026-10-07: the stat MLP had long levelled off
+            # when the upsets came to rest on the card text): the same spells until the thawed steps reach the budget.
+            unfreeze_language(model, optimizer)
+            spells.update(done=False, frozen=False, since=step, baseline=None)
+            print(json.dumps({"step": step, "language_reopened": True, "budget": language_budget,
+                              "thawed_before": spells["thawed"]}), flush=True)
         if freeze_language_at is None:  # a restart keeps the run's freeze unless told otherwise (2026-10-05: one
             freeze_language_at = state.get("freeze_language_at")  # that left it out unfroze the deep run's encoder)
     inputs = Inputs(device)
@@ -963,7 +971,8 @@ if __name__ == "__main__":
                         help="least steps of a frozen spell; it thaws at the first evaluation after them where the stat "
                         "MLP has stopped learning")
     parser.add_argument("--language-budget", type=int, default=60000,
-                        help="thawed steps in all, after which the description transformer stays frozen")
+                        help="thawed steps in all, after which the description transformer stays frozen (a larger one on "
+                        "a restart reopens it, thawed at once: 120000 gives a spent 60000 another 60000)")
     parser.add_argument("--plateau-spread", type=float, default=0.15,
                         help="the stat MLP has stopped learning when its last --plateau-evals stat_drift readings lie "
                         "within a factor 1 + this of each other")
