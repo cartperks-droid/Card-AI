@@ -2,6 +2,7 @@
 
 import random
 import tempfile
+import math
 import unittest
 from pathlib import Path
 
@@ -402,6 +403,27 @@ class TrainingTests(unittest.TestCase):
         with torch.no_grad():
             seen = strategy(**common, card_stats=stats, card_visible=hidden).softmax(-1)[2, 0]
         torch.testing.assert_close(seen, torch.sigmoid(torch.tensor(2.0)))
+        smooth = BattleModel(strategic_config=StrategicConfig(layers=1, stat_prior=True, stat_prior_scale=3.0,
+                                                              stat_prior_slope=1.0)).strategy.eval()
+        stats[2, 1] /= 100  # equal stats
+        with torch.no_grad():
+            probs = smooth(**common, card_stats=stats).softmax(-1)[:, 0]
+        expected = torch.sigmoid(3 * torch.tanh(torch.tensor(math.log(100) / 3)))  # A has 100x the strength
+        torch.testing.assert_close(probs, torch.stack([expected, 1 - expected, torch.tensor(0.5)]))
+        grown = stats.clone().requires_grad_(True)  # the smooth prior passes a gradient to the stats
+        smooth(**common, card_stats=grown)[:, 0].sum().backward()
+        self.assertGreater(float(grown.grad[2, 0].sum()), 0.0)
+
+    def test_the_smooth_prior_fit_recovers_its_numbers(self):
+        from card_engine.training.train import fit_prior
+        generator = torch.Generator().manual_seed(0)
+        delta = torch.randn(200_000, generator=generator, dtype=torch.float64) * 3
+        target = torch.sigmoid(0.3 + 4.0 * torch.tanh(1.5 * delta / 4.0))  # scale 4, slope 1.5, A's edge 0.3
+        scale, slope, bias, report = fit_prior(delta, target)
+        self.assertAlmostEqual(bias, 0.3, places=2)
+        self.assertAlmostEqual(scale, 4.0, places=2)
+        self.assertAlmostEqual(slope, 1.5, places=2)
+        self.assertLess(report["loss"], report["step_loss"])
 
     def test_training_runs_and_resumes(self):
         root = Path(self.temp.name) / "labels"
@@ -423,6 +445,13 @@ class TrainingTests(unittest.TestCase):
         metrics = evaluate(model, inputs, table, val_rows)  # one shared card table, as in training
         self.assertTrue(0 <= metrics["accuracy"] <= 1 and metrics["kl"] >= 0)
         run = Path(self.temp.name) / "run"
+        smooth_run = Path(self.temp.name) / "smooth"  # a new run fits its smooth prior, kept in its checkpoints
+        train(steps=2, batch_size=4, warmup=1, eval_every=100, checkpoint_every=2, device="cpu", run_dir=smooth_run,
+              label_root=root, smooth_prior=True, layers=1)
+        from card_engine.model.checkpoint import load_checkpoint
+        config = load_checkpoint(smooth_run / "model.checkpoint")[0].strategic_config
+        self.assertTrue(config.stat_prior and config.stat_prior_scale > 0 and config.stat_prior_slope > 0)
+        self.assertEqual(load_checkpoint(smooth_run / "ema.checkpoint")[0].strategic_config, config)
         train(steps=2, batch_size=4, warmup=1, eval_every=100, checkpoint_every=2, device="cpu", run_dir=run, label_root=root)
         state = torch.load(run / "trainer.pt", weights_only=True)
         self.assertEqual(state["step"], 2)

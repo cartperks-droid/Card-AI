@@ -320,24 +320,34 @@ class StrategicModel(nn.Module):
 
     @staticmethod
     def stat_rule(card_stats: Tensor, visible: Tensor | None = None) -> tuple[Tensor, Tensor]:
-        """(rule, usable) per battle: rule 1.0 when side A's total sqrt(HP x ATK) is at least side B's (the stat
-        favourite, as training.train.stat_favourite), else 0.0; usable when every card is seen."""
+        """(delta, usable) per battle: delta = ln(side A's total sqrt(HP x ATK) / side B's), > 0 when A is the stat
+        favourite (as training.train.stat_favourite; ties to A); usable when every card is seen. Differentiable in the
+        stats, so the generator's relaxed slots get its gradient."""
         if visible is None:
             visible = torch.ones(card_stats.shape[:3], dtype=torch.bool, device=card_stats.device)
-        strength = torch.where(visible, (card_stats[..., 0] * card_stats[..., 1]).clamp_min(0).sqrt(), 0.0).sum(-1)
-        return (strength[:, 0] >= strength[:, 1]).to(card_stats.dtype), visible.all(-1).all(-1)
+        strength = torch.where(visible, (card_stats[..., 0] * card_stats[..., 1]).clamp_min(1e-30).sqrt(), 0.0).sum(-1)
+        strength = strength.clamp_min(1e-30).log()
+        return strength[:, 0] - strength[:, 1], visible.all(-1).all(-1)
+
+    def prior_logit(self, delta: Tensor) -> Tensor:
+        """The stat prior's A-win log-odds for a strength log ratio: +-STAT_PRIOR_LOGIT by its sign (ties to A), or
+        the smooth bias + scale * tanh(slope * delta / scale) when the run fitted one."""
+        c = self.config
+        if c.stat_prior_scale > 0 and c.stat_prior_slope > 0:
+            return c.stat_prior_bias + c.stat_prior_scale * torch.tanh(c.stat_prior_slope * delta.float() / c.stat_prior_scale)
+        return torch.where(delta >= 0, STAT_PRIOR_LOGIT, -STAT_PRIOR_LOGIT).float()
 
     def outcome(self, sequence: Tensor, rule: tuple[Tensor, Tensor] | None = None) -> Tensor:
         """Logits (A win, B win) for an assembled sequence. With stat_prior and a stat rule (stat_rule), the A-win
-        log-odds is +-STAT_PRIOR_LOGIT by the rule plus the outcome head's residual; without a rule (a side unseen) the
-        head answers alone."""
+        log-odds is the prior (prior_logit) plus the outcome head's residual; without a rule (a side unseen) the head
+        answers alone."""
         for block in self.blocks:
             sequence = block(sequence)
         logits = self.outcome_head(sequence[:, -1])
         if not self.config.stat_prior or rule is None:
             return logits
-        favoured, usable = rule
-        offset = torch.where(usable, (2 * favoured - 1) * STAT_PRIOR_LOGIT, 0.0)  # + for A favoured, - for B
+        delta, usable = rule
+        offset = torch.where(usable, self.prior_logit(delta), 0.0)  # + for A favoured, - for B
         return logits.float() + torch.stack([offset / 2, -offset / 2], -1)
 
     def prior_residual(self, sequence: Tensor) -> Tensor:

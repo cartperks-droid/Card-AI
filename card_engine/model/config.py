@@ -71,6 +71,14 @@ class StrategicConfig:
     # sqrt(HP x ATK) (ties to A), plus the network's residual, which starts at 0. The residual's target is centred on
     # 0 rather than near a pole, so overturning the favourite is a bounded shift; with a side unseen there is no rule.
     stat_prior: bool = False
+    # A smooth prior (2026-10-07): with scale and slope set, the A-win log-odds prior is
+    # bias + scale * tanh(slope * delta / scale), delta = ln(A's total sqrt(HP x ATK) / B's), all three fitted to the
+    # training rows when the run starts (training.train.fit_stat_prior). Smooth at equal stats (the step jumped by
+    # 4.72 there) and saturating for huge gaps, so the residual no longer has to learn "a bigger gap is worse", and
+    # the generator gets a gradient. bias: side A initiates and loses draws, so equal stats are not even odds.
+    stat_prior_scale: float = 0.0
+    stat_prior_slope: float = 0.0
+    stat_prior_bias: float = 0.0
     # The engine reads a card's pack and mutation weather only for its stats and the stat supports that boost it,
     # all inside the card's stats already (2026-10-06): without these embeddings neither can stand in for identity.
     pack_embedding: bool = True

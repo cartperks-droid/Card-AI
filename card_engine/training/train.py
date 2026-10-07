@@ -9,6 +9,7 @@ Checkpoints hold the model (model.checkpoint) plus optimizer/step state for exac
 """
 
 import copy
+import dataclasses
 import functools
 import hashlib
 import json
@@ -21,6 +22,7 @@ from pathlib import Path
 
 import numpy as np
 import torch
+import torch.nn.functional as F
 
 from ..model import BattleModel, load_model_data
 from ..model.config import DescriptionConfig, StrategicConfig
@@ -325,6 +327,39 @@ def stat_favourite(rows):
     return (strength[:, 1] > strength[:, 0]).long()
 
 
+def fit_stat_prior(rows, inputs, sample=1_000_000, seed=0):
+    """(scale, slope, bias, report) of the smooth stat prior, bias + scale * tanh(slope * delta / scale) in A-win log-odds with
+    delta the strength log ratio (StrategicModel.stat_rule), fitted by maximum likelihood to the soft targets of up to
+    `sample` battles with both sides seen. report: the mean loss under the fit and under the +-2.36 step."""
+    from ..model.networks import STAT_PRIOR_LOGIT, StrategicModel
+    complete = (rows["hidden_side"] < 0).nonzero().squeeze(1)
+    order = torch.randperm(len(complete), generator=torch.Generator().manual_seed(seed))[:sample]
+    part = {key: value[complete[order.to(complete.device)]] for key, value in rows.items()}
+    delta = StrategicModel.stat_rule(card_stats(part, inputs.stat_tables).double())[0].cpu()
+    return fit_prior(delta, part["target"][:, 0].double().cpu())
+
+
+def fit_prior(delta, target):
+    """(scale, slope, bias, report): fit_stat_prior on strength log ratios and A-win targets."""
+    from ..model.networks import STAT_PRIOR_LOGIT
+    loss = lambda z: -(target * F.logsigmoid(z) + (1 - target) * F.logsigmoid(-z)).mean()
+    log_scale = torch.tensor(math.log(STAT_PRIOR_LOGIT), dtype=torch.float64, requires_grad=True)
+    log_slope = torch.zeros((), dtype=torch.float64, requires_grad=True)
+    bias = torch.zeros((), dtype=torch.float64, requires_grad=True)
+    smooth = lambda: bias + log_scale.exp() * torch.tanh(log_slope.exp() * delta / log_scale.exp())
+    optimizer = torch.optim.LBFGS([log_scale, log_slope, bias], max_iter=200, line_search_fn="strong_wolfe")
+    def closure():
+        optimizer.zero_grad()
+        value = loss(smooth())
+        value.backward()
+        return value
+    optimizer.step(closure)
+    with torch.no_grad():
+        step = torch.where(delta >= 0, STAT_PRIOR_LOGIT, -STAT_PRIOR_LOGIT).double()
+        report = {"rows": len(target), "loss": round(float(loss(smooth())), 4), "step_loss": round(float(loss(step)), 4)}
+    return float(log_scale.detach().exp()), float(log_slope.detach().exp()), float(bias.detach()), report
+
+
 JURASSIC_WORLD = 13  # blue: Prehistoric cards gain value% stats per Prehistoric card on the team
 
 
@@ -544,7 +579,7 @@ def mix_shares(step, mix, mix_start=None, mix_until=None):
 def train(*, steps=None, batch_size=512, lr=3e-4, warmup=1000, weight_decay=0.05, dropout=0.1, freeze_language_at=None,
           eval_every=1000, init_from=None, language_lr=None, mix=(0.05, 0.0, 0.0), layers=None, architecture=None, language=None, language_from=None,
           mix_start=None, mix_until=None, ema_decay=0.999, pack_labels=False, bf16=False, lr_decay=None, lr_floor=0.05,
-          watch=None, max_rows=None, eval_rows=None, field_generations=2, language_after_plateau=False, thaw_min=6000, frozen_min=12000,
+          watch=None, max_rows=None, eval_rows=None, field_generations=2, smooth_prior=False, language_after_plateau=False, thaw_min=6000, frozen_min=12000,
           language_budget=60000, plateau_drift=2.0, plateau_evals=2,
           checkpoint_every=1000, reload_every=1000, device=None, run_dir=RUN_DIR, label_root=SHARD_DIR):
     """Train in run_dir, resuming its model and optimizer if both are there. Otherwise init_from (a model checkpoint,
@@ -554,6 +589,9 @@ def train(*, steps=None, batch_size=512, lr=3e-4, warmup=1000, weight_decay=0.05
     language_lr: the description transformer's learning rate (default lr), its own parameter group. Its Adam state
     starts fresh whenever the saved optimizer has no such group, so unfreezing it later (a --freeze-language-at past
     the current step) does not resume momentum from before the freeze.
+
+    smooth_prior (new run): the stat prior is bias + scale * tanh(slope * delta / scale) (StrategicConfig), fitted to
+    the loaded training rows before the first step (fit_stat_prior; "stat_prior_fit" in the output).
 
     language_after_plateau (new run; user, 2026-10-06): the description transformer's last layer starts at zero and
     stays frozen, so the strategic transformer runs without card text (every card vector 0) while the stat MLP absorbs
@@ -597,6 +635,7 @@ def train(*, steps=None, batch_size=512, lr=3e-4, warmup=1000, weight_decay=0.05
     model_path, state_path, log_path = run_dir / "model.checkpoint", run_dir / "trainer.pt", run_dir / "log.jsonl"
     ema_path = run_dir / "ema.checkpoint"
     warm_from = 0  # step the learning-rate warmup counts from (a fresh optimizer warms up again)
+    fresh = False  # a new model from random weights (its smooth stat prior is fitted once the rows are loaded)
     if model_path.exists() and state_path.exists():
         model, _ = load_checkpoint(model_path, map_location=device)
         state = torch.load(state_path, map_location="cpu", weights_only=True)
@@ -605,6 +644,7 @@ def train(*, steps=None, batch_size=512, lr=3e-4, warmup=1000, weight_decay=0.05
         state, warm_from = None, int(metadata["step"])
     else:
         strategic = StrategicConfig(**({"layers": layers} if layers else {}), **(architecture or {}))
+        fresh = True
         description = DescriptionConfig(**(language or {}))
         model, state = BattleModel(description_config=description, strategic_config=strategic).to(device), None
         if language_from is not None:
@@ -656,6 +696,13 @@ def train(*, steps=None, batch_size=512, lr=3e-4, warmup=1000, weight_decay=0.05
     train_rows, val_rows = load_split(label_dir, device, pack=pack_labels, max_rows=max_rows, generations=field_generations)
     if train_rows is None:
         raise SystemExit("No labels are valid under the current rules: see `python -m card_engine.training.flags status`")
+    if fresh and smooth_prior:  # the smooth stat prior's two numbers, fitted to this run's first rows and kept
+        scale, slope, bias, report = fit_stat_prior(train_rows, inputs)
+        for weights in (model, ema):
+            config = dataclasses.replace(weights.strategic_config, stat_prior=True, stat_prior_scale=scale,
+                                         stat_prior_slope=slope, stat_prior_bias=bias)
+            weights.strategic_config = weights.strategy.config = config
+        print(json.dumps({"stat_prior_fit": {"scale": round(scale, 4), "slope": round(slope, 4), "bias": round(bias, 4), **report}}), flush=True)
     mixed = mix_rows(train_rows)  # recomputed on each reload
     rules_id = snapshot()  # the current rules; probes and the best checkpoint reset when it changes
     watched = load_watch(watch, device) if watch else None
@@ -922,6 +969,9 @@ if __name__ == "__main__":
     parser.add_argument("--stat-prior", action="store_true",
                         help="new run: the stat rule (the larger total sqrt(HP x ATK) wins, log-odds +-2.36) as a "
                         "prior; the network adds a residual in log-odds")
+    parser.add_argument("--smooth-prior", action="store_true",
+                        help="new run: the stat prior as scale x tanh(slope x delta / scale), delta the log ratio of the "
+                        "sides' total sqrt(HP x ATK), both fitted to the training rows at the start (implies --stat-prior)")
     parser.add_argument("--width", type=int, default=768,
                         help="new run: the token width (user, 2026-10-06: 256 is far faster and makes the 289 cards share "
                         "directions); attention width / 2 (at least 64), feed-forward and stat MLP 4 x width")
@@ -967,7 +1017,7 @@ if __name__ == "__main__":
           eval_every=parsed.eval_every, init_from=parsed.init_from, language_lr=parsed.language_lr, mix=parsed.mix,
           layers=parsed.layers, architecture={"stat_width": parsed.stat_width, "stat_tokens": parsed.stat_tokens, "stat_pairs": parsed.stat_pairs,
           "pack_embedding": not parsed.no_pack_embedding, "mutation_embedding": not parsed.no_mutation_embedding,
-          "stat_hidden_width": parsed.stat_hidden or 4 * parsed.width, "stat_prior": parsed.stat_prior,
+          "stat_hidden_width": parsed.stat_hidden or 4 * parsed.width, "stat_prior": parsed.stat_prior or parsed.smooth_prior,
           **({} if parsed.width == 768 else {"width": parsed.width, "attention_width": max(64, parsed.width // 2),
                                              "feedforward_width": 4 * parsed.width})},
           language={"width": parsed.language_width, "layers": parsed.language_layers,
@@ -977,6 +1027,6 @@ if __name__ == "__main__":
           language_from=parsed.language_from, mix_start=parsed.mix_start, mix_until=parsed.mix_until, ema_decay=parsed.ema_decay, pack_labels=parsed.pack_labels,
           bf16=parsed.bf16, lr_decay=parsed.lr_decay, lr_floor=parsed.lr_floor, watch=parsed.watch or None, max_rows=parsed.max_rows, eval_rows=parsed.eval_rows,
           field_generations=parsed.field_generations, plateau_drift=parsed.plateau_drift, plateau_evals=parsed.plateau_evals,
-          language_after_plateau=parsed.language_after_plateau, thaw_min=parsed.thaw_min,
+          smooth_prior=parsed.smooth_prior, language_after_plateau=parsed.language_after_plateau, thaw_min=parsed.thaw_min,
           frozen_min=parsed.frozen_min, language_budget=parsed.language_budget,
           run_dir=parsed.run_dir)

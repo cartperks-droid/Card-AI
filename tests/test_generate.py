@@ -63,7 +63,8 @@ class GeneratorTests(unittest.TestCase):
     def test_slot_tokens_reproduce_classifiers_with_stats_apart_from_the_card(self):
         from card_engine.model.config import StrategicConfig
         for layout in ({"stat_width": 64}, {"stat_tokens": True}, {"stat_tokens": True, "stat_pairs": True}, {"stat_pairs": True},
-                       {"stat_pairs": True, "stat_prior": True}):
+                       {"stat_pairs": True, "stat_prior": True},
+                       {"stat_pairs": True, "stat_prior": True, "stat_prior_scale": 3.0, "stat_prior_slope": 1.0}):
             torch.manual_seed(1)
             model = BattleModel(strategic_config=StrategicConfig(layers=2, pack_embedding=False, mutation_embedding=False,
                                                                  **layout))
