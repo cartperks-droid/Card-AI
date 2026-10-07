@@ -98,6 +98,11 @@ exact("    const copied = [...runtime.state.fallen[card.team]].reverse()\n      
 exact("    const copied = [...runtime.state.fallen[card.team]].reverse()\n      .map((fallen) => ability(fallen))\n      .find((candidate) => candidate && candidate !== 'The Underworld')\n",
       "    const copied = underworldCopy([...runtime.state.fallen[card.team]].reverse(), (fallen) => [ability(fallen)])\n")
 
+// Stalemate after 100 turns without a death, not 150 (user, 2026-10-02 Immortal Witch mirror: both cards fell after
+// 100 turns, 50 rounds; his turn is one card's action, as the user counted, 2026-10-07).
+exact("    if (turnsWithoutDeaths >= 150) {", "    if (turnsWithoutDeaths >= 100) {")
+exact("Expansion 150-turn no-progress resolution", "Expansion 100-turn no-progress resolution")
+
 // The runtime carries the chance source; a battle may arrive with a prebuilt (two-sided) state.
 exact('  rng: SeededRng\n', '  rng: SeededRng\n  chance: any\n')
 // Ability lookups (user: precomputed entries, as a chess engine's lookup tables): an entry holds a card's ability, its

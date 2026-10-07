@@ -2222,7 +2222,7 @@ int simulate(Runtime *rt, int max_turns, const Counters *resume, void (*on_turn)
     if (attacker == NOCARD || defender == NOCARD) break;
     if (rt->deathEpoch != last_epoch) { without_deaths = 0; last_epoch = rt->deathEpoch; }
     without_deaths += 1;
-    if (without_deaths >= 150) {
+    if (without_deaths >= 100) {  // 100, not his 150 (user: Immortal Witch mirror; codemod.mjs)
       CARD(attacker)->hp = 0;
       CARD(defender)->hp = 0;
       resolve_deaths(rt);
