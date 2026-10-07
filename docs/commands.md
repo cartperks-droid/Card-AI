@@ -144,7 +144,7 @@ The watch list in both turn orders, the model against the engine (the player alw
 python3 scripts/turns.py data/training_10s/ema.checkpoint
 ```
 
-Tune the generator's settings by the engine: each trial generates counters to tower floors (105, 100, 95 Impossible by default) with one setting, the engine plays the best 8 per floor attacking first, and the trials print best first (trial 0 is the current defaults). One JSON line per trial goes to `data/tune_generator.jsonl` as it finishes:
+Tune the generator's settings by the engine: each trial generates counters to tower floors (105, 100, 95 Impossible by default) with one setting, the engine plays the best 8 per floor attacking first, and the trials print best first (trial 0 is the current defaults; `M10000` and `M50000` are the model search, an evolution scored by the model, instead of the ascent). One JSON line per trial goes to `data/tune_generator.jsonl` as it finishes. A large `model_mean` with engine wins near 0 means the setting found teams the model is wrong about, not counters:
 ```
 python3 scripts/tune_generator.py --checkpoint data/training_10s/step298k_ema.checkpoint --trials 24 --workers 2
 ```

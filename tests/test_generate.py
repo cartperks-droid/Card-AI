@@ -149,6 +149,22 @@ class GeneratorTests(unittest.TestCase):
             self.assertTrue(-1e-9 <= win <= 1 + 1e-9, win)  # summed branch probabilities
         self.assertEqual([w for _, w in found], sorted((w for _, w in found), reverse=True))
 
+    def test_model_search_ranks_by_the_classifier_inside_the_pool(self):
+        enemy = parse_side(self.catalog, ["Immortal Witch", "Archer", "Good Boy", "Set"])
+        allowed = {tuple(e) for e in self.pool.entries.tolist()}
+        start = generate.random_team(self.pool, np.random.default_rng(3))
+        stats = (5e5, 2e5, False)
+        found = generate.model_search(self.space, enemy, [start], evaluations=200, enemy_stats=stats, population=16,
+                                      parents=4, children=4, catalog=self.catalog)
+        self.assertGreaterEqual(len(found), 16)
+        self.assertIn(generate._key(start), {generate._key(team) for team, _ in found})
+        for team, _ in found:
+            self.assertTrue(all(e in allowed for e in zip(team["cards"], team["borders"], team["mutations"], team["arts"])))
+        wins = [w for _, w in found]
+        self.assertEqual(wins, sorted(wins, reverse=True))
+        best, win = found[0]  # its score is the classifier's own
+        self.assertAlmostEqual(win, float(self.classifier.ally_win([(best, enemy)], stats)[0, 0]), places=4)
+
     def test_own_pool_respects_copy_counts(self):
         deck = {"cards": [{"card": 1, "border": 1, "mutation": "None", "count": 1},
                           {"card": 3, "border": 2, "mutation": "Storm", "count": 3}],

@@ -42,6 +42,11 @@ the masks: a deck pool is used as it is.
   - --max-rarity: leaves out entries rarer than this, card x border rarity as the game shows it (1 in N: 2.5M,
     30T, 10qd).
 
+Model search (--model-search N teams, off by default; 2026-10-07): the same evolution as the engine search below,
+scored by the classifier instead, ranked by its log-odds. The ascent cannot reach cheese (at floor 105 its best
+teams scored 0.001-0.006 by the model, which rates Drago's decks 0.55); the evolution needs no gradient, and the
+model scores thousands of teams a second. Its distinct best teams join the ascent's for the engine check.
+
 Engine search (--engine-search N engine evaluations, off by default): a local refinement, not a replacement for the
 ascent, which is the generator (user). The ascent only finds what the model already believes, so where the model
 rates almost everything 0, against huge stats, it stacks stats and loses (2026-10-05, an older checkpoint: 32
@@ -449,21 +454,20 @@ def _ids(pool, team):
     return entries, pool.reds.index((team["red"], team["red_tier"])), pool.blues.index((team["blue"], team["blue_tier"]))
 
 
-def engine_search(space, enemy, starts, *, evaluations=4096, role="attack", enemy_stats=None, workers=None, seed=1,
-                  catalog=None, population=64, parents=16, children=4):
-    """An evolution scored by the engine, inside the pool (see the module notes): [(team, engine win)], best first."""
-    from concurrent.futures import ProcessPoolExecutor
-    from .counter import _init
+def evolve(space, starts, score, *, evaluations, seed=1, prior=0.5, population=64, parents=16, children=4,
+           catalog=None):
+    """An evolution inside the pool (see the module notes): each generation the `parents` best members found so far
+    get `children` mutations each (a slot's entry, a support, or two slots swapped), scored by score(members) -> wins
+    for members (entry ids, red, blue). prior: chance a drawn entry is a stat-ignoring card (labels.STAT_IGNORING).
+    Returns {member: win}."""
     from .labels import stat_ignoring_cards
     catalog = catalog or load_catalog()
     pool, rng = space.pool, np.random.default_rng(seed)
     ignoring = set(stat_ignoring_cards(catalog))
     ignoring_entries = [i for i, entry in enumerate(pool.entries) if int(entry[0]) in ignoring]
-    per_card = None if enemy_stats is None else tower.engine_stats(catalog, enemy["cards"], enemy_stats)
-    column = ROLES.index(role)
 
     def entry():
-        if ignoring_entries and rng.random() < 0.5:
+        if ignoring_entries and rng.random() < prior:
             return int(rng.choice(ignoring_entries))
         return int(rng.integers(len(pool.entries)))
 
@@ -494,25 +498,60 @@ def engine_search(space, enemy, starts, *, evaluations=4096, role="attack", enem
         return (ids, red, blue) if _allowed(space, ids) else member
 
     seen = {}
+
+    def scored(members):
+        new = list(dict.fromkeys(m for m in members if m not in seen))
+        for member, win in zip(new, score(new, len(seen))):
+            seen[member] = win
+
+    alive = [_ids(pool, team) for team in starts][:population]
+    alive += [fresh() for _ in range(population - len(alive))]
+    scored(alive)
+    while len(seen) < evaluations:
+        best = sorted(set(alive), key=lambda m: -seen[m])[:parents]
+        before = len(seen)
+        scored([mutate(m) for m in best for _ in range(children)])
+        alive = sorted(seen, key=lambda m: -seen[m])[:population]  # the best so far, parents included
+        if len(seen) == before:  # nothing new to try
+            break
+    return seen
+
+
+def engine_search(space, enemy, starts, *, evaluations=4096, role="attack", enemy_stats=None, workers=None, seed=1,
+                  catalog=None, population=64, parents=16, children=4):
+    """An evolution scored by the engine (evolve): [(team, engine win)], best first."""
+    from concurrent.futures import ProcessPoolExecutor
+    from .counter import _init
+    catalog = catalog or load_catalog()
+    per_card = None if enemy_stats is None else tower.engine_stats(catalog, enemy["cards"], enemy_stats)
+    column = ROLES.index(role)
     with ProcessPoolExecutor(workers or max(1, (os.cpu_count() or 2) - 1), mp_context=mp.get_context("spawn"),
                              initializer=_init) as executor:
-        def score(members):
-            new = list(dict.fromkeys(m for m in members if m not in seen))
-            jobs = [(_team(space, *m), enemy, seed + 2 * (len(seen) + i), per_card, column) for i, m in enumerate(new)]
-            for member, win in zip(new, executor.map(_role_win, jobs, chunksize=8)):
-                seen[member] = win
+        def score(members, done):
+            jobs = [(_team(space, *m), enemy, seed + 2 * (done + i), per_card, column) for i, m in enumerate(members)]
+            return list(executor.map(_role_win, jobs, chunksize=8))
 
-        alive = [_ids(pool, team) for team in starts][:population]
-        alive += [fresh() for _ in range(population - len(alive))]
-        score(alive)
-        while len(seen) < evaluations:
-            best = sorted(set(alive), key=lambda m: -seen[m])[:parents]
-            before = len(seen)
-            score([mutate(m) for m in best for _ in range(children)])
-            alive = sorted(seen, key=lambda m: -seen[m])[:population]  # the best so far, parents included
-            if len(seen) == before:  # nothing new to try
-                break
+        seen = evolve(space, starts, score, evaluations=evaluations, seed=seed, catalog=catalog, population=population,
+                      parents=parents, children=children)
     return [(_team(space, *m), win) for m, win in sorted(seen.items(), key=lambda item: -item[1])]
+
+
+def model_search(space, enemy, starts, *, evaluations=100_000, role="attack", enemy_stats=None, seed=1, catalog=None,
+                 prior=0.0, population=512, parents=128, children=4):
+    """An evolution scored by the classifier (evolve), ranked by its log-odds so that selection still separates teams
+    at 0.001 and 0.003 against huge stats (user, 2026-10-07: the model became fast and accurate enough, 0.07 off the
+    engine on Drago's decks, while the gradient ascent found nothing above 0.006 at floor 105 where the model rates
+    his decks 0.55; cheese is a narrow four-card combination no gradient leads to). No stat-ignoring prior by default:
+    the model is cheap enough to search the whole pool. [(team, model win)], best first."""
+    column = ROLES.index(role)
+
+    def score(members, done):
+        wins = space.classifier.ally_win([(_team(space, *m), enemy) for m in members], enemy_stats)[:, column]
+        return [float(np.log(w + 1e-9) - np.log1p(-w + 1e-9)) for w in wins]
+
+    seen = evolve(space, starts, score, evaluations=evaluations, seed=seed, prior=prior, catalog=catalog,
+                  population=population, parents=parents, children=children)
+    return [(_team(space, *m), float(1 / (1 + np.exp(-logit)))) for m, logit in sorted(seen.items(), key=lambda i: -i[1])]
 
 
 def verify(teams, enemy, workers, seed=1, enemy_stats=None, catalog=None):
@@ -553,6 +592,9 @@ def main():
     parser.add_argument("--role", choices=ROLES, default="attack",
                         help="attack: your team attacks first and loses a mutual wipe; defend: the enemy attacks first")
     parser.add_argument("--no-verify", action="store_true", help="skip the engine check")
+    parser.add_argument("--model-search", type=int, default=0, metavar="N",
+                        help="also run an evolution of N teams scored by the model (fast: 100000 is about a minute), "
+                        "from the ascent's teams; its distinct best go to the engine check and the engine search")
     parser.add_argument("--engine-search", type=int, default=0, metavar="N",
                         help="also run an engine-guided search of N engine evaluations from the model's teams (see above)")
     parser.add_argument("--workers", type=int, default=max(1, (os.cpu_count() or 2) - 1))
@@ -587,6 +629,15 @@ def main():
     for index, enemy in enumerate(enemies):
         found = [(*entry, "model") for entry in counters(space, enemy, count=args.counters, restarts=args.restarts,
                                                          settings=settings, seed=args.seed + index, enemy_stats=enemy_stats)]
+        if args.model_search:
+            from .hard import distinct
+            evolved = model_search(space, enemy, [team for team, *_ in found], evaluations=args.model_search,
+                                   role=args.role, enemy_stats=enemy_stats, seed=args.seed + 104729 * (index + 1),
+                                   catalog=catalog)
+            known = {_key(team) for team, *_ in found}
+            evolved = [(team, win) for team, win in evolved if _key(team) not in known]
+            picks = distinct([team for team, _ in evolved], range(len(evolved)), args.counters)
+            found += [(evolved[i][0], evolved[i][1], float("nan"), "model search") for i in picks]
         if args.engine_search:
             searched = engine_search(space, enemy, [team for team, *_ in found], evaluations=args.engine_search,
                                      role=args.role, enemy_stats=enemy_stats, workers=args.workers,
