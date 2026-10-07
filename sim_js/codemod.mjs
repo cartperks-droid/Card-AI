@@ -58,6 +58,25 @@ exact("  const appliedHpDamage = Math.min(hpTarget.hp, damage)\n  hpTarget.hp -=
 exact("if (alive(ally)) ally.damage += damage * 1.25",
       "if (alive(ally)) ally.damage += ((target as any).hpTaken ?? damage) * 1.25")
 
+// Hades's The Underworld (user, 2026-10-07): it cannot copy Parallax's Paradox, and a fallen Hades offers only its own
+// The Underworld, never the ability it copied, so a Hades behind a fallen Hades copies nothing ("two Hades
+// consecutively is wrong"). His engine copied both, so Parallax / Hades / Hades / Robin Hood beat floor 105 Impossible
+// every time (each Hades a second Parallax). On entry, and when Pandora's Box gains The Underworld.
+exact("function resolvePandoraGainedAbility(",
+      "function underworldCopy(fallen: CombatCard[], names: (card: CombatCard) => (string | null)[], skip: string[] = []): string | null {\n"
+      + "  for (const card of fallen) {\n"
+      + "    if ((card.definition as any).ability === 'The Underworld') return null\n"
+      + "    const found = names(card).find((name) => name && name !== 'The Underworld' && name !== 'Paradox' && !skip.includes(name))\n"
+      + "    if (found) return found\n"
+      + "  }\n"
+      + "  return null\n"
+      + "}\n\n"
+      + "function resolvePandoraGainedAbility(")
+exact("    const copied = [...runtime.state.fallen[card.team]].reverse()\n      .flatMap((fallen) => abilityNames(fallen))\n      .find((candidate) => candidate !== 'The Underworld' && candidate !== \"Pandora's Box\")\n",
+      "    const copied = underworldCopy([...runtime.state.fallen[card.team]].reverse(), (fallen) => abilityNames(fallen), [\"Pandora's Box\"])\n")
+exact("    const copied = [...runtime.state.fallen[card.team]].reverse()\n      .map((fallen) => ability(fallen))\n      .find((candidate) => candidate && candidate !== 'The Underworld')\n",
+      "    const copied = underworldCopy([...runtime.state.fallen[card.team]].reverse(), (fallen) => [ability(fallen)])\n")
+
 // The runtime carries the chance source; a battle may arrive with a prebuilt (two-sided) state.
 exact('  rng: SeededRng\n', '  rng: SeededRng\n  chance: any\n')
 // Ability lookups (user: precomputed entries, as a chess engine's lookup tables): an entry holds a card's ability, its

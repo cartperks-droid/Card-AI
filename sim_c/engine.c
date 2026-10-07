@@ -218,9 +218,12 @@ static int resolve_pandora_gained(Runtime *rt, int c, int name) {
   if (name == A_CONSTELLAR) return random_constellar(rt);
   if (name == A_THE_UNDERWORLD) {
     int team = CARD(c)->team;
-    for (int i = S->nfallen[team] - 1; i >= 0; i--) {  // [...fallen].reverse().flatMap(abilityNames).find(...)
-      int names[8], n = ability_names(rt, S->fallen[team][i], names);
-      for (int j = 0; j < n; j++) if (names[j] != A_THE_UNDERWORLD && names[j] != A_PANDORA_S_BOX) return names[j];
+    for (int i = S->nfallen[team] - 1; i >= 0; i--) {  // underworldCopy (codemod.mjs; user, 2026-10-07)
+      int f = S->fallen[team][i];
+      if (DEF_ABILITY[CARD(f)->def] == A_THE_UNDERWORLD) break;  // a fallen Hades offers only The Underworld
+      int names[8], n = ability_names(rt, f, names);
+      for (int j = 0; j < n; j++)
+        if (names[j] != A_THE_UNDERWORLD && names[j] != A_PANDORA_S_BOX && names[j] != A_PARADOX) return names[j];
     }
   }
   return name;
@@ -322,9 +325,11 @@ static void on_entry_(Runtime *rt, int c) {
 
   if (name == A_THE_UNDERWORLD) {
     int copied = AO_NULL;
-    for (int i = S->nfallen[team] - 1; i >= 0 && copied < 0; i--) {
-      int a = ability(rt, S->fallen[team][i]);
-      if (a >= 0 && a != A_THE_UNDERWORLD) copied = a;
+    for (int i = S->nfallen[team] - 1; i >= 0 && copied < 0; i--) {  // underworldCopy (codemod.mjs; user, 2026-10-07)
+      int f = S->fallen[team][i];
+      if (DEF_ABILITY[CARD(f)->def] == A_THE_UNDERWORLD) break;  // a fallen Hades offers only The Underworld
+      int a = ability(rt, f);
+      if (a >= 0 && a != A_THE_UNDERWORLD && a != A_PARADOX) copied = a;
     }
     if (copied >= 0) {
       card->abilityOverride = copied;

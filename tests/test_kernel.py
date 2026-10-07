@@ -47,6 +47,20 @@ class KernelTests(unittest.TestCase):
             spec["cards"][0] = dragons
             self.same(spec, tier)
 
+    def test_hades_copies_neither_paradox_nor_a_fallen_hades(self):
+        # user, 2026-10-07: Hades cannot copy Parallax's Paradox, and a fallen Hades offers only The Underworld; his
+        # engine copied both, so this deck beat floor 105 Impossible every time
+        from card_engine import tower
+        from card_engine.teams import parse_side, spec
+        enemy = tower.fixed_team(self.catalog, 105)
+        enemy.update(borders=[1] * 4, mutations=[0] * 4, red=0, red_tier=0, blue=0, blue_tier=0)
+        per_card = tower.engine_stats(self.catalog, enemy["cards"], tower.stats(105, "Impossible"))
+        ally = parse_side(self.catalog, ["Parallax", "Hades", "Hades", "Robin Hood"], None, "Storm Spirit")
+        battle = spec(ally, enemy)
+        self.same(battle, 1, fixed=(1, per_card))
+        probs, _ = kernel.evaluate(self.catalog, battle, 1, fixed=(1, per_card))
+        self.assertLess(probs[0], 0.01)
+
     def test_a_runaway_battle_with_hundreds_of_created_cards(self):
         rng = random.Random(22883)  # label shard 22883, row 1219: Pandora's rolls create 836 cards
         spec = [labels.random_spec(rng, self.catalog) for _ in range(1220)][-1]
