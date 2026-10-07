@@ -588,7 +588,7 @@ def train(*, steps=None, batch_size=512, lr=3e-4, warmup=1000, weight_decay=0.05
           eval_every=1000, init_from=None, language_lr=None, mix=(0.05, 0.0, 0.0), layers=None, architecture=None, language=None, language_from=None,
           mix_start=None, mix_until=None, ema_decay=0.999, pack_labels=False, bf16=False, lr_decay=None, lr_floor=0.05,
           watch=None, max_rows=None, eval_rows=None, field_generations=2, smooth_prior=False, language_after_plateau=False, thaw_min=6000, frozen_min=12000,
-          language_budget=60000, plateau_drift=2.0, plateau_evals=2,
+          language_budget=60000, plateau_spread=0.15, plateau_evals=3, learning_rise=1.5,
           checkpoint_every=1000, reload_every=1000, device=None, run_dir=RUN_DIR, label_root=SHARD_DIR):
     """Train in run_dir, resuming its model and optimizer if both are there. Otherwise init_from (a model checkpoint,
     e.g. one downloaded from another machine) gives the starting weights and step, with a fresh optimizer whose learning
@@ -608,9 +608,11 @@ def train(*, steps=None, batch_size=512, lr=3e-4, warmup=1000, weight_decay=0.05
     evaluation where the MLP is learning again. Once its thawed steps reach language_budget in all, it freezes for the
     rest of the run ("language_thawed", "language_refrozen", "language_done" in the log; kept across restarts).
     The stat MLP's drift, its weights' net displacement over each evaluation interval divided by the length of the path
-    they took and by that ratio for pure noise (drift_floor), is logged as "stat_drift" (about 1: the MLP only wanders;
-    much more: it is still learning). It has stopped learning after plateau_evals intervals in a row at or under
-    plateau_drift, and is learning at an interval over it.
+    they took and by that ratio for Adam's noise (drift_floor), is logged as "stat_drift". Its scale is the run's own,
+    not that ratio's (the 10s run, 2026-10-07: 1.01 at step 2,000, 0.56, then 0.40-0.46 from step 6,000; below the
+    noise model's 1, as Adam's steps bounce across a narrow valley), so both tests are relative: the MLP has stopped
+    learning when the spell's last plateau_evals readings lie within a factor 1 + plateau_spread of each other (their
+    mean becomes the baseline), and is learning again at a reading over learning_rise x that baseline.
 
     A new run (random weights) takes `layers` strategic layers (default StrategicConfig's) and `architecture`, other
     StrategicConfig fields (stat_tokens, stat_pairs, stat_width, pack_embedding, mutation_embedding, stat_hidden_width),
@@ -768,7 +770,7 @@ def train(*, steps=None, batch_size=512, lr=3e-4, warmup=1000, weight_decay=0.05
     # The stat MLP's drift over each evaluation interval (it thaws and freezes the description transformer)
     stat_parameters = [*model.strategy.stat_projection.parameters(), *model.strategy.stat_mlp.parameters()]
     flat = lambda: torch.nn.utils.parameters_to_vector(stat_parameters).detach().clone()
-    window_start, previous, path, window_steps, flat_evals = flat(), flat(), torch.zeros((), device=device), 0, 0
+    window_start, previous, path, window_steps, readings = flat(), flat(), torch.zeros((), device=device), 0, []
     generator = torch.Generator(device="cpu").manual_seed(step)
     started, last = time.time(), time.time()
     losses = []  # this interval's batch losses, kept on the device (no sync per step); logged as their mean
@@ -840,16 +842,20 @@ def train(*, steps=None, batch_size=512, lr=3e-4, warmup=1000, weight_decay=0.05
                 if step % eval_every == 0:
                     drift = float((previous - window_start).norm() / path.clamp_min(1e-12)) / drift_floor(window_steps)
                     record["stat_drift"] = round(drift, 2)
-                    flat_evals = flat_evals + 1 if drift <= plateau_drift else 0
+                    readings.append(drift)  # this spell's readings (a restart starts them again)
                     if spells is not None and not spells["done"]:
-                        spell = step - spells["since"]
-                        if spells["frozen"] and spell >= frozen_min and flat_evals >= max(1, plateau_evals):
+                        spell, recent = step - spells["since"], readings[-max(2, plateau_evals):]
+                        if spells.get("baseline") is None and not spells["frozen"]:
+                            spells["baseline"] = drift  # a thawed spell from before baselines: its first reading
+                        if (spells["frozen"] and spell >= frozen_min and len(recent) >= max(2, plateau_evals)
+                                and max(recent) <= (1 + plateau_spread) * min(recent)):
                             unfreeze_language(model, optimizer)  # the stat MLP has stopped: the language side learns
-                            frozen_table = None
-                            spells.update(frozen=False, since=step)
+                            frozen_table, readings = None, []
+                            spells.update(frozen=False, since=step, baseline=sum(recent) / len(recent))
                             record["language_thawed"] = True
-                        elif not spells["frozen"] and spell >= thaw_min and drift > plateau_drift:
+                        elif not spells["frozen"] and spell >= thaw_min and drift > learning_rise * spells["baseline"]:
                             spells.update(frozen=True, since=step, thawed=spells["thawed"] + spell)  # it learns again:
+                            readings = []
                             record["language_refrozen"] = True  # the card vectors hold while it absorbs them
                     window_start, path, window_steps = previous.clone(), torch.zeros((), device=device), 0
                 if step % eval_every == 0 and val_rows is not None:
@@ -958,10 +964,13 @@ if __name__ == "__main__":
                         "MLP has stopped learning")
     parser.add_argument("--language-budget", type=int, default=60000,
                         help="thawed steps in all, after which the description transformer stays frozen")
-    parser.add_argument("--plateau-drift", type=float, default=2.0,
-                        help="the stat MLP has plateaued when its drift (stat_drift in the log; about 1 is noise) stays "
-                        "at or under this for --plateau-evals evaluations")
-    parser.add_argument("--plateau-evals", type=int, default=2, help="evaluations in a row")
+    parser.add_argument("--plateau-spread", type=float, default=0.15,
+                        help="the stat MLP has stopped learning when its last --plateau-evals stat_drift readings lie "
+                        "within a factor 1 + this of each other")
+    parser.add_argument("--plateau-evals", type=int, default=3, help="readings the plateau test looks at (at least 2)")
+    parser.add_argument("--learning-rise", type=float, default=1.5,
+                        help="a thawed description transformer refreezes when stat_drift rises over this times the "
+                        "plateau's level (the stat MLP is learning again)")
     parser.add_argument("--language-lr", type=float, help="the description transformer's learning rate (default --lr)")
     parser.add_argument("--mix", type=float, nargs="+", default=(0.05, 0.0, 0.0), metavar="SHARE",
                         help="HARD UPSET FIXED [HIDDEN [FOUND]]: shares of each batch drawn from hard examples "
@@ -1040,7 +1049,8 @@ if __name__ == "__main__":
                     "feedforward_width": 4 * parsed.language_width},
           language_from=parsed.language_from, mix_start=parsed.mix_start, mix_until=parsed.mix_until, ema_decay=parsed.ema_decay, pack_labels=parsed.pack_labels,
           bf16=parsed.bf16, lr_decay=parsed.lr_decay, lr_floor=parsed.lr_floor, watch=parsed.watch or None, max_rows=parsed.max_rows, eval_rows=parsed.eval_rows,
-          field_generations=parsed.field_generations, plateau_drift=parsed.plateau_drift, plateau_evals=parsed.plateau_evals,
+          field_generations=parsed.field_generations, plateau_spread=parsed.plateau_spread, plateau_evals=parsed.plateau_evals,
+          learning_rise=parsed.learning_rise,
           smooth_prior=parsed.smooth_prior, language_after_plateau=parsed.language_after_plateau, thaw_min=parsed.thaw_min,
           frozen_min=parsed.frozen_min, language_budget=parsed.language_budget,
           run_dir=parsed.run_dir)

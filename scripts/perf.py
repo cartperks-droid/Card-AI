@@ -10,7 +10,8 @@ up_kl and fav_kl: the KL on the upsets alone and on the other battles; kl is abo
 second, so it can fall while the upsets get worse.
 val_rows and upsets are the validation set's size and its upset slice: when new shards change them, the
 metrics move with the data, not the model.
-stat_drift: the stat MLP's progress over the interval; about 1 means it only wanders (a plateau). With
+stat_drift: the stat MLP's progress over the interval, on the run's own scale: it falls while the MLP learns and
+flattens at a plateau (the 10s run: 1.01 at step 2,000, about 0.45 from 6,000). With
 --language-after-plateau it thaws and freezes the description transformer (thawed / refrozen / done).
 """
 
