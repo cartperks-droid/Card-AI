@@ -478,6 +478,8 @@ class TrainingTests(unittest.TestCase):
         state = lambda: torch.load(plateau / "trainer.pt", weights_only=True)["language_spells"]
         train(steps=100, language_after_plateau=True, plateau_drift=-1, **spells, **small)
         self.assertEqual((state()["frozen"], vectors()), (True, 0.0))  # waiting, and no plateau yet
+        first = _json.loads((plateau / "log.jsonl").read_text().splitlines()[0])
+        self.assertEqual(first["grok"]["language_gain"]["kl"], 0.0)  # no card text yet: zeroing it changes nothing
         train(steps=200, plateau_drift=1e9, language_budget=1000, **spells)  # plateau: thaws at 200 (frozen 200 steps)
         self.assertEqual(state(), {"frozen": False, "since": 200, "thawed": 0, "done": False})
         train(steps=300, plateau_drift=-1, language_budget=1000, **spells)  # 100 thawed steps, the MLP learns: refreezes

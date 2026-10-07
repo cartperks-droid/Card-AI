@@ -872,8 +872,14 @@ def train(*, steps=None, batch_size=512, lr=3e-4, warmup=1000, weight_decay=0.05
                     record["grok"] = {"train_probe": {k: round(v, 4) for k, v in evaluate(model, inputs, table, train_probe).items()
                                                       if k in ("kl", "accuracy", "decisive_accuracy")},
                                       "val_probe": {k: round(v, 4) for k, v in evaluate(model, inputs, table, val_probe).items()
-                                                    if k in ("kl", "accuracy", "upset_accuracy", "decisive_accuracy", "probabilistic_error")},
+                                                    if k in ("kl", "accuracy", "upset_accuracy", "upset_kl", "decisive_accuracy", "probabilistic_error")},
                                       "weight_norm": round(weight_norm(model), 2)}
+                    # What the card text is worth (user, 2026-10-07: "once it thaws, does the model use it?"): the
+                    # validation probe again with every card vector 0, as before the first thaw. The KL it adds
+                    # ("language_gain") is what the model now draws from the description transformer; 0 while unused.
+                    blind = evaluate(model, inputs, torch.zeros_like(table), val_probe)
+                    record["grok"]["language_gain"] = {key: round(blind[key] - record["grok"]["val_probe"][key], 4)
+                                                       for key in ("kl", "upset_kl")}
                     with torch.no_grad():
                         ema_table = card_table(ema, tokens)
                     hard = val_rows["hard"] == 1

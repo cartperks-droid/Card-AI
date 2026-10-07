@@ -4,6 +4,8 @@
     python3 scripts/perf.py data/training/log.jsonl 12        # another log, last 12 evaluations
     python3 scripts/perf.py data/training_18p.out              # a trainer's printed output works too
 
+text A / B: the KL the probe gains with every card vector 0 (A overall, B on upsets): what the model draws
+from the description transformer, 0 while it is unused.
 up_kl and fav_kl: the KL on the upsets alone and on the other battles; kl is about 9% the first and 91% the
 second, so it can fall while the upsets get worse.
 val_rows and upsets are the validation set's size and its upset slice: when new shards change them, the
@@ -32,6 +34,7 @@ for r in [json.loads(l) for l in lines[-200 * count:] if '"val"' in l][-count:]:
           f"{v['accuracy']:.3f}  {v['baseline']:.3f}  {v['upset_accuracy']:.3f}  {v['kl']:.3f}  "
           f"{v.get('upset_kl', float('nan')):.3f}  {v.get('favourite_kl', float('nan')):.3f}  "
           f"{v['decisive_accuracy']:.3f}     {v['probabilistic_error']:.3f}     {t.get('accuracy', float('nan')):.3f}      {r.get('stat_drift', float('nan')):.2f}"
+          + (f"  text {gain['kl']:+.3f} / {gain['upset_kl']:+.3f}" if (gain := r.get("grok", {}).get("language_gain")) else "")
           + "".join(f"  {k[9:]}" for k in ("language_thawed", "language_refrozen", "language_done") if r.get(k)))
 for name, title in (("val_fixed", "fixed-stat battles only"), ("val_hard", "hard examples only (generator-proposed)"),
                     ("val_hidden", "incomplete mode only (against the unseen field)"),
