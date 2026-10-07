@@ -96,12 +96,10 @@ class GeneratorTests(unittest.TestCase):
             teams = [generate.random_team(self.pool, rng) for _ in range(4)]
             hidden = space.fixed([HIDDEN_TEAM] * 4)
             with torch.no_grad():
-                attack = space.logits(space.fixed(teams), hidden, hidden=1).softmax(-1)[:, 0].numpy()
                 defend = space.logits(hidden, space.fixed(teams), hidden=0).softmax(-1)[:, 1].numpy()
-                other = space.logits(space.fixed(teams), space.fixed(teams[::-1]), hidden=1).softmax(-1)[:, 0].numpy()
-            np.testing.assert_allclose(attack, classifier.field_win(teams, 0), atol=1e-5, err_msg=str(layout))
-            np.testing.assert_allclose(defend, classifier.field_win(teams, 1), atol=1e-5, err_msg=str(layout))
-            np.testing.assert_allclose(other, attack, atol=1e-5)  # nothing of the hidden side's tuple gets through
+                other = space.logits(space.fixed(teams[::-1]), space.fixed(teams), hidden=0).softmax(-1)[:, 1].numpy()
+            np.testing.assert_allclose(defend, classifier.field_win(teams), atol=1e-5, err_msg=str(layout))
+            np.testing.assert_allclose(other, defend, atol=1e-5)  # nothing of the hidden side's tuple gets through
 
     def test_fixed_enemy_stats_reach_the_classifier(self):
         rng = np.random.default_rng(5)
@@ -164,6 +162,12 @@ class GeneratorTests(unittest.TestCase):
         self.assertEqual(wins, sorted(wins, reverse=True))
         best, win = found[0]  # its score is the classifier's own
         self.assertAlmostEqual(win, float(self.classifier.ally_win([(best, enemy)], stats)[0, 0]), places=4)
+
+    def test_model_search_in_incomplete_mode_scores_against_the_unseen_field(self):
+        found = generate.model_search(self.space, None, [], evaluations=120, role="defend", population=16, parents=4,
+                                      children=4, catalog=self.catalog, incomplete=True)
+        best, win = found[0]
+        self.assertAlmostEqual(win, float(self.classifier.field_win([best])[0]), places=4)
 
     def test_own_pool_respects_copy_counts(self):
         deck = {"cards": [{"card": 1, "border": 1, "mutation": "None", "count": 1},

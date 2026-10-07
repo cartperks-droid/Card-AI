@@ -70,11 +70,10 @@ class Classifier:
         return np.stack([first, second], 1)
 
 
-    def field_win(self, teams, role):
-        """The incomplete-mode win chance of each team in a role (0 attack, 1 defend) against the field it cannot see."""
+    def field_win(self, teams):
+        """The incomplete-mode win chance of each team defending against the attackers it cannot see (the field). Only
+        the defender has hidden information (user, 2026-10-07): an attacker sees the team it attacks."""
         from .labels import HIDDEN_TEAM
-        if role == 0:
-            return self.win_a([spec(team, HIDDEN_TEAM) for team in teams], hidden=1)
         return 1 - self.win_a([spec(HIDDEN_TEAM, team) for team in teams], hidden=0)
 
 

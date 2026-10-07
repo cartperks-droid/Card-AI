@@ -269,7 +269,7 @@ class Settings:
     rechecks: int = 3  # extra ascent rounds (doubled penalty) while slots stay blurred
     nearest: int = 3  # decoding: k nearest entries per slot
     role: str = "attack"  # the ascended side attacks first ("attack") or defends ("defend")
-    incomplete: bool = False  # against the field the model cannot see (incomplete mode), not a named enemy
+    incomplete: bool = False  # defending against the attackers the model cannot see (incomplete mode), not a named enemy
     noise_levels: int = 12  # annealing: the ascent runs in this many levels, fresh noise before each after the first
     # noise added before the second level, in units of each factor's spread (z). At floor 105, borderless, restricted
     # pool (2026-10-06): sigma 0.5-1 never left the stat-stacking peak, 2-4 reached high model scores, and 8 found the
@@ -300,7 +300,7 @@ def ascend(space, opponents, settings, generator, enemy_stats=None):
         log_red = torch.einsum("erk,nr->nek", space.log_red, red)
         stats = torch.einsum("nse,ek->nsk", p, space.log_base) + torch.einsum("nse,nek->nsk", p, log_red)
         ally = (vectors[0] + vectors[1] + vectors[2], stats, red @ space.red_vectors, blue @ space.blue_vectors)
-        hidden = (1 if settings.role == "attack" else 0) if settings.incomplete else None
+        hidden = 0 if settings.incomplete else None  # incomplete mode: the attacker (side A) is the hidden one
         if settings.role == "attack":
             objective = space.logits(ally, enemy, hidden).log_softmax(-1)[:, 0]
         else:
@@ -407,7 +407,10 @@ def _key(team):
 
 def counters(space, enemy, *, count=32, restarts=64, settings=Settings(), seed=1, enemy_stats=None):
     """The `count` best distinct ally teams against `enemy` in settings.role, by the classifier: [(team, win, blur)].
-    With settings.incomplete the teams are ascended against the unseen field instead (enemy: labels.HIDDEN_TEAM)."""
+    With settings.incomplete the teams are ascended defending against the unseen attackers instead (enemy:
+    labels.HIDDEN_TEAM); only the defender has hidden information, so it needs settings.role "defend"."""
+    if settings.incomplete and settings.role != "defend":
+        raise ValueError("incomplete mode is the defender's: an attacker sees the team it attacks (role 'defend')")
     generator = torch.Generator().manual_seed(seed)
     distance, red, blue, blur = ascend(space, [enemy] * restarts, settings, generator, enemy_stats)
     best = {}
@@ -415,7 +418,7 @@ def counters(space, enemy, *, count=32, restarts=64, settings=Settings(), seed=1
         if not teams:
             continue
         if settings.incomplete:
-            score = space.classifier.field_win(teams, ROLES.index(settings.role))
+            score = space.classifier.field_win(teams)
         else:
             score = space.classifier.ally_win([(team, enemy) for team in teams], enemy_stats)[:, ROLES.index(settings.role)]
         top = int(score.argmax())
@@ -537,16 +540,21 @@ def engine_search(space, enemy, starts, *, evaluations=4096, role="attack", enem
 
 
 def model_search(space, enemy, starts, *, evaluations=100_000, role="attack", enemy_stats=None, seed=1, catalog=None,
-                 prior=0.0, population=512, parents=128, children=4):
+                 prior=0.0, population=512, parents=128, children=4, incomplete=False):
     """An evolution scored by the classifier (evolve), ranked by its log-odds so that selection still separates teams
     at 0.001 and 0.003 against huge stats (user, 2026-10-07: the model became fast and accurate enough, 0.07 off the
     engine on Drago's decks, while the gradient ascent found nothing above 0.006 at floor 105 where the model rates
     his decks 0.55; cheese is a narrow four-card combination no gradient leads to). No stat-ignoring prior by default:
-    the model is cheap enough to search the whole pool. [(team, model win)], best first."""
+    the model is cheap enough to search the whole pool. incomplete: defending against the attackers the model cannot
+    see (Classifier.field_win; `enemy` and `role` unused). [(team, model win)], best first."""
     column = ROLES.index(role)
 
     def score(members, done):
-        wins = space.classifier.ally_win([(_team(space, *m), enemy) for m in members], enemy_stats)[:, column]
+        teams = [_team(space, *m) for m in members]
+        if incomplete:
+            wins = space.classifier.field_win(teams)
+        else:
+            wins = space.classifier.ally_win([(team, enemy) for team in teams], enemy_stats)[:, column]
         return [float(np.log(w + 1e-9) - np.log1p(-w + 1e-9)) for w in wins]
 
     seen = evolve(space, starts, score, evaluations=evaluations, seed=seed, prior=prior, catalog=catalog,
