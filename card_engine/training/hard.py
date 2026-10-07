@@ -58,9 +58,14 @@ POD_RUN = Path(__file__).resolve().parents[2] / "data" / "training_pod"  # the p
 BORDER_SETS = ((1,), (1, 2, 3), tuple(range(1, 17)))  # borderless, up to Crystal, every border
 
 
-def draw_enemy(rng, catalog):
-    """(enemy side, fixed stats (HP, ATK, HP multiplier applies))."""
-    if rng.random() < 0.5:
+def draw_enemy(rng, catalog, floor=None):
+    """(enemy side, fixed stats (HP, ATK, HP multiplier applies)). floor: (floor, difficulty) for every enemy, its fixed
+    team or random enemies on a floor without one (2026-10-07: floor 105 Impossible fields part of the cheese deck
+    itself, Judgment Day, so its wins come from cross-side interactions only its own battles teach)."""
+    if floor is not None:
+        level = tower.difficulty(floor[1])
+        team, stats = tower.fixed_team(catalog, floor[0]), tower.stats(floor[0], level)
+    elif rng.random() < 0.5:
         floor, level = tower.draw_floor(rng)  # the deep model rated Drago's decks 0.02 under uniform floors
         team = tower.fixed_team(catalog, floor)
         stats = tower.stats(floor, level)
@@ -224,7 +229,7 @@ def proposals(rng, classifier, catalog, pool, enemy, fixed, per_card, seed, spac
 
 
 def hard_shard(classifier, catalog, seed, rounds, pool, candidates=1024, keep=16, keep_random=4, generator_every=4,
-               prior=PRIOR):
+               prior=PRIOR, floor=None):
     """One shard's rows: per round, the `keep` distinct searched teams the model gets most wrong plus `keep_random`
     others. Every `generator_every`-th round proposes its teams with the annealed generator instead of the engine
     search (0: never). With no classifier (--select engine) the engine's own choice is kept instead: the `keep`
@@ -233,7 +238,7 @@ def hard_shard(classifier, catalog, seed, rounds, pool, candidates=1024, keep=16
     rng = random.Random(f"hard-{seed}")
     rows, gaps_all, gaps_kept, best_found, spaces = [], [], [], [], {}
     for r in range(rounds):
-        enemy, fixed = draw_enemy(rng, catalog)
+        enemy, fixed = draw_enemy(rng, catalog, floor)
         per_card = tower.engine_stats(catalog, enemy["cards"], fixed)
         if classifier is not None and generator_every and r % generator_every == generator_every - 1:
             evaluated = proposals(rng, classifier, catalog, pool, enemy, fixed, per_card,
@@ -274,7 +279,7 @@ def hard_shard(classifier, catalog, seed, rounds, pool, candidates=1024, keep=16
 
 
 def run(shards, *, rounds=40, workers=None, checkpoint=None, out_dir=STORE, first_seed=None, device=None,
-        candidates=12000, keep=16, keep_random=4, generator_every=4, prior=PRIOR, select="model"):
+        candidates=12000, keep=16, keep_random=4, generator_every=4, prior=PRIOR, select="model", floor=None):
     from .flags import snapshot
     out_dir = Path(out_dir)
     out_dir.mkdir(parents=True, exist_ok=True)
@@ -297,7 +302,7 @@ def run(shards, *, rounds=40, workers=None, checkpoint=None, out_dir=STORE, firs
             started = time.time()
             arrays, probs, exact, extra, gap_all, gap_kept, best = hard_shard(classifier, catalog, seed, rounds, pool,
                                                                               candidates, keep, keep_random,
-                                                                              generator_every, prior)
+                                                                              generator_every, prior, floor)
             target = out_dir / f"{kind}_{seed:08d}.npz"
             tmp = target.with_name(f"partial_{target.name}")
             np.savez_compressed(tmp, probs=probs, exact=exact, snapshot=np.array(snapshot(catalog)), **arrays, **extra)
@@ -332,13 +337,18 @@ def main():
                         "random battles from every gap, with no model to score (engine; no --checkpoint needed)")
     parser.add_argument("--prior", type=float, default=PRIOR,
                         help="chance a drawn card comes from the stat-ignoring list (0: discovery from the whole pool)")
+    parser.add_argument("--tower", nargs=2, metavar=("FLOOR", "DIFFICULTY"),
+                        help="every enemy on this tower floor and difficulty (e.g. 105 Impossible), not drawn")
     args = parser.parse_args()
+    floor = (int(args.tower[0]), args.tower[1]) if args.tower else None
+    if floor is not None:
+        tower.difficulty(floor[1])  # an unknown difficulty fails here, not after the first shard's search
     engine = args.select == "engine"  # the engine's picks: keep many (the model mode keeps few: near-duplicates were memorised)
     args.keep = args.keep if args.keep is not None else 32 if engine else 16
     args.keep_random = args.keep_random if args.keep_random is not None else 200 if engine else 4
     run(args.shards, rounds=args.rounds, workers=args.workers, checkpoint=args.checkpoint, first_seed=args.first_seed,
         device=args.device, candidates=args.candidates, keep=args.keep, keep_random=args.keep_random,
-        generator_every=args.generator_every, prior=args.prior, select=args.select)
+        generator_every=args.generator_every, prior=args.prior, select=args.select, floor=floor)
 
 
 if __name__ == "__main__":

@@ -163,6 +163,19 @@ class TrainingTests(unittest.TestCase):
         self.assertEqual(distinct(teams, [0, 1, 2, 3, 4], keep=4), [0, 2, 3, 4])
         self.assertEqual(distinct(teams, [0, 1, 2, 3, 4], keep=2), [0, 2])
 
+    def test_the_miner_can_hold_one_tower_floor(self):
+        import random
+        from card_engine import tower
+        from card_engine.catalog import load_catalog
+        from card_engine.training.hard import draw_enemy
+        catalog, rng = load_catalog(), random.Random(1)
+        fixed = tower.fixed_team(catalog, 105)["cards"]
+        for _ in range(3):  # every enemy is floor 105 Impossible: its fixed team at its stats
+            team, stats = draw_enemy(rng, catalog, (105, "impossible"))
+            self.assertEqual((team["cards"], stats), (fixed, tower.stats(105, "Impossible")))
+        team, stats = draw_enemy(rng, catalog, (104, "Hell"))  # no fixed team there: random enemies at its stats
+        self.assertEqual((len(team["cards"]), stats), (4, tower.stats(104, "Hell")))
+
     def test_hard_examples_take_a_share_of_each_batch(self):
         import numpy as np
         root = Path(self.temp.name) / "hardmix"
