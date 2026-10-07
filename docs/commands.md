@@ -63,7 +63,7 @@ caffeinate -i bash -c 'while true; do python3 -m card_engine.training.labels --f
 
 Hard examples (annealed engine search, then the model's disagreements). `--checkpoint` should be the model you are training, its averaged weights:
 ```
-caffeinate -i nice -n 19 env OMP_NUM_THREADS=2 bash -c 'while true; do python3 -m card_engine.training.hard --shards 2 --workers 2 --device cpu --prior 0 --checkpoint data/training_18t/ema.checkpoint; done' >> hard.out 2>&1 &
+caffeinate -i nice -n 19 env OMP_NUM_THREADS=2 bash -c 'while true; do python3 -m card_engine.training.hard --shards 2 --workers 2 --device cpu --prior 0 --checkpoint data/training_10s/ema.checkpoint; done' >> hard.out 2>&1 &
 ```
 Without a model scoring the search (cheaper next to a trainer), keep the engine's winners and random battles from every gap:
 ```
@@ -98,44 +98,36 @@ CARD_ENGINE_TRACE=1 python3 -m card_engine.training.labels --fixed --shards 1 --
 
 ## 4. Training
 
-The current run (18p: the original 18 layout, stat comparisons in the stat MLP, its own description transformer learned from scratch, the found share). The same command resumes it after a stop:
+The current run (10s: 10 layers at width 256, stat comparisons in the stat MLP, the smooth stat prior, its own description transformer thawed and frozen by the stat MLP, all five batch shares). The same command resumes it after a stop; new-run settings (layers, width, priors) are read from the run, the rest (rates, shares, data, the language budget) take effect on a restart:
 ```
-python3 -m card_engine.training.train --run-dir data/training_18p --layers 18 --stat-pairs --batch-size 512 --lr 3e-4 --weight-decay 0.05 --dropout 0.1 --mix-start 0.03 0.42 0.42 0 0.01 --mix-until 60000 --mix 0.03 0.1 0.1 0 0.06 --max-rows 60000000 --eval-rows 100000 --eval-every 2000 2>&1 | tee -a data/training_18p.out
+python3 -m card_engine.training.train --run-dir data/training_10s --layers 10 --width 256 --stat-pairs --smooth-prior --language-after-plateau --language-budget 120000 --batch-size 512 --lr 3e-4 --lr-decay 330000 370000 --lr-floor 0.33 --weight-decay 0.05 --dropout 0.1 --mix-start 0.03 0.42 0.42 0 0.01 --mix-until 60000 --mix 0.03 0.1 0.1 0.05 0.06 --max-rows 75000000 --eval-rows 100000 --eval-every 2000 >> data/training_10s.out 2>&1 &
 ```
+The learning rate decayed from 3e-4 between steps 330,000 and 370,000 and holds at `--lr-floor` of it since: 0.33 is about 1e-4 (2026-10-07: at 0.1, 3e-5, new hard, PvP and depths rows were absorbed too slowly and the curves went flat). If the averaged weights' probe KL climbs and stays up, lower it to 0.2.
 
-Battles found by the annealed search (`hard.py --select engine`, `found_*` shards) get the fifth share; incomplete mode is the fourth (0 until it has labels):
-```
---mix-start 0.03 0.42 0.42 0 0.06 --mix 0.03 0.1 0.1 0 0.06
-```
-
-Once incomplete-mode labels exist, add their share as a fourth number:
-```
---mix-start 0.03 0.45 0.45 0.03 --mix 0.03 0.1 0.1 0.05
-```
-
-For the last stretch of a run, decay the learning rate between two steps (pick FIRST and LAST from the current step and speed):
-```
---lr-decay FIRST LAST
-```
+The batch shares are `--mix HARD UPSET FIXED HIDDEN FOUND`: hard examples (`hard_*`, and the PvP duels' `pvp_*`), upsets, fixed-stat battles, incomplete mode (the duels' `hidden_*`, drawn only by its share) and the annealed search's finds (`found_*`). `--mix-start` and `--mix-until` set a curriculum for a new run; past `--mix-until` they do nothing.
 
 Every trainer option:
 - `--run-dir DIR`: where the run lives. A new directory starts a new model.
 - New-run settings, saved in the run, ignored when resuming: `--width W` (256 is fast), `--stat-prior`, `--smooth-prior` (the prior fitted to the rows at the start), `--language-after-plateau`, `--language-width W`, `--language-layers N`, `--stat-hidden H`, `--layers N`, `--stat-tokens`, `--stat-pairs`, `--stat-width S`, `--no-pack-embedding`, `--no-mutation-embedding`, `--language-from CHECKPOINT`.
 - Rates: `--lr`, `--language-lr`, `--lr-decay FIRST LAST`, `--lr-floor 0.05`, `--weight-decay`, `--dropout`, `--batch-size`.
 - Description encoder: a new run learns its own from scratch. `--freeze-language-at STEP` freezes it from that step (a later step than the current one trains it until then); `--language-after-plateau` (new run) keeps it frozen, every card vector 0, until the stat MLP plateaus, then thaws and freezes it by the stat MLP (`--frozen-min 12000`, `--thaw-min 6000`; `stat_drift` flat within `--plateau-spread 0.15` over `--plateau-evals 3` readings thaws it, a rise over `--learning-rise 1.5` × that level refreezes it) until `--language-budget 60000` thawed steps, then frozen for good; `--language-from CHECKPOINT` borrows another run's instead, frozen from the start.
-- Batch mix: `--mix HARD UPSET FIXED [HIDDEN]`, `--mix-start ...`, `--mix-until STEP`.
-- Data: `--max-rows N` (36 GB Mac: 60M at most), `--pvp-generations 2` (incomplete mode), `--reload-every 1000`, `--pack-labels` (slow pod disks only).
+- Batch mix: `--mix HARD UPSET FIXED [HIDDEN [FOUND]]`, `--mix-start ...`, `--mix-until STEP`.
+- Data: `--max-rows N` (the 10s run: 75M), `--pvp-generations 2` (incomplete mode), `--reload-every 1000`, `--pack-labels` (slow pod disks only).
 - Evaluation: `--eval-every`, `--eval-rows`, `--watch FILE` (`''` for none), `--ema-decay 0.999`.
 - Device: `--device cuda|mps|cpu`, `--bf16` (CUDA GPUs).
 - Moving machines: `--init-from CHECKPOINT` (a run directory without trainer state starts from these weights).
 
-Stop a trainer with Ctrl-C. Checkpoints are saved every 1,000 steps, so at most the steps since the last one are lost.
+Stop a trainer: Ctrl-C in its terminal, or for one started in the background, find its PID and kill it. Checkpoints are saved every 1,000 steps, so at most the steps since the last one are lost:
+```
+ps -eo pid,etime,args | grep 'training\.train' | grep -v grep
+kill PID
+```
 
 ## 5. Watching progress
 
 Tables: general, fixed-stat, hard, incomplete mode, live against averaged weights, and the watch list. The number is how many evaluations to show:
 ```
-python3 scripts/perf.py data/training_18t/log.jsonl 6
+python3 scripts/perf.py data/training_10s/log.jsonl 6
 ```
 
 The watch list in both turn orders, the model against the engine (the player always starts in the tower; the reversed order tests whether the model learned the matchup or only the order it saw):
@@ -154,18 +146,18 @@ python3 scripts/tune_generator.py --checkpoint data/training_10s/report_ema.chec
 
 The raw log, and the trainer's output (loading progress and errors):
 ```
-tail -3 data/training_18t/log.jsonl
-tail -5 data/training_18t.out
+tail -3 data/training_10s/log.jsonl
+tail -5 data/training_10s.out
 ```
 
 Real speed over one minute:
 ```
-a=$(grep -o '"step": [0-9]*' data/training_18t/log.jsonl | tail -1 | cut -d' ' -f2); sleep 60; b=$(grep -o '"step": [0-9]*' data/training_18t/log.jsonl | tail -1 | cut -d' ' -f2); echo "$(( (b - a) / 60 )) steps/s"
+a=$(grep -o '"step": [0-9]*' data/training_10s/log.jsonl | tail -1 | cut -d' ' -f2); sleep 60; b=$(grep -o '"step": [0-9]*' data/training_10s/log.jsonl | tail -1 | cut -d' ' -f2); echo "$(( (b - a) / 60 )) steps/s"
 ```
 
 Hard examples learned or memorised (training KL against held-out KL):
 ```
-python3 scripts/hard_fit.py data/training_18t/ema.checkpoint
+python3 scripts/hard_fit.py data/training_10s/ema.checkpoint
 ```
 
 Memory (keep "Memory Pressure" green in Activity Monitor):
@@ -183,23 +175,23 @@ The checkpoints in a run directory:
 
 When the watch list changes, the old list's best weights are kept as `*.previous_list.checkpoint`. To see the step a checkpoint was saved at:
 ```
-python3 -c 'import torch; print(torch.load("data/training_18t/watch_best_ema.checkpoint", map_location="cpu", weights_only=True)["metadata"])'
+python3 -c 'import torch; print(torch.load("data/training_10s/watch_best_ema.checkpoint", map_location="cpu", weights_only=True)["metadata"])'
 ```
 
 ## 6. Using the model
 
 A matchup's win chance in both turn orders. `--simulate` adds the engine's answer:
 ```
-python3 -m card_engine.training.predict --checkpoint data/training_18t/ema.checkpoint --ally "Fate Seamstress" "Judgement Day" Parallax "Robin Hood" --ally-blue Fate --tower 105 Impossible --simulate
-python3 -m card_engine.training.predict --checkpoint data/training_18t/ema.checkpoint --ally "Vampire Lord@GaPl" Set "Good Boy@Pl/Storm" Archer --ally-red Stormcaller@Galaxy --enemy "Immortal Witch" Archer "Good Boy" Set --enemy-blue Fate@Crystal --simulate
+python3 -m card_engine.training.predict --checkpoint data/training_10s/ema.checkpoint --ally "Fate Seamstress" "Judgement Day" Parallax "Robin Hood" --ally-blue Fate --tower 105 Impossible --simulate
+python3 -m card_engine.training.predict --checkpoint data/training_10s/ema.checkpoint --ally "Vampire Lord@GaPl" Set "Good Boy@Pl/Storm" Archer --ally-red Stormcaller@Galaxy --enemy "Immortal Witch" Archer "Good Boy" Set --enemy-blue Fate@Crystal --simulate
 ```
 Cards are written `Name[@Border][/Mutation]`, supports `Name[@Tier]`. A fixed-stat enemy: `--enemy-stats HP ATK`.
 
 Generate counters (the engine verifies every team):
 ```
-python3 -m card_engine.training.generate --checkpoint data/training_18t/ema.checkpoint --tower 105 Impossible
-python3 -m card_engine.training.generate --checkpoint data/training_18t/ema.checkpoint --enemy "Immortal Witch" Archer "Good Boy" Set --pool own
-python3 -m card_engine.training.generate --checkpoint data/training_18t/ema.checkpoint --enemies 8 --pool restricted --role defend
+python3 -m card_engine.training.generate --checkpoint data/training_10s/ema.checkpoint --tower 105 Impossible
+python3 -m card_engine.training.generate --checkpoint data/training_10s/ema.checkpoint --enemy "Immortal Witch" Archer "Good Boy" Set --pool own
+python3 -m card_engine.training.generate --checkpoint data/training_10s/ema.checkpoint --enemies 8 --pool restricted --role defend
 ```
 Generator options:
 - Pools: `--pool own|custom|restricted|all`, `--enemy-pool ...`.
@@ -223,7 +215,7 @@ Options: `--bans CARD ...` (your Depth bans, up to 14) or a preset (`speedrun`, 
 
 Model against engine on a suite of battles:
 ```
-python3 -m card_engine.training.verify --checkpoint data/training_18t/ema.checkpoint --suite tower --difficulty Impossible --n 200 --show 20
+python3 -m card_engine.training.verify --checkpoint data/training_10s/ema.checkpoint --suite tower --difficulty Impossible --n 200 --show 20
 ```
 
 ## 7. Your collection and the player base
@@ -262,9 +254,9 @@ bash scripts/pod_sync.sh IP PORT
 On the pod, after copying the code, build the engine, then start the trainer with the GPU options:
 ```
 cd /workspace/card_engine && bash sim_js/setup.sh
-python -m card_engine.training.train --run-dir data/training_18t --device cuda --bf16 --batch-size 512 --lr 3e-4 --weight-decay 0.05 --dropout 0.1 --mix 0.03 0.1 0.1 --eval-rows 100000 2>&1 | tee -a data/training_18t.out
+python -m card_engine.training.train --run-dir data/training_10s --device cuda --bf16 --batch-size 512 --lr 3e-4 --weight-decay 0.05 --dropout 0.1 --mix 0.03 0.1 0.1 --eval-rows 100000 2>&1 | tee -a data/training_10s.out
 ```
-To continue a Mac run there, copy `data/training_18t/` up first (it holds the checkpoints and `trainer.pt`).
+To continue a Mac run there, copy `data/training_10s/` up first (it holds the checkpoints and `trainer.pt`).
 
 Stop the pod at a set time (UTC), archiving every run to `/workspace` first:
 ```
@@ -274,7 +266,7 @@ cat /workspace/finish.log
 
 Before the balance runs out, bring everything down from the Mac:
 ```
-rsync -az --progress -e "ssh -p PORT" root@IP:/workspace/card_engine/data/training_18t/ data/training_18t/
+rsync -az --progress -e "ssh -p PORT" root@IP:/workspace/card_engine/data/training_10s/ data/training_10s/
 rsync -az --ignore-existing --progress -e "ssh -p PORT" --exclude 'partial_*' root@IP:/workspace/card_engine/data/labels/store/ data/labels/store/
 ```
 
