@@ -144,6 +144,11 @@ The watch list in both turn orders, the model against the engine (the player alw
 python3 scripts/turns.py data/training_10s/ema.checkpoint
 ```
 
+Tune the generator's settings by the engine: each trial generates counters to tower floors (105, 100, 95 Impossible by default) with one setting, the engine plays the best 8 per floor attacking first, and the trials print best first (trial 0 is the current defaults). One JSON line per trial goes to `data/tune_generator.jsonl` as it finishes:
+```
+python3 scripts/tune_generator.py --checkpoint data/training_10s/step298k_ema.checkpoint --trials 24 --workers 2
+```
+
 The raw log, and the trainer's output (loading progress and errors):
 ```
 tail -3 data/training_18t/log.jsonl
