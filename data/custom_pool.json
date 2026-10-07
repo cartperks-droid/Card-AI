@@ -1,0 +1,180 @@
+{
+ "cards": [
+  {
+   "card": 10,
+   "name": "Arthur",
+   "border": 10,
+   "mutation": "None",
+   "count": 2
+  },
+  {
+   "card": 21,
+   "name": "Ice Queen",
+   "border": 6,
+   "mutation": "None",
+   "count": 1
+  },
+  {
+   "card": 22,
+   "name": "Three-Legged Golden Crow",
+   "border": 6,
+   "mutation": "None",
+   "count": 1
+  },
+  {
+   "card": 25,
+   "name": "Brunhilde",
+   "border": 9,
+   "mutation": "None",
+   "count": 1
+  },
+  {
+   "card": 28,
+   "name": "Titan",
+   "border": 5,
+   "mutation": "None",
+   "count": 1
+  },
+  {
+   "card": 31,
+   "name": "Phoenix",
+   "border": 5,
+   "mutation": "None",
+   "count": 1
+  },
+  {
+   "card": 32,
+   "name": "Hoarfrost Phoenix",
+   "border": 6,
+   "mutation": "None",
+   "count": 1
+  },
+  {
+   "card": 50,
+   "name": "Judgement Day",
+   "border": 1,
+   "mutation": "None",
+   "count": 1
+  },
+  {
+   "card": 68,
+   "name": "Vizier",
+   "border": 6,
+   "mutation": "None",
+   "count": 1
+  },
+  {
+   "card": 71,
+   "name": "Amenhotep",
+   "border": 9,
+   "mutation": "None",
+   "count": 1
+  },
+  {
+   "card": 73,
+   "name": "Horus",
+   "border": 5,
+   "mutation": "None",
+   "count": 1
+  },
+  {
+   "card": 81,
+   "name": "Demon Hunter",
+   "border": 10,
+   "mutation": "None",
+   "count": 1
+  },
+  {
+   "card": 83,
+   "name": "Gambler",
+   "border": 10,
+   "mutation": "None",
+   "count": 1
+  },
+  {
+   "card": 84,
+   "name": "Stone Scientist",
+   "border": 10,
+   "mutation": "None",
+   "count": 1
+  },
+  {
+   "card": 97,
+   "name": "Joe",
+   "border": 9,
+   "mutation": "None",
+   "count": 1
+  },
+  {
+   "card": 110,
+   "name": "AK4-ON1",
+   "border": 9,
+   "mutation": "None",
+   "count": 1
+  },
+  {
+   "card": 112,
+   "name": "River Dragon",
+   "border": 10,
+   "mutation": "None",
+   "count": 1
+  },
+  {
+   "card": 126,
+   "name": "Immortal Cultivator",
+   "border": 3,
+   "mutation": "None",
+   "count": 1
+  },
+  {
+   "card": 143,
+   "name": "Brachiosaurus",
+   "border": 9,
+   "mutation": "None",
+   "count": 1
+  },
+  {
+   "card": 144,
+   "name": "Tricerotops",
+   "border": 9,
+   "mutation": "None",
+   "count": 1
+  },
+  {
+   "card": 145,
+   "name": "Pterodactylus",
+   "border": 9,
+   "mutation": "None",
+   "count": 2
+  },
+  {
+   "card": 205,
+   "name": "Chronus The Hoarder",
+   "border": 10,
+   "mutation": "None",
+   "count": 1
+  },
+  {
+   "card": 206,
+   "name": "Malik The Sovereign",
+   "border": 9,
+   "mutation": "None",
+   "count": 1
+  },
+  {
+   "card": 207,
+   "name": "Gideon The Insatiable",
+   "border": 9,
+   "mutation": "None",
+   "count": 1
+  },
+  {
+   "card": 208,
+   "name": "Lilith the Enchantress",
+   "border": 3,
+   "mutation": "None",
+   "count": 1
+  }
+ ],
+ "supports": []
+}
