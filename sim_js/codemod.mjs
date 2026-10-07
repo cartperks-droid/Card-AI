@@ -61,7 +61,8 @@ exact("if (alive(ally)) ally.damage += damage * 1.25",
 // Hades's The Underworld (user, 2026-10-07): it cannot copy Parallax's Paradox, and a fallen Hades offers only its own
 // The Underworld, never the ability it copied, so a Hades behind a fallen Hades copies nothing ("two Hades
 // consecutively is wrong"). His engine copied both, so Parallax / Hades / Hades / Robin Hood beat floor 105 Impossible
-// every time (each Hades a second Parallax). On entry, and when Pandora's Box gains The Underworld.
+// every time (each Hades a second Parallax). On entry, and when Pandora's Box gains The Underworld. Paradox passed over
+// or not makes no difference: Parallax's one activation is global (user).
 exact("function resolvePandoraGainedAbility(",
       "function underworldCopy(fallen: CombatCard[], names: (card: CombatCard) => (string | null)[], skip: string[] = []): string | null {\n"
       + "  for (const card of fallen) {\n"
@@ -71,7 +72,29 @@ exact("function resolvePandoraGainedAbility(",
       + "  }\n"
       + "  return null\n"
       + "}\n\n"
+      + "// Hades fires The Underworld again each time it comes back to the front (user, 2026-10-07: a second Hades with\n"
+      + "// Piccolo behind it copies Piccolo once Piccolo has swapped in and died); its copied ability is dropped, so the\n"
+      + "// copy is the newest fallen ally's, and that ability gets its own entry. Other entry abilities fire once.\n"
+      + "function underworldReturn(runtime: Runtime) {\n"
+      + "  for (const team of ['Allies', 'Enemies'] as BattleTeam[]) {\n"
+      + "    runtime.state.teams[team].forEach((card, index) => {\n"
+      + "      if ((card.definition as any).ability !== 'The Underworld') return\n"
+      + "      if (index > 0) {\n"
+      + "        if (card.flags.underworldFront) { card.flags.underworldFront = false; card.flags.underworldAway = true }\n"
+      + "        return\n"
+      + "      }\n"
+      + "      card.flags.underworldFront = true\n"
+      + "      if (card.flags.underworldAway && card.entered && alive(card) && card.abilityOverride !== null) {\n"
+      + "        card.flags.underworldAway = false\n"
+      + "        card.abilityOverride = undefined\n"
+      + "        card.entered = false\n"
+      + "      }\n"
+      + "    })\n"
+      + "  }\n"
+      + "}\n\n"
       + "function resolvePandoraGainedAbility(")
+exact("    if (!attacker || !defender) break\n\n    onEntry(runtime, attacker)\n",
+      "    if (!attacker || !defender) break\n\n    underworldReturn(runtime)\n    onEntry(runtime, attacker)\n")
 exact("    const copied = [...runtime.state.fallen[card.team]].reverse()\n      .flatMap((fallen) => abilityNames(fallen))\n      .find((candidate) => candidate !== 'The Underworld' && candidate !== \"Pandora's Box\")\n",
       "    const copied = underworldCopy([...runtime.state.fallen[card.team]].reverse(), (fallen) => abilityNames(fallen), [\"Pandora's Box\"])\n")
 exact("    const copied = [...runtime.state.fallen[card.team]].reverse()\n      .map((fallen) => ability(fallen))\n      .find((candidate) => candidate && candidate !== 'The Underworld')\n",

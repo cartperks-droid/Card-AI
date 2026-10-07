@@ -28,7 +28,7 @@
   X(lotusReviveUsed) X(manaShield) X(mirrorImageReturned) X(moonlightUsed) X(naughtyListDrain) X(noRng) X(onBonusTurn) \
   X(ouroborosActive) X(paired) X(pandoraRolled) X(paradox) X(perseveranceBoosted) X(revealed) X(revived) X(sealed) \
   X(shapeshifterActive) X(sixRealmsRolled) X(slowed) X(stealChristmasUsed) X(suppressArmageddonOnce) X(suppressOnDeath) \
-  X(transformed) X(undeadPractitioner) X(undyingActive) X(unholyActive) X(voidReady) X(wail) X(warScytheEntry) \
+  X(transformed) X(undeadPractitioner) X(underworldAway) X(underworldFront) X(undyingActive) X(unholyActive) X(voidReady) X(wail) X(warScytheEntry) \
   X(warScytheEntryUsed) X(witchCurseStolen) X(worldCooldown) X(zeroWeaponsRolled)
 #define COUNTER_LIST(X) X(ahimsaTurns) X(ascension) X(attacks) X(bindFatePair) X(bleed) X(blockHp) X(bloodlustBase) \
   X(cancerThreshold) X(cosmicRivalryDR) X(d8Reduction) X(damageTaken) X(death) X(defensiveManeuver) X(divinationMoves) \

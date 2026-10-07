@@ -3,7 +3,6 @@
 These are open rule and class questions, most important first. The daily task picks from here and adds new ones as they come up. Once a check is answered, move it to "Answered" with the date and result.
 
 ## Open
-0. **Hades's copy timing** (2026-10-07). The user: a second Hades with Piccolo behind it copies Piccolo after Piccolo swaps in and dies. Does Hades copy every time it comes back to the front, or only when it copied nothing before? And do other entry abilities (Admiral Ice's slow) fire again when a card returns to the front after a Piccolo swap? Also: with a fallen Parallax newest, does Hades copy the ally that fell before it, or nothing?
 1. **Class spot-checks.** Next is toy (7 reviewed), then avian (3), dragon (5) and demon (7). Only check the *Reviewed* rows in `docs/classes.md` (`python -m card_engine.class_report` regenerates it).
 
 2. **Odin's dodge cost.** Is it 20% of current HP (it can never die to normal attacks) or 20% of max HP (dead after 5 dodges)?
@@ -16,6 +15,7 @@ These are open rule and class questions, most important first. The daily task pi
    - **New cards:** about 16 cards in his data but not ours. Do they exist in game?
 
 ## Answered
+- 2026-10-07 **Hades's copy timing** (user): it copies again every time it comes back to the front (the second Hades copies Piccolo after Piccolo swaps in and dies); other entry abilities do not re-fire; a fallen Parallax is passed over, which makes no difference since Parallax's one activation is global. Corrected in both engines.
 - 2026-10-07 **Hades** (user): cannot copy Parallax's Paradox; a fallen Hades offers only The Underworld, so two Hades in a row is wrong. Parallax / Hades / Hades / Robin Hood, which his engine had winning floor 105 every time, now loses. Corrected in both engines.
 - 2026-10-03 **Ruby red supports** (user): The One Ring at Ruby is 256%; the old 157% reading was wrong. Ruby Dinosaur King is 207%, and 334% on Prehistoric cards. The engine's Ruby rarity ×500 gives exactly these: 207%, and 334.76% on Prehistoric cards, which the game displays as 334. Every red support now fits ×500.
 - 2026-10-03 **Card stats:** DaddyDrago's engine data is more accurate (user). His rarities (4 cards), stat multipliers (36 cards, incl. HP multipliers for Sciron, Gorilla, Yeti, Vampire Lord) and Final Testament's 7.5/12.5 are adopted; see `docs/drago_crosscheck.md`.

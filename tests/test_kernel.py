@@ -61,6 +61,20 @@ class KernelTests(unittest.TestCase):
         probs, _ = kernel.evaluate(self.catalog, battle, 1, fixed=(1, per_card))
         self.assertLess(probs[0], 0.01)
 
+    def test_hades_copies_again_back_at_the_front(self):
+        # user, 2026-10-07: a second Hades with Piccolo behind it copies Piccolo once Piccolo swaps in and dies; both
+        # engines play these lines alike
+        from card_engine.teams import parse_side, spec
+        rng = random.Random(11)
+        for seed, ally in enumerate((["Hades", "Hades", "Piccolo", "Robin Hood"], ["Robin Hood", "Hades", "Piccolo", "Hades"],
+                                     ["Hades", "Piccolo", "Hades", "Piccolo"])):
+            enemy = labels.random_spec(rng, self.catalog, cards=self.pool)
+            battle = spec(parse_side(self.catalog, ally), parse_side(self.catalog, ["Archer", "Archer", "Archer", "Archer"]))
+            battle["cards"][1] = enemy["cards"][1]
+            self.same(battle, seed + 1)
+            self.same({**battle, "cards": battle["cards"][::-1], "borders": battle["borders"][::-1],
+                       "mutations": battle["mutations"][::-1], "arts": battle["arts"][::-1]}, seed + 7)
+
     def test_a_runaway_battle_with_hundreds_of_created_cards(self):
         rng = random.Random(22883)  # label shard 22883, row 1219: Pandora's rolls create 836 cards
         spec = [labels.random_spec(rng, self.catalog) for _ in range(1220)][-1]
