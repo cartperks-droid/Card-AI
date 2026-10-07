@@ -372,12 +372,12 @@ class TrainingTests(unittest.TestCase):
         hidden = strategy.stat_inputs(stats, visible)
         self.assertTrue(bool((hidden[:, 0, 0, 2 + 6 * 5:] == 0).all()))  # nothing about an unseen card
 
-    def test_incomplete_mode_rows_hide_their_side_and_only_the_newest_fields_count(self):
+    def test_incomplete_mode_rows_hide_their_side_and_only_the_newest_generations_count(self):
         from card_engine.training.labels import GENERATION_SEEDS, HIDDEN_TEAM
         from card_engine.training.train import Inputs, newest_generations
         names = [Path(f"hidden_{g * GENERATION_SEEDS + n:08d}.npz") for g in (0, 1, 2) for n in (1, 2)]
-        kept = newest_generations([Path("shard_00000001.npz"), *names], 2)
-        self.assertEqual({p.name for p in kept}, {"shard_00000001.npz", *(p.name for p in names[2:])})
+        kept = newest_generations([Path("shard_00000001.npz"), Path("pvp_00000001.npz"), *names], 2)
+        self.assertEqual({p.name for p in kept}, {"shard_00000001.npz", "pvp_00000001.npz", *(p.name for p in names[2:])})
         team = {key: value[0] for key, value in labels.random_spec(random.Random(4), load_catalog()).items()}
         rows = {key: torch.tensor([[team[key], HIDDEN_TEAM[key]], [HIDDEN_TEAM[key], team[key]]], dtype=torch.int16)
                 for key in labels.FIELDS}
@@ -387,6 +387,23 @@ class TrainingTests(unittest.TestCase):
         self.assertEqual(metadata["card_visible"][1].tolist(), [[False] * 4, [True] * 4])
         self.assertEqual(metadata["support_visible"][1, 0].tolist(), [False, False])
         self.assertEqual(metadata["mode_ids"].tolist(), [1, 1])
+
+    def test_pvp_players_own_more_with_rolls_and_luck_and_attackers_stay_near_the_defender(self):
+        import numpy as np
+        from card_engine.training import incomplete
+        progression = incomplete.Progression(load_catalog())
+        rng = np.random.default_rng(1)
+        sizes = [len(progression.pool(rng, rolls, luck).entries) for rolls, luck in ((1e5, 1), (1e7, 1), (1e7, 100), (1e9, 100))]
+        self.assertEqual(sizes, sorted(sizes))
+        self.assertLess(sizes[0], sizes[-1])
+        pool = progression.pool(rng, 1e9, 100)
+        self.assertTrue((pool.copies >= 1).all() and (pool.copies <= incomplete.MAX_COPIES).all())
+        self.assertEqual(len(pool.reds), 5 * len(load_catalog().red_supports))  # every support at every tier
+        self.assertAlmostEqual(incomplete.mutation_chance(1), 1 / 2000)
+        self.assertAlmostEqual(incomplete.mutation_chance(100), 1 / 150)
+        draws = np.array([incomplete.draw_attacker(rng, 1e7, 3) for _ in range(2000)])
+        self.assertTrue(((draws[:, 0] >= 1e5) & (draws[:, 0] <= 1e9) & (draws[:, 1] >= 1) & (draws[:, 1] <= 100)).all())
+        self.assertLess(np.log10(draws[:, 0]).std(), np.log10(draws[:, 1]).std())  # luck varies more than rolls
 
     def test_found_shards_are_their_own_kind(self):
         import numpy as np

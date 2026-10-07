@@ -90,8 +90,10 @@ def _read_shard(item):
     rows = {key: arrays[key][keep].astype(np.int16) for key in FIELDS}
     rows.update({key: arrays[key][keep] for key in BATTLE_FIELDS})
     rows["target"] = (arrays["probs"][keep, :2] / finished[keep, None]).astype(np.float32)
-    # 1: hard examples (the model's disagreements); 2: found by the annealed search (training.hard --select engine)
-    rows["hard"] = np.full(int(keep.sum()), 1 if path.name.startswith("hard_") else 2 if path.name.startswith("found_") else 0,
+    # 1: hard examples (the model's disagreements: training.hard, and the PvP duels' complete-mode battles, the model's
+    # own counters, training.incomplete);
+    # 2: found by the annealed search (training.hard --select engine)
+    rows["hard"] = np.full(int(keep.sum()), 1 if path.name.startswith(("hard_", "pvp_")) else 2 if path.name.startswith("found_") else 0,
                            dtype=np.int8)
     rows["favourite"] = stat_favourite({key: torch.as_tensor(value) for key, value in rows.items()
                                         if key != "target"}).numpy().astype(np.int8)
@@ -177,8 +179,8 @@ def capped_paths(paths, max_rows):
     rows come to about max_rows (2,000 per shard, 1,600 per hard shard). The share is fixed at the first call, so a
     reload only adds shards, never swaps them (2026-10-06: loading the pod's and the Mac's 165M rows crashed the
     Mac)."""
-    hard = [path for path in paths if path.name.startswith(("hard_", "found_"))]
-    rest = [path for path in paths if not path.name.startswith(("hard_", "found_"))]
+    hard = [path for path in paths if path.name.startswith(("hard_", "found_", "pvp_"))]
+    rest = [path for path in paths if not path.name.startswith(("hard_", "found_", "pvp_"))]
     if not _CAP:
         _CAP.update(share=min(1.0, max(0, max_rows - 1600 * len(hard)) / max(1, 2000 * len(rest))),
                     first={path.name for path in rest})
@@ -567,8 +569,8 @@ def mix_rows(rows):
 
 
 def newest_generations(paths, keep):
-    """The paths without incomplete-mode shards of fields older than the newest `keep` generations: the hidden side
-    means the current field of strong teams (user, 2026-10-06), so labels against older fields stop counting."""
+    """The paths without incomplete-mode shards older than the newest `keep` generations: the hidden side means the
+    attackers the current model builds (training.incomplete), so labels against older, weaker attackers stop counting."""
     generations = {path: int(path.stem.split("_")[1]) // GENERATION_SEEDS for path in paths if path.name.startswith("hidden_")}
     if not generations:
         return paths
@@ -588,7 +590,7 @@ def mix_shares(step, mix, mix_start=None, mix_until=None):
 def train(*, steps=None, batch_size=512, lr=3e-4, warmup=1000, weight_decay=0.05, dropout=0.1, freeze_language_at=None,
           eval_every=1000, init_from=None, language_lr=None, mix=(0.05, 0.0, 0.0), layers=None, architecture=None, language=None, language_from=None,
           mix_start=None, mix_until=None, ema_decay=0.999, pack_labels=False, bf16=False, lr_decay=None, lr_floor=0.05,
-          watch=None, max_rows=None, eval_rows=None, field_generations=2, smooth_prior=False, language_after_plateau=False, thaw_min=6000, frozen_min=12000,
+          watch=None, max_rows=None, eval_rows=None, pvp_generations=2, smooth_prior=False, language_after_plateau=False, thaw_min=6000, frozen_min=12000,
           language_budget=60000, plateau_spread=0.15, plateau_evals=3, learning_rise=1.5,
           checkpoint_every=1000, reload_every=1000, device=None, run_dir=RUN_DIR, label_root=SHARD_DIR):
     """Train in run_dir, resuming its model and optimizer if both are there. Otherwise init_from (a model checkpoint,
@@ -712,7 +714,7 @@ def train(*, steps=None, batch_size=512, lr=3e-4, warmup=1000, weight_decay=0.05
     tokens = inputs.data.description_tokens
     from .flags import snapshot
     label_dir = latest_label_dir(label_root)
-    train_rows, val_rows = load_split(label_dir, device, pack=pack_labels, max_rows=max_rows, generations=field_generations)
+    train_rows, val_rows = load_split(label_dir, device, pack=pack_labels, max_rows=max_rows, generations=pvp_generations)
     if train_rows is None:
         raise SystemExit("No labels are valid under the current rules: see `python -m card_engine.training.flags status`")
     if fresh and smooth_prior:  # the smooth stat prior's two numbers, fitted to this run's first rows and kept
@@ -788,7 +790,7 @@ def train(*, steps=None, batch_size=512, lr=3e-4, warmup=1000, weight_decay=0.05
             if step and step % reload_every == 0:  # new shards, or new rules
                 label_dir = latest_label_dir(label_root)
                 fresh = load_split(label_dir, device, release=release, pack=pack_labels, max_rows=max_rows,
-                                   generations=field_generations)
+                                   generations=pvp_generations)
                 if fresh[0] is None:  # every row held back (an undeclared engine change): keep the rows already loaded
                     print(json.dumps({"step": step, "labels_held_back": "no rows are valid under the current rules; "
                                       "training continues on the loaded rows until the change is declared (flags status)"}),
@@ -989,8 +991,8 @@ if __name__ == "__main__":
                         "rest uniformly from the others")
     parser.add_argument("--mix-start", type=float, nargs="+", metavar="SHARE",
                         help="the shares at step 0, moving linearly to --mix at --mix-until (a curriculum)")
-    parser.add_argument("--field-generations", type=int, default=2,
-                        help="newest field generations whose incomplete-mode labels count (training.incomplete)")
+    parser.add_argument("--pvp-generations", type=int, default=2,
+                        help="newest model generations (training.incomplete: its step // 50,000) whose incomplete-mode labels count")
     parser.add_argument("--mix-until", type=int, help="step at which the shares reach --mix")
     parser.add_argument("--layers", type=int, help="strategic transformer layers, for a run starting from random weights")
     parser.add_argument("--stat-width", type=int, default=0,
@@ -1059,7 +1061,7 @@ if __name__ == "__main__":
                     "feedforward_width": 4 * parsed.language_width},
           language_from=parsed.language_from, mix_start=parsed.mix_start, mix_until=parsed.mix_until, ema_decay=parsed.ema_decay, pack_labels=parsed.pack_labels,
           bf16=parsed.bf16, lr_decay=parsed.lr_decay, lr_floor=parsed.lr_floor, watch=parsed.watch or None, max_rows=parsed.max_rows, eval_rows=parsed.eval_rows,
-          field_generations=parsed.field_generations, plateau_spread=parsed.plateau_spread, plateau_evals=parsed.plateau_evals,
+          pvp_generations=parsed.pvp_generations, plateau_spread=parsed.plateau_spread, plateau_evals=parsed.plateau_evals,
           learning_rise=parsed.learning_rise,
           smooth_prior=parsed.smooth_prior, language_after_plateau=parsed.language_after_plateau, thaw_min=parsed.thaw_min,
           frozen_min=parsed.frozen_min, language_budget=parsed.language_budget,

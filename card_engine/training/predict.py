@@ -47,7 +47,7 @@ class Classifier:
 
     def win_a(self, specs, batch=2048, fixed=None, hidden=None):
         """P(side A wins) per spec. fixed: (side, (HP, ATK, HP multiplier applies)) sets that side's starting stats.
-        hidden: the side the model is not shown (incomplete mode: the field of strong teams, training.incomplete)."""
+        hidden: the side the model is not shown (incomplete mode: the defender's unseen attackers, training.incomplete)."""
         out = []
         with torch.no_grad():
             for start in range(0, len(specs), batch):
@@ -70,9 +70,10 @@ class Classifier:
         return np.stack([first, second], 1)
 
 
-    def field_win(self, teams):
-        """The incomplete-mode win chance of each team defending against the attackers it cannot see (the field). Only
-        the defender has hidden information (user, 2026-10-07): an attacker sees the team it attacks."""
+    def defend_win(self, teams):
+        """The incomplete-mode win chance of each team defending against the attackers it cannot see: players near its
+        level who see it and counter it (training.incomplete's duels). Only the defender has hidden information (user,
+        2026-10-07): an attacker sees the team it attacks."""
         from .labels import HIDDEN_TEAM
         return 1 - self.win_a([spec(HIDDEN_TEAM, team) for team in teams], hidden=0)
 

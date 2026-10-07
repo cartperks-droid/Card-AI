@@ -98,7 +98,7 @@ class GeneratorTests(unittest.TestCase):
             with torch.no_grad():
                 defend = space.logits(hidden, space.fixed(teams), hidden=0).softmax(-1)[:, 1].numpy()
                 other = space.logits(space.fixed(teams[::-1]), space.fixed(teams), hidden=0).softmax(-1)[:, 1].numpy()
-            np.testing.assert_allclose(defend, classifier.field_win(teams), atol=1e-5, err_msg=str(layout))
+            np.testing.assert_allclose(defend, classifier.defend_win(teams), atol=1e-5, err_msg=str(layout))
             np.testing.assert_allclose(other, defend, atol=1e-5)  # nothing of the hidden side's tuple gets through
 
     def test_fixed_enemy_stats_reach_the_classifier(self):
@@ -167,7 +167,7 @@ class GeneratorTests(unittest.TestCase):
         found = generate.model_search(self.space, None, [], evaluations=120, role="defend", population=16, parents=4,
                                       children=4, catalog=self.catalog, incomplete=True)
         best, win = found[0]
-        self.assertAlmostEqual(win, float(self.classifier.field_win([best])[0]), places=4)
+        self.assertAlmostEqual(win, float(self.classifier.defend_win([best])[0]), places=4)
 
     def test_own_pool_respects_copy_counts(self):
         deck = {"cards": [{"card": 1, "border": 1, "mutation": "None", "count": 1},

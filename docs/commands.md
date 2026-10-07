@@ -71,12 +71,11 @@ caffeinate -i nice -n 19 bash -c 'while true; do python3 -m card_engine.training
 ```
 Options: `--candidates 12000` (battles per enemy; 6000 is half the time and still climbs floor 105), `--rounds 40` (enemies per shard), `--keep 16`, `--generator-every 4` (0: no generator rounds). `--tower 105 Impossible`: every enemy on that floor (its fixed team, or random enemies on floors without one) instead of drawn ones.
 
-Incomplete mode (PvP): build a field generation, then mine labels against it. Rebuild the field with newer weights as the model improves:
+PvP duels: one defender built blind (incomplete mode) against 32 attackers near its rolls and luck, each countering it from its own pool (complete mode). It writes `pvp_*` (complete rows, hard examples) and `hidden_*` (the defender's mean) shards. Point it at the newest checkpoint as the model improves:
 ```
-python3 -m card_engine.training.incomplete field --checkpoint data/training_18t/ema.checkpoint --workers 3
-caffeinate -i nice -n 19 bash -c 'while true; do python3 -m card_engine.training.incomplete labels --shards 5 --checkpoint data/training_18t/ema.checkpoint --workers 3; done' >> incomplete.out 2>&1 &
+caffeinate -i nice -n 19 bash -c 'while true; do python3 -m card_engine.training.incomplete --shards 5 --checkpoint data/training_10s/ema.checkpoint --workers 3; done' >> pvp.out 2>&1 &
 ```
-Field options: `--size 48`, `--candidates 160`, `--opponents 24`. Label options: `--rounds 40`, `--opponents 16`.
+Options: `--duels 8` (per shard), `--device cpu` beside a trainer.
 
 See what is running, and stop loops:
 ```
@@ -125,7 +124,7 @@ Every trainer option:
 - Rates: `--lr`, `--language-lr`, `--lr-decay FIRST LAST`, `--lr-floor 0.05`, `--weight-decay`, `--dropout`, `--batch-size`.
 - Description encoder: a new run learns its own from scratch. `--freeze-language-at STEP` freezes it from that step (a later step than the current one trains it until then); `--language-after-plateau` (new run) keeps it frozen, every card vector 0, until the stat MLP plateaus, then thaws and freezes it by the stat MLP (`--frozen-min 12000`, `--thaw-min 6000`; `stat_drift` flat within `--plateau-spread 0.15` over `--plateau-evals 3` readings thaws it, a rise over `--learning-rise 1.5` × that level refreezes it) until `--language-budget 60000` thawed steps, then frozen for good; `--language-from CHECKPOINT` borrows another run's instead, frozen from the start.
 - Batch mix: `--mix HARD UPSET FIXED [HIDDEN]`, `--mix-start ...`, `--mix-until STEP`.
-- Data: `--max-rows N` (36 GB Mac: 60M at most), `--field-generations 2` (incomplete mode), `--reload-every 1000`, `--pack-labels` (slow pod disks only).
+- Data: `--max-rows N` (36 GB Mac: 60M at most), `--pvp-generations 2` (incomplete mode), `--reload-every 1000`, `--pack-labels` (slow pod disks only).
 - Evaluation: `--eval-every`, `--eval-rows`, `--watch FILE` (`''` for none), `--ema-decay 0.999`.
 - Device: `--device cuda|mps|cpu`, `--bf16` (CUDA GPUs).
 - Moving machines: `--init-from CHECKPOINT` (a run directory without trainer state starts from these weights).

@@ -20,7 +20,7 @@ This project simulates a Roblox "Snap!"-style card game and trains an AI to pred
   - `predict.py`: the classifier's win rate for named teams, both turn orders (`--simulate` adds the engine).
   - `generate.py`: the generator (design below): counters to a named enemy or to broadly generated enemies, verified by the engine.
   - `hard.py`: hard examples, the battles where the model and the engine disagree most.
-  - `incomplete.py`: incomplete mode (PvP, user 2026-10-06): the defender does not know its attacker, the attacker sees the defender (user, 2026-10-07), so only defenders are hidden-information: the hidden attacker stands for the *field*, self-play generations of strong defenders and of the attackers that counter them, proposed by the model search and confirmed by the engine; labels are a defender's mean result against the attacker field.
+  - `incomplete.py`: PvP duels (user, 2026-10-06/07): the defender does not know its attacker, the attacker sees the defender. A defender at a progression (rolls 100k–1B, luck 1–100×; its pool a random draw by rolls × luck, any mutation 1/2,000–1/150 with luck) builds one team in incomplete mode; 32 attackers near its progression (luck varying more than rolls) each build a complete-mode counter from their own pool. The engine plays them: every battle is a complete hard row (`pvp_*`), the defender's mean win its incomplete row (`hidden_*`).
   - `crosscheck.py`: our engine against DaddyDrago's own unmodified battle code, on fixed-stat battles (`docs/drago_crosscheck.md`).
 - `card_engine/tower.py`: tower floors (DaddyDrago's formula and fixed teams).
 - `card_engine/teams.py`: teams by name: `"Name[@Border][/Mutation]"` cards, `"Name[@Tier]"` supports.

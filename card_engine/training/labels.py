@@ -245,7 +245,7 @@ POD_SEEDS = 5_000_000  # the pod numbers from here up (docs/runpod.md); the Mac 
 # What an incomplete-mode row stores for its unseen side; the model never reads it (card_visible), only valid ids.
 HIDDEN_TEAM = {"cards": [1, 2, 3, 4], "borders": [1] * 4, "mutations": [0] * 4, "arts": [0] * 4,
                "red": 0, "red_tier": 0, "blue": 0, "blue_tier": 0}
-GENERATION_SEEDS = 1_000_000  # incomplete-mode shards: hidden_<generation * this + n>, so the name gives the field
+GENERATION_SEEDS = 1_000_000  # incomplete-mode shards: hidden_<generation * this + n>, so the name gives the model generation
 
 
 def next_seed(existing, first_seed=None):
@@ -317,9 +317,9 @@ def possible_rows(cards):
 
 def shard_paths(directory):
     """Every label shard: random battles (shard_*), fixed-stat battles (fixed_*), hard examples (hard_*, training.hard)
-    incomplete-mode battles (hidden_*, training.incomplete) and the annealed search's own winners (found_*,
-    training.hard --select engine); partial files excluded."""
-    return [path for kind in ("shard", "fixed", "hard", "hidden", "found") for path in Path(directory).glob(f"{kind}_*.npz")]
+    incomplete-mode battles (hidden_*, training.incomplete), PvP battles in complete mode (pvp_*, training.incomplete)
+    and the annealed search's own winners (found_*, training.hard --select engine); partial files excluded."""
+    return [path for kind in ("shard", "fixed", "hard", "hidden", "found", "pvp") for path in Path(directory).glob(f"{kind}_*.npz")]
 
 
 def battle_arrays(shard, rows):

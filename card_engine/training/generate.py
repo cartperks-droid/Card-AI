@@ -418,7 +418,7 @@ def counters(space, enemy, *, count=32, restarts=64, settings=Settings(), seed=1
         if not teams:
             continue
         if settings.incomplete:
-            score = space.classifier.field_win(teams)
+            score = space.classifier.defend_win(teams)
         else:
             score = space.classifier.ally_win([(team, enemy) for team in teams], enemy_stats)[:, ROLES.index(settings.role)]
         top = int(score.argmax())
@@ -546,13 +546,13 @@ def model_search(space, enemy, starts, *, evaluations=100_000, role="attack", en
     engine on Drago's decks, while the gradient ascent found nothing above 0.006 at floor 105 where the model rates
     his decks 0.55; cheese is a narrow four-card combination no gradient leads to). No stat-ignoring prior by default:
     the model is cheap enough to search the whole pool. incomplete: defending against the attackers the model cannot
-    see (Classifier.field_win; `enemy` and `role` unused). [(team, model win)], best first."""
+    see (Classifier.defend_win; `enemy` and `role` unused). [(team, model win)], best first."""
     column = ROLES.index(role)
 
     def score(members, done):
         teams = [_team(space, *m) for m in members]
         if incomplete:
-            wins = space.classifier.field_win(teams)
+            wins = space.classifier.defend_win(teams)
         else:
             wins = space.classifier.ally_win([(team, enemy) for team in teams], enemy_stats)[:, column]
         return [float(np.log(w + 1e-9) - np.log1p(-w + 1e-9)) for w in wins]
