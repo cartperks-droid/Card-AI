@@ -139,6 +139,11 @@ Tables: general, fixed-stat, hard, incomplete mode, live against averaged weight
 python3 scripts/perf.py data/training_18t/log.jsonl 6
 ```
 
+The watch list in both turn orders, the model against the engine (the player always starts in the tower; the reversed order tests whether the model learned the matchup or only the order it saw):
+```
+python3 scripts/turns.py data/training_10s/ema.checkpoint
+```
+
 The raw log, and the trainer's output (loading progress and errors):
 ```
 tail -3 data/training_18t/log.jsonl
