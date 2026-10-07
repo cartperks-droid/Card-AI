@@ -78,6 +78,8 @@ def draw_enemy(rng, catalog, floor=None):
     return team, stats
 
 
+PROPOSAL_SEARCH = 20_000  # teams the model search scores per proposal round
+
 PRIOR = 0.5  # chance a drawn card comes from labels.STAT_IGNORING (a prior the user means to drop: --prior 0)
 
 
@@ -207,21 +209,21 @@ def distinct(teams, ranked, keep, apart=2):
 
 
 def proposals(rng, classifier, catalog, pool, enemy, fixed, per_card, seed, spaces):
-    """Teams the classifier rates highest against `enemy`, from the annealed generator (training.generate), each
-    played by the engine: [(team, probs, engine win chance, exact)]. The engine search finds teams the model
-    underrates; these are the ones it overrates (2026-10-05: at floor 105, borderless, the deep model rated
-    Kira / Time Lord Stryx / Legends / Hades 0.92; the engine, 0.0)."""
-    from .generate import Settings, SlotSpace, counters, make_pool
+    """Teams the classifier rates highest against `enemy`, each played by the engine: [(team, probs, engine win
+    chance, exact)]. The engine search finds teams the model underrates; these are the ones it overrates (2026-10-05:
+    at floor 105, borderless, the deep model rated Kira / Time Lord Stryx / Legends / Hades 0.92; the engine, 0.0).
+    They come from the model search (generate.model_search), the 32 best distinct: on the step-298,000 model it
+    reached teams the model rated 0.66-0.79 at floor 105 (Admiral Ice, two Stegosaurus, Flame Wizard; the engine, 0.0)
+    where the tuned gradient ascent's best reached 0.325 (2026-10-07)."""
+    from .generate import SlotSpace, make_pool, model_search
     borders, mutations, tiers = rng.choice(BORDER_SETS), rng.choice(((0,), None)), rng.choice(((1,), None))
     key = (borders, mutations, tiers)
     if key not in spaces:  # one slot space per mask and shard (the classifier is reloaded per shard)
         spaces[key] = SlotSpace(classifier, make_pool(catalog, "all", borders=list(borders), tiers=tiers,
                                                       mutations=None if mutations is None else list(mutations)))
-    # The tuner's best finder of overrated teams (scripts/tune_generator.py, step-298,000 model, 2026-10-07): its
-    # floor-100 teams averaged 0.325 by the model and 0.000 by the engine; the earlier settings here were not measured.
-    settings = Settings(steps=600, lr=0.05, temperature=0.2, commitment=2.0, nearest=5, noise_levels=24, sigma_max=4.0)
-    teams = [team for team, *_ in counters(spaces[key], enemy, count=32, restarts=32, settings=settings,
-                                           seed=seed, enemy_stats=fixed)]
+    evolved = model_search(spaces[key], enemy, [], evaluations=PROPOSAL_SEARCH, enemy_stats=fixed, seed=seed,
+                           catalog=catalog)
+    teams = [evolved[i][0] for i in distinct([team for team, _ in evolved], range(len(evolved)), 32)]
     jobs = [(spec(team, enemy), seed + i, per_card) for i, team in enumerate(teams)]
     out = []
     for team, (probs, exact) in zip(teams, pool.map(_label, jobs, chunksize=4)):
