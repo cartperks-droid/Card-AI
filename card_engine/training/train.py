@@ -439,7 +439,7 @@ def evaluate(model, inputs, table, rows, batch_size=4096):
     """Scores rows against a card table computed in eval mode (see `train`'s `eval_table`)."""
     model.eval()
     total = {"loss": 0.0, "accuracy": 0.0, "brier": 0.0, "baseline": 0.0, "upsets": 0.0, "upset_accuracy": 0.0,
-             "kl": 0.0, "decisive": 0.0, "decisive_accuracy": 0.0, "probabilistic_error": 0.0}
+             "upset_kl": 0.0, "favourite_kl": 0.0, "kl": 0.0, "decisive": 0.0, "decisive_accuracy": 0.0, "probabilistic_error": 0.0}
     count = rows["target"].shape[0]
     with torch.no_grad():
         for start in range(0, count, batch_size):
@@ -450,7 +450,8 @@ def evaluate(model, inputs, table, rows, batch_size=4096):
             total["accuracy"] += float((logits.argmax(-1) == target.argmax(-1)).sum())
             total["brier"] += float((logits.softmax(-1) - target).square().sum())
             # KL = loss minus the targets' own entropy: the part of the loss the model could still remove.
-            total["kl"] += float((target * (target.clamp_min(1e-12).log() - logits.log_softmax(-1))).sum())
+            kl = (target * (target.clamp_min(1e-12).log() - logits.log_softmax(-1))).sum(-1)
+            total["kl"] += float(kl.sum())
             decisive = target.max(-1).values >= 0.999  # deterministic battles: should be right every time
             total["decisive"] += float(decisive.sum())
             total["decisive_accuracy"] += float((decisive & (logits.argmax(-1) == target.argmax(-1))).sum())
@@ -461,9 +462,16 @@ def evaluate(model, inputs, table, rows, batch_size=4096):
             total["baseline"] += float((~upset).sum())
             total["upsets"] += float(upset.sum())
             total["upset_accuracy"] += float((upset & (logits.argmax(-1) == winner)).sum())
+            # KL apart on upsets and on the rest: the overall KL is about 9% the first and 91% the second, so it can
+            # fall while the upsets get worse (user, 2026-10-07: upset accuracy and KL moved against each other)
+            total["upset_kl"] += float(kl[upset].sum())
+            total["favourite_kl"] += float(kl[~upset].sum())
     model.train()
     result = {k: v / count for k, v in total.items()
-              if k not in ("upsets", "upset_accuracy", "decisive", "decisive_accuracy", "probabilistic_error")}
+              if k not in ("upsets", "upset_accuracy", "upset_kl", "favourite_kl", "decisive", "decisive_accuracy",
+                           "probabilistic_error")}
+    result["upset_kl"] = total["upset_kl"] / max(1.0, total["upsets"])
+    result["favourite_kl"] = total["favourite_kl"] / max(1.0, count - total["upsets"])
     result["probabilistic_error"] = total["probabilistic_error"] / max(1.0, count - total["decisive"])
     result["probabilistic_rows"] = count - total["decisive"]
     result["decisive_accuracy"] = total["decisive_accuracy"] / max(1.0, total["decisive"])
@@ -872,7 +880,7 @@ def train(*, steps=None, batch_size=512, lr=3e-4, warmup=1000, weight_decay=0.05
                     record["ema"] = {}
                     if val_probe is not None:
                         record["ema"]["val_probe"] = {k: round(v, 4) for k, v in evaluate(ema, inputs, ema_table, val_probe).items()
-                                                      if k in ("kl", "accuracy", "upset_accuracy", "probabilistic_error")}
+                                                      if k in ("kl", "accuracy", "upset_accuracy", "upset_kl", "probabilistic_error")}
                     if bool(hard.any()):
                         part = {k: v[hard] for k, v in val_rows.items()}
                         record["ema"]["val_hard"] = {k: round(v, 4) for k, v in evaluate(ema, inputs, ema_table, part).items()

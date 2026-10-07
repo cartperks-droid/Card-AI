@@ -444,6 +444,8 @@ class TrainingTests(unittest.TestCase):
             table = card_table(model, inputs.data.description_tokens)
         metrics = evaluate(model, inputs, table, val_rows)  # one shared card table, as in training
         self.assertTrue(0 <= metrics["accuracy"] <= 1 and metrics["kl"] >= 0)
+        upsets = metrics["upset_rows"] / val_rows["target"].shape[0]  # the KL splits into upsets and the rest
+        self.assertAlmostEqual(metrics["kl"], upsets * metrics["upset_kl"] + (1 - upsets) * metrics["favourite_kl"], places=5)
         run = Path(self.temp.name) / "run"
         smooth_run = Path(self.temp.name) / "smooth"  # a new run fits its smooth prior, kept in its checkpoints
         train(steps=2, batch_size=4, warmup=1, eval_every=100, checkpoint_every=2, device="cpu", run_dir=smooth_run,
