@@ -3,6 +3,7 @@
 These are open rule and class questions, most important first. The daily task picks from here and adds new ones as they come up. Once a check is answered, move it to "Answered" with the date and result.
 
 ## Open
+0. **Parallax / Hades / Hades / Robin Hood at floor 105 Impossible** (2026-10-07). The model search found it (`generate.model_search`, step-298,000 model); DaddyDrago's engine says it wins every time with any supports (8 support pairs, all 1.0), where his own Parallax / Judgement Day / Judgement Day / Robin Hood wins 0.32. Prediction from the engine, not an observation. The chain his engine plays: Parallax's "once only, if self would die, the enemy dies instead", then each Hades ("copy fallen ally's ability") copies it after Parallax falls, with its own fresh "once only", and Robin Hood's 50% of current HP. Check in game: does a Hades that copies Parallax's ability kill the enemy instead of dying, once per Hades? And does the deck clear floor 105 Impossible? (`--model-search` alone, borderless, base supports: the cards are Era 1 and Era 2.)
 1. **Class spot-checks.** Next is toy (7 reviewed), then avian (3), dragon (5) and demon (7). Only check the *Reviewed* rows in `docs/classes.md` (`python -m card_engine.class_report` regenerates it).
 
 2. **Odin's dodge cost.** Is it 20% of current HP (it can never die to normal attacks) or 20% of max HP (dead after 5 dodges)?
