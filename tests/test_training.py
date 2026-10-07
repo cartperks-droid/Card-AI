@@ -429,6 +429,12 @@ class TrainingTests(unittest.TestCase):
         value = depths.run_value([1, 10], [1.0, 0.0], [5, 5], 100)  # clears 1-9, dies on 10: ten floors' packs
         self.assertEqual((value["expected_floors"], value["packs"]), (9.0, 10.0))
         self.assertEqual(len(depths.parse_bans(catalog, ["speedrun"])), 14)
+        prehistoric = [c.id for c in catalog.cards if c.packs and "Prehistoric" in c.packs]
+        teams = depths.expand_packs(catalog, ["pack:Prehistoric@Ga", "Tricerotops", "Julius Leader", "Julius Leader"])
+        self.assertEqual(sorted(t["cards"][0] for t in teams), sorted(prehistoric))
+        self.assertTrue(all(t["borders"][0] != 1 for t in teams))  # the pack slot keeps its border
+        orders = depths.expand_packs(catalog, ["Tricerotops", "Velociraptor", "Julius Leader", "Julius Leader"], orders=True)
+        self.assertEqual(len(orders), 12)  # 4! / 2! with two Julius
         side, fixed = labels.fixed_battle(random.Random(0), catalog, labels.random_spec(random.Random(0), catalog))
         self.assertIn(side, (0, 1))
         from card_engine.training.hard import draw_enemy

@@ -208,8 +208,13 @@ python3 -m card_engine.depths search --checkpoint data/training_10s/ema.checkpoi
 ```
 Speedrun teams (aura packs per hour, Drago's timing and rewards, battle lengths from our engine; it searches with the engine, since the model gives no battle length, starting from `--ally`):
 ```
-python3 -m card_engine.depths run --checkpoint data/training_10s/ema.checkpoint --ally Tricerotops DINO "Julius Leader" "Julius Leader" --bans speedrun --simulate
-python3 -m card_engine.depths search --objective speed --checkpoint data/training_10s/ema.checkpoint --ally Tricerotops DINO "Julius Leader" "Julius Leader" --bans speedrun --pool own --device cpu
+python3 -m card_engine.depths run --checkpoint data/training_10s/ema.checkpoint --ally Tricerotops Velociraptor "Julius Leader" "Julius Leader" --bans speedrun --simulate
+python3 -m card_engine.depths search --objective speed --checkpoint data/training_10s/ema.checkpoint --ally Tricerotops Velociraptor "Julius Leader" "Julius Leader" --bans speedrun --pool own --device cpu
+```
+A card slot can be a whole pack, `pack:Prehistoric` (with `@Border` or `/Mutation` if wanted), in any position: `run` then plays one team per card of the pack and ranks them (packs per hour with `--simulate`, else the model's expected floors). `--orders` also tries every distinct lineup order of each team (12 for a team with two Julius; with a pack slot, about 220 teams, a few minutes by the engine):
+```
+python3 -m card_engine.depths run --checkpoint data/training_10s/ema.checkpoint --device cpu --ally Tricerotops pack:Prehistoric "Julius Leader" "Julius Leader" --bans speedrun --simulate --workers 2
+python3 -m card_engine.depths run --checkpoint data/training_10s/ema.checkpoint --device cpu --ally Tricerotops pack:Prehistoric "Julius Leader" "Julius Leader" --bans speedrun --simulate --orders --workers 2
 ```
 Options: `--bans CARD ...` (your Depth bans, up to 14) or a preset (`speedrun`, `pro`), `--cap 10000` (last floor), `--points` (floors sampled, geometric; 24, or 12 for the speed search), `--samples` (enemy draws per floor; 32, or 8), `--evaluations` (5,000 teams by the model; 300 by the engine for speed), `--no-chrono-shard`, `--structure N` (battle-speed structure 0-7), `--skill-tree N` (0-4). Output: `expected_floors` (cleared on average), `median_death_floor`, per sampled floor the mean win chance and the chance to have survived that far; with the engine also `turns` per floor, `minutes` and `packs` per run, `packs_per_hour` and `floors_per_hour` (runs restart from floor 1).
 

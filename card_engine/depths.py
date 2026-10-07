@@ -244,6 +244,43 @@ def add_arguments(parser):
     parser.add_argument("--skill-tree", type=int, default=0, help="speed: battle-speed skill-tree level (0-4)")
 
 
+def expand_packs(catalog, cards, red=None, blue=None, orders=False):
+    """Teams from four card names, where a "pack:NAME[@Border][/Mutation]" slot stands for every card of that pack
+    (user, 2026-10-07: a speedrun team's "1 dino" is any Prehistoric card, in any slot), one team per card; at most one
+    of each single-copy card. orders: also every distinct lineup order of each team (the front card fights first)."""
+    from .teams import SINGLE_COPY, parse_side
+    from itertools import product
+    options = []
+    for text in cards:
+        if not text.lower().startswith("pack:"):
+            options.append([text])
+            continue
+        name, mark = text[5:], ""
+        for sep in ("@", "/"):
+            if sep in name:
+                name, rest = name.split(sep, 1)
+                mark = sep + rest
+                break
+        members = [c.name for c in catalog.cards if c.packs and any(p.casefold() == name.strip().casefold() for p in c.packs)]
+        if not members:
+            packs = sorted({p for c in catalog.cards for p in (c.packs or ())})
+            raise SystemExit(f"No pack {name!r}; one of {', '.join(packs)}")
+        options.append([f"{member}{mark}" for member in members])
+    from itertools import permutations
+    teams, seen = [], set()
+    for names in product(*options):
+        team = parse_side(catalog, list(names), red, blue)
+        if any(team["cards"].count(card) > 1 for card in SINGLE_COPY):
+            continue
+        slots = list(zip(team["cards"], team["borders"], team["mutations"], team["arts"]))
+        for order in (dict.fromkeys(permutations(slots)) if orders else [tuple(slots)]):
+            if order not in seen:
+                seen.add(order)
+                teams.append({**team, **{key: [slot[i] for slot in order]
+                                         for i, key in enumerate(("cards", "borders", "mutations", "arts"))}})
+    return teams
+
+
 def parse_bans(catalog, names):
     from .deck import _match
     names = [card for name in names for card in BAN_PRESETS.get(name, [name])]
@@ -260,6 +297,7 @@ def main():
     commands = parser.add_subparsers(dest="command", required=True)
     run = commands.add_parser("run", help="a team's depth curve (and with --simulate the engine's, speed and packs)")
     run.add_argument("--simulate", action="store_true", help="also the engine's curve, speed and aura packs")
+    run.add_argument("--orders", action="store_true", help="also every distinct lineup order of each team, ranked")
     search = commands.add_parser("search", help="the team that goes deepest (model search) or earns aura packs "
                                  "fastest (engine search), engine-verified")
     search.add_argument("--objective", choices=("depth", "speed"), default="depth",
@@ -273,7 +311,8 @@ def main():
     search.add_argument("--top", type=int, default=4, help="best distinct teams reported")
     for command in (run, search):
         command.add_argument("--ally", nargs=4, required=command is run, metavar="CARD",
-                             help="four cards, Name[@Border][/Mutation] (search: a starting team)")
+                             help="four cards, Name[@Border][/Mutation] (search: a starting team); in run, a "
+                             "pack:NAME[@Border] slot tries every card of that pack and ranks the teams")
         command.add_argument("--ally-red")
         command.add_argument("--ally-blue")
         command.add_argument("--checkpoint", required=True)
@@ -292,7 +331,10 @@ def main():
     missing = pool(catalog)[1]
     if missing:
         print(f"his Depths pool has cards our catalog lacks (never drawn): {', '.join(missing)}", file=sys.stderr)
-    start = parse_side(catalog, args.ally, args.ally_red, args.ally_blue) if args.ally else None
+    variants = expand_packs(catalog, args.ally, args.ally_red, args.ally_blue, getattr(args, "orders", False)) if args.ally else []
+    if args.command == "search" and len(variants) > 1:
+        raise SystemExit("search takes one starting team: name its cards (pack: slots are for run)")
+    start = variants[0] if variants else None
 
     def report(team, model, engine=None):
         result = {"team": describe(catalog, team), "mode": "hard" if hard else "normal"}
@@ -310,10 +352,29 @@ def main():
     with engine_pool(args.workers) as engine:
         curves = lambda teams: engine_curves(catalog, teams, drawn, engine, hard, args.seed)
         if args.command == "run":
-            model = model_wins(classifier, [start], drawn, hard)[0]
-            report(start, model, tuple(c[0] for c in curves([start])) if args.simulate else None)
+            models = model_wins(classifier, variants, drawn, hard)
+            engines = curves(variants) if args.simulate else None
+            rows = []
+            for i, team in enumerate(variants):
+                report(team, models[i], (engines[0][i], engines[1][i]) if engines else None)
+                row = {"team": " / ".join(describe(catalog, team)["cards"]),
+                       "model_floors": survival(floors, models[i], args.cap)[0]}
+                if engines:
+                    row.update(run_value(floors, engines[0][i], engines[1][i], args.cap, **speed),
+                               median=survival(floors, engines[0][i], args.cap)[2])
+                rows.append(row)
             print("floors: grid floor -> [mean win chance there, chance to have survived through the floors it covers]; "
                   "turns: expected battle length per grid floor")
+            if len(rows) > 1:  # a pack slot or --orders: every team, best first
+                key = "packs_per_hour" if engines else "model_floors"
+                print(f"\n{'team':<60} {'model floors':>12}" + (f" {'engine floors':>13} {'median death':>12} {'min/run':>8} "
+                                                                 f"{'packs/h':>9} {'floors/h':>9}" if engines else ""))
+                for row in sorted(rows, key=lambda r: -r[key]):
+                    line = f"{row['team']:<60} {row['model_floors']:>12.1f}"
+                    if engines:
+                        line += (f" {row['expected_floors']:>13.1f} {row['median']:>12} {row['minutes']:>8.1f} "
+                                 f"{row['packs_per_hour']:>9.1f} {row['floors_per_hour']:>9.1f}")
+                    print(line)
             return
         from types import SimpleNamespace
         from .training.generate import _ids, _team, evolve, make_pool, masks
