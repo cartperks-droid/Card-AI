@@ -28,7 +28,7 @@
   X(lotusReviveUsed) X(manaShield) X(mirrorImageReturned) X(moonlightUsed) X(naughtyListDrain) X(noRng) X(onBonusTurn) \
   X(ouroborosActive) X(paired) X(pandoraRolled) X(paradox) X(perseveranceBoosted) X(revealed) X(revived) X(sealed) \
   X(shapeshifterActive) X(sixRealmsRolled) X(slowed) X(stealChristmasUsed) X(suppressArmageddonOnce) X(suppressOnDeath) \
-  X(transformed) X(undeadPractitioner) X(underworldAway) X(underworldFront) X(undyingActive) X(unholyActive) X(voidReady) X(wail) X(warScytheEntry) \
+  X(transformed) X(undeadPractitioner) X(underworldFront) X(undyingActive) X(unholyActive) X(voidReady) X(wail) X(warScytheEntry) \
   X(warScytheEntryUsed) X(witchCurseStolen) X(worldCooldown) X(zeroWeaponsRolled)
 #define COUNTER_LIST(X) X(ahimsaTurns) X(ascension) X(attacks) X(bindFatePair) X(bleed) X(blockHp) X(bloodlustBase) \
   X(cancerThreshold) X(cosmicRivalryDR) X(d8Reduction) X(damageTaken) X(death) X(defensiveManeuver) X(divinationMoves) \
@@ -38,7 +38,7 @@
   X(normalDamage) X(normalMaxHp) X(ouroborosBonusDamage) X(ouroborosBonusHp) X(ouroborosBonusMaxHp) X(ouroborosTurns) \
   X(passion) X(perishTurns) X(persistence) X(poisonFlat) X(poisonPercent) X(poisonTurns) X(runFast) X(slowTurns) \
   X(slowed) X(snowbound) X(tail) X(telekinesis) X(thunder) X(toyCount) X(transcend) X(turnsPerTurn) X(undyingTurns) \
-  X(unholyActivatedTurn) X(unholyLastTick) X(unholyTurns) X(upheaval) X(videoFrozen) X(void_) X(waterfowl) \
+  X(underworldSeen) X(unholyActivatedTurn) X(unholyLastTick) X(unholyTurns) X(upheaval) X(videoFrozen) X(void_) X(waterfowl) \
   X(weaknessTurns) X(worldCreation)
 #define ENUM_ITEM(name) F_##name,
 enum { FLAG_LIST(ENUM_ITEM) NFLAG };

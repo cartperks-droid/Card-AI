@@ -2180,25 +2180,23 @@ static void resolve_constellar_arts(Runtime *rt) {
 
 static const int NEXT_TEAM_FIRST_TURN = 0;
 
-// underworldReturn (codemod.mjs; user, 2026-10-07): a Hades fires The Underworld again each time it comes back to
-// the front, its copied ability dropped.
+// underworldReturn (codemod.mjs; user, 2026-10-07): a Hades reaching the front copies again when an ally has fallen
+// since its last copy, its copied ability dropped.
 static void underworld_return(Runtime *rt) {
-  for (int t = 0; t < 2; t++)
+  for (int t = 0; t < 2; t++) {
+    int fallen = S->nfallen[t];
     for (int i = 0; i < S->nteam[t]; i++) {
       int c = at(rt, t, i);
       Card *k = CARD(c);
       if (DEF_ABILITY[k->def] != A_THE_UNDERWORLD) continue;
-      if (i > 0) {
-        if (k->flag[F_underworldFront]) { k->flag[F_underworldFront] = 0; k->flag[F_underworldAway] = 1; }
-        continue;
-      }
+      if (i > 0) { k->flag[F_underworldFront] = 0; continue; }
+      if (k->flag[F_underworldFront]) continue;
       k->flag[F_underworldFront] = 1;
-      if (k->flag[F_underworldAway] && k->entered && alive(rt, c) && k->abilityOverride != AO_NULL) {
-        k->flag[F_underworldAway] = 0;
-        k->abilityOverride = AO_UNDEFINED;
-        k->entered = 0;
-      }
+      if (k->entered && (!alive(rt, c) || k->abilityOverride == AO_NULL || fallen <= k->counter[C_underworldSeen])) continue;
+      k->counter[C_underworldSeen] = fallen;
+      if (k->entered) { k->abilityOverride = AO_UNDEFINED; k->entered = 0; }
     }
+  }
 }
 
 int simulate(Runtime *rt, int max_turns, const Counters *resume, void (*on_turn)(Runtime *, const Counters *)) {
