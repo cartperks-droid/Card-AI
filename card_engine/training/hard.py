@@ -19,10 +19,12 @@ Every --generator-every-th enemy (4) gets the annealed generator's teams instead
 engine search finds the winners the model underrates, the generator the losers it overrates (2026-10-05: 0.92 by the
 model, 0.0 by the engine, borderless at floor 105).
 
-Enemies, half each:
-  - a tower floor (card_engine.tower), weighted toward the top floors (a quarter on 95-105) and hard difficulties
-    (Normal 1 : Hard 1 : Extreme 2 : Hell 3 : Impossible 3), its fixed team or random cards;
-  - random cards with stats HP = 10^U(2, 7.5), ATK = HP / 2 * 10^U(-0.5, 0.5).
+Enemies:
+  - a third, a tower floor (card_engine.tower), weighted toward the top floors (a quarter on 95-105) and hard
+    difficulties (Normal 1 : Hard 1 : Extreme 2 : Hell 3 : Impossible 3), its fixed team or random cards;
+  - a quarter, a depths floor (card_engine.depths, mostly hard depths: user, 2026-10-07), four enemies drawn from its
+    pool at its stats (--depths: every enemy);
+  - the rest, random cards with stats HP = 10^U(2, 7.5), ATK = HP / 2 * 10^U(-0.5, 0.5).
 The enemy is side B; the candidate attacks first. Candidates: each card a stat-ignoring one with probability 1/2,
 else any card; borders, mutations and support tiers drawn per round (borderless, up to Crystal, or all borders;
 mutations none or random; supports base or random tier, none 10% of the time).
@@ -46,7 +48,7 @@ from pathlib import Path
 
 import numpy as np
 
-from .. import tower
+from .. import depths, tower
 from ..catalog import load_catalog
 from ..mutations import MUTATION_NAMES
 from ..teams import ASTRAEUS, ASTRAEUS_ARTS, SINGLE_COPY, side, spec
@@ -61,12 +63,18 @@ BORDER_SETS = ((1,), (1, 2, 3), tuple(range(1, 17)))  # borderless, up to Crysta
 def draw_enemy(rng, catalog, floor=None):
     """(enemy side, fixed stats (HP, ATK, HP multiplier applies)). floor: (floor, difficulty) for every enemy, its fixed
     team or random enemies on a floor without one (2026-10-07: floor 105 Impossible fields part of the cheese deck
-    itself, Judgment Day, so its wins come from cross-side interactions only its own battles teach)."""
+    itself, Judgment Day, so its wins come from cross-side interactions only its own battles teach); "depths" for
+    every enemy a depths floor's draw (depths.draw_floor, mostly hard depths). Otherwise a third are tower floors, a
+    quarter depths floors and the rest random cards at random stats."""
     border = 1  # tower enemies carry their difficulty's border (tower.enemy_border)
+    draw = rng.random()
+    if floor == "depths" or (floor is None and 1 / 3 <= draw < 7 / 12):
+        level, hard = depths.draw_floor(rng)
+        return depths.draw_team(rng, catalog, level), depths.stats(level, hard)
     if floor is not None:
         level = tower.difficulty(floor[1])
         team, stats, border = tower.fixed_team(catalog, floor[0]), tower.stats(floor[0], level), tower.enemy_border(catalog, level)
-    elif rng.random() < 0.5:
+    elif draw < 1 / 3:
         floor, level = tower.draw_floor(rng)  # the deep model rated Drago's decks 0.02 under uniform floors
         team = tower.fixed_team(catalog, floor)
         stats, border = tower.stats(floor, level), tower.enemy_border(catalog, level)
@@ -354,9 +362,13 @@ def main():
                         help="chance a drawn card comes from the stat-ignoring list (0: discovery from the whole pool)")
     parser.add_argument("--tower", nargs=2, metavar=("FLOOR", "DIFFICULTY"),
                         help="every enemy on this tower floor and difficulty (e.g. 105 Impossible), not drawn")
+    parser.add_argument("--depths", action="store_true",
+                        help="every enemy a depths floor's draw (mostly hard depths, card_engine/depths.py)")
     args = parser.parse_args()
-    floor = (int(args.tower[0]), args.tower[1]) if args.tower else None
-    if floor is not None:
+    if args.tower and args.depths:
+        parser.error("give --tower or --depths, not both")
+    floor = (int(args.tower[0]), args.tower[1]) if args.tower else "depths" if args.depths else None
+    if isinstance(floor, tuple):
         tower.difficulty(floor[1])  # an unknown difficulty fails here, not after the first shard's search
     engine = args.select == "engine"  # the engine's picks: keep many (the model mode keeps few: near-duplicates were memorised)
     args.keep = args.keep if args.keep is not None else 32 if engine else 16

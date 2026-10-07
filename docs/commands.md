@@ -56,7 +56,7 @@ Ordinary random battles:
 caffeinate -i bash -c 'while true; do python3 -m card_engine.training.labels --shards 1000 --rows 2000 --workers 3; done' >> labels.out 2>&1 &
 ```
 
-Fixed-stat battles (a third are tower floors). `--prior` is the chance a weaker-side card comes from the stat-ignoring list; `--prior 0` drops it:
+Fixed-stat battles (a third are tower floors, a sixth depths floors). `--prior` is the chance a weaker-side card comes from the stat-ignoring list; `--prior 0` drops it:
 ```
 caffeinate -i bash -c 'while true; do python3 -m card_engine.training.labels --fixed --shards 1000 --rows 2000 --workers 2 --prior 0.5; done' >> fixed.out 2>&1 &
 ```
@@ -69,7 +69,7 @@ Without a model scoring the search (cheaper next to a trainer), keep the engine'
 ```
 caffeinate -i nice -n 19 bash -c 'while true; do python3 -m card_engine.training.hard --shards 2 --workers 2 --select engine --prior 0; done' >> hard.out 2>&1 &
 ```
-Options: `--candidates 12000` (battles per enemy; 6000 is half the time and still climbs floor 105), `--rounds 40` (enemies per shard), `--keep 16`, `--generator-every 4` (0: no generator rounds). `--tower 105 Impossible`: every enemy on that floor (its fixed team, or random enemies on floors without one) instead of drawn ones.
+Options: `--candidates 12000` (battles per enemy; 6000 is half the time and still climbs floor 105), `--rounds 40` (enemies per shard), `--keep 16`, `--generator-every 4` (0: no generator rounds). `--tower 105 Impossible`: every enemy on that floor (its fixed team, or random enemies on floors without one) instead of drawn ones. `--depths`: every enemy a depths floor's draw (mostly hard depths).
 
 PvP duels: one defender built blind (incomplete mode) against 32 attackers near its rolls and luck, each countering it from its own pool (complete mode). It writes `pvp_*` (complete rows, hard examples) and `hidden_*` (the defender's mean) shards. Point it at the newest checkpoint as the model improves:
 ```
@@ -208,6 +208,13 @@ Generator options:
 - Search: `--counters 32`, `--restarts`, `--steps`, `--noise-levels`, `--sigma-max 8`, `--temperature`, `--nearest`.
 - Engine: `--engine-search` (adds an engine search, slower), `--no-verify`.
 - Close the trainer's GPU work first, or add `--device cpu`.
+
+Depths (hard depths by default: the floor's enemy pool, the stats of floor × 10; `--normal` for normal depths). A team's depth curve, the model's and with `--simulate` the engine's on the same enemy draws, and the model search for the team that goes deepest (its best `--top` engine-verified):
+```
+python3 -m card_engine.depths run --checkpoint data/training_10s/ema.checkpoint --ally Parallax "Judgement Day" "Judgement Day" "Robin Hood" --ally-blue Fate --simulate
+python3 -m card_engine.depths search --checkpoint data/training_10s/ema.checkpoint --pool own --device cpu
+```
+Options: `--bans CARD ...` (your Depth bans, up to 14), `--cap 10000` (last floor), `--points 24` (floors sampled, geometric), `--samples 32` (enemy draws per floor), `--evaluations 5000` (search). Output: `expected_floors` (floors cleared on average), `median_death_floor`, and per sampled floor the mean win chance and the chance to have survived that far.
 
 Model against engine on a suite of battles:
 ```

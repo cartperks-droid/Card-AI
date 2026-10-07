@@ -8,6 +8,9 @@
 //            -> {"base": [card][border][mutation] = [hp, attack], "red": [card][mutation][red][tier] = [hp x, attack x],
 //                "prehistoric": [per card], "jurassic": [Jurassic World % per Prehistoric card, per tier]}
 //   check:   {"op": "check", "a": ..., "b": ...} -> {"unsupported": [...]} without running the battle
+//   depths:  {"op": "depths"} -> {"pool": [[name, weight, ATK x HP] per card Depths can field], "legacyBans": [...],
+//            "maxBans"}: his Depths pool (depths.ts: eligibility and weather weights), a card unlocking once its
+//            ATK x HP is below the floor's budget (card_engine/depths.py)
 //   state:   {"op": "state", "a": ..., "b": ..., "options": tweaks} -> the battle as it starts, for the C engine
 //            (card_engine/simulator/kernel.py): {"cards": [...], "lists": [Allies, Enemies, fallen Allies, fallen
 //            Enemies as card positions], "boosts": [Allies, Enemies], "turn", "moving", "unsupported"}
@@ -16,6 +19,7 @@ import { solve, startState } from './search'
 import { createTwoSidedState } from './vendor/CardRngExpansionDepths/src/engine/battle-v2.label'
 import { getAttack, getHealth } from './vendor/CardRngExpansionDepths/src/engine/stats'
 import { getAura, getSkillAuraValue, statAuraPercentForCard } from './vendor/CardRngExpansionDepths/src/engine/auras.label'
+import { depthsMechanics, getDepthsPool } from './vendor/CardRngExpansionDepths/src/engine/depths'
 import cards from './vendor/CardRngExpansionDepths/src/data/cards'
 
 const byName = new Map(cards.map((card: any) => [card.name, card]))
@@ -76,6 +80,10 @@ lines.on('line', (line) => {
       reply = { a: cards(state.teams.Allies), b: cards(state.teams.Enemies) }
     } else if (req.op === 'state') {
       reply = exportState(startState(req.a, req.b, req.options || {}))
+    } else if (req.op === 'depths') {
+      const every = getDepthsPool(Number.MAX_SAFE_INTEGER)  // every eligible card has unlocked by then
+      reply = { pool: every.map(({ card, weight }: any) => [card.name, weight, getAttack(card) * getHealth(card)]),
+        legacyBans: depthsMechanics.legacyHardExclusions, maxBans: depthsMechanics.maxPlayerBans }
     } else if (req.op === 'check') {
       reply = { unsupported: [...createTwoSidedState(req.a, req.b).unsupportedAbilities] }
     } else {

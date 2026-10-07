@@ -405,6 +405,30 @@ class TrainingTests(unittest.TestCase):
         self.assertTrue(((draws[:, 0] >= 1e5) & (draws[:, 0] <= 1e9) & (draws[:, 1] >= 1) & (draws[:, 1] <= 100)).all())
         self.assertLess(np.log10(draws[:, 0]).std(), np.log10(draws[:, 1]).std())  # luck varies more than rolls
 
+    def test_depths_floors_follow_his_pool_and_formula(self):
+        from card_engine import depths
+        catalog = load_catalog()
+        self.assertEqual(depths.stats(1, hard=False), (78.0, 39.0, True))  # ceil(sqrt(2 * 3040))
+        self.assertEqual(depths.stats(1), depths.stats(10, hard=False))  # hard depths: the stats of floor x 10
+        early, late = depths.floor_pool(catalog, 1)[0], depths.floor_pool(catalog, 1000)[0]
+        self.assertTrue(set(early) < set(late))
+        parallax = next(c.id for c in catalog.cards if c.name == "Parallax")
+        self.assertNotIn(parallax, late)  # his hard exclusions
+        archer = next(c.id for c in catalog.cards if c.name == "Archer")
+        self.assertIn(archer, early)
+        self.assertNotIn(archer, depths.floor_pool(catalog, 1, bans=[archer])[0])
+        team = depths.draw_team(random.Random(2), catalog, 500)
+        self.assertEqual((team["borders"], team["mutations"], team["red"], team["blue"]), ([1] * 4, [0] * 4, 0, 0))
+        self.assertTrue(set(team["cards"]) <= set(late))
+        expected, curve, median = depths.survival([1, 10, 100], [1.0, 0.9, 0.5], 1000)
+        self.assertAlmostEqual(expected, 9 + 0.9 * (1 - 0.9 ** 90) / 0.1 + 0.9 ** 90 * 1.0, places=6)
+        self.assertEqual(median, 16)  # 0.9^7 < 1/2: the seventh floor from 10
+        side, fixed = labels.fixed_battle(random.Random(0), catalog, labels.random_spec(random.Random(0), catalog))
+        self.assertIn(side, (0, 1))
+        from card_engine.training.hard import draw_enemy
+        enemy, fixed = draw_enemy(random.Random(3), catalog, "depths")
+        self.assertTrue(fixed[2] and set(enemy["cards"]) <= set(late))
+
     def test_found_shards_are_their_own_kind(self):
         import numpy as np
         root = Path(self.temp.name) / "found"

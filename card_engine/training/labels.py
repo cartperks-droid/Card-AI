@@ -11,8 +11,9 @@ ignored; the general problem, not one mode (user). One side, A or B at random, i
 cards at one (HP, ATK): the opponent's geometric-mean stats times a level, with the HP/ATK balance moved by
 10^U(-0.5, 0.5). A third are tower floors instead (2026-10-06: the cheese decks' battles, a floor's fixed team,
 stats and HP multiplier, had appeared only in hard examples): side B is the floor (tower.draw_floor, weighted toward
-the top and the hardest difficulties) and each of side A's cards leans on stat-ignoring abilities as below. Of the
-rest, half draw the level from 10^U(-2, 4); the other half are big gaps, 10^U(1, 4.5), where
+the top and the hardest difficulties) and each of side A's cards leans on stat-ignoring abilities as below. A sixth
+are depths floors (depths.draw_floor; user, 2026-10-07: hard depths above all): side B is four enemies drawn from
+the floor's pool at its stats, side A leaning on stat-ignoring abilities likewise. Of the rest, half draw the level from 10^U(-2, 4); the other half are big gaps, 10^U(1, 4.5), where
 each of the weaker side's cards is, with probability 1/2, one whose ability ignores raw stats (STAT_IGNORING:
 damage scaled to the enemy's HP, kills, revives, shared damage), so that wins against huge stats appear at all (user,
 2026-10-04: floor 105 Impossible is about 2,700x a borderless deck). The first fixed shards spread the level only
@@ -36,7 +37,7 @@ import numpy as np
 from ..catalog import load_catalog
 from ..mutations import MUTATION_NAMES
 from ..simulator import drago, kernel
-from .. import tower
+from .. import depths, tower
 from ..teams import ASTRAEUS, ASTRAEUS_ARTS, SINGLE_COPY
 from .tablebase import Tablebase
 
@@ -110,6 +111,7 @@ def stat_ignoring_cards(catalog):
 
 
 TOWER_SHARE = 1 / 3  # fixed-stat battles that are tower floors (module docstring)
+DEPTHS_SHARE = 1 / 6  # and depths floors
 
 
 PRIOR = 0.5  # chance a leaning side's card comes from STAT_IGNORING, a prior the user means to drop (--prior 0)
@@ -130,8 +132,8 @@ def _lean_on_stat_ignoring(rng, catalog, spec, side):
 
 def fixed_battle(rng, catalog, spec):
     """Turns a random spec into a fixed-stat battle: (side, (HP, ATK, HP multiplier applies)); that side's borders
-    become none. A third are tower floors, the rest half big gaps (module docstring); in both of those the other side
-    leans on stat-ignoring abilities."""
+    become none. A third are tower floors, a sixth depths floors, the rest half big gaps (module docstring); in all of
+    those the other side leans on stat-ignoring abilities."""
     if rng.random() < TOWER_SHARE:
         floor, level = tower.draw_floor(rng)
         team = tower.fixed_team(catalog, floor)  # None: the game draws the floor's team, so the random cards stay
@@ -143,6 +145,13 @@ def fixed_battle(rng, catalog, spec):
         _lean_on_stat_ignoring(rng, catalog, spec, 0)
         spec["borders"][1] = [tower.enemy_border(catalog, level)] * 4
         return 1, tower.stats(floor, level)
+    if rng.random() < DEPTHS_SHARE / (1 - TOWER_SHARE):
+        floor, hard = depths.draw_floor(rng)
+        team = depths.draw_team(rng, catalog, floor)  # borderless, unmutated, no supports
+        for key in FIELDS:
+            spec[key][1] = team[key]
+        _lean_on_stat_ignoring(rng, catalog, spec, 0)
+        return 1, depths.stats(floor, hard)
     base = _base_stats(catalog)
     side = rng.randrange(2)
     other = 1 - side
