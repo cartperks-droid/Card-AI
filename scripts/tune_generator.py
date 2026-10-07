@@ -4,7 +4,9 @@ the engine plays the best of them. Settings that propose teams the engine lets w
     python3 scripts/tune_generator.py --checkpoint data/training_10s/step298k_ema.checkpoint
     python3 scripts/tune_generator.py --checkpoint ... --floors "105 Impossible" "100 Impossible" --trials 40 --pool custom
 
-Trial 0 is the current defaults (generate.Settings), the baseline; the others draw each setting from SPACE. The
+Trial 0 is the current defaults (generate.Settings), the baseline; the others draw each setting from SPACE.
+--search-trials N adds model-search trials (S1 ... SN) drawing its population, parents, children, stat-ignoring prior
+and size from SEARCH_SPACE; their best go to generate.py's --search-* options. The
 model-search trials ("M" plus its size, --model-search) replace the ascent with generate.model_search, an evolution
 scored by the model, and keep its distinct best teams (2026-10-07: every ascent setting scored 0 at floors 95-105). Each
 trial verifies its `--top` best teams per floor attacking first (the player always starts in the tower) and scores
@@ -40,6 +42,13 @@ SPACE = {  # each trial draws one value per setting
     "noise_levels": (1, 6, 12, 24),
     "sigma_max": (2.0, 4.0, 8.0, 16.0),
 }
+SEARCH_SPACE = {  # the model search's settings (generate.model_search), one value each per search trial
+    "evaluations": (20_000, 50_000, 100_000),
+    "population": (256, 512, 1024),
+    "parents": (32, 128, 256),
+    "children": (2, 4, 8),
+    "prior": (0.0, 0.25, 0.5),
+}
 
 
 def main():
@@ -55,7 +64,9 @@ def main():
     parser.add_argument("--mutations", nargs="+", default=["None"])
     parser.add_argument("--support-tiers", nargs="+", default=["base"])
     parser.add_argument("--model-search", type=int, nargs="*", default=[10000, 50000],
-                        help="model-search trial sizes (teams the model scores); none: ascent trials only")
+                        help="model-search trial sizes at its default settings (teams the model scores)")
+    parser.add_argument("--search-trials", type=int, default=0,
+                        help="model-search trials drawing every setting from SEARCH_SPACE (S1, S2, ...)")
     parser.add_argument("--workers", type=int, default=2)
     parser.add_argument("--seed", type=int, default=1)
     parser.add_argument("--device")
@@ -76,7 +87,9 @@ def main():
     space = SlotSpace(Classifier(args.checkpoint, args.device),
                       make_pool(catalog, args.pool, borders=borders, mutations=mutations, tiers=tiers))
     rng = random.Random(args.seed)
-    trials = [(f"M{n}", n) for n in args.model_search] + [(0, Settings())] * (args.trials > 0)
+    trials = [(f"M{n}", {"evaluations": n}) for n in args.model_search]
+    trials += [(f"S{i}", {k: rng.choice(v) for k, v in SEARCH_SPACE.items()}) for i in range(1, args.search_trials + 1)]
+    trials += [(0, Settings())] * (args.trials > 0)
     trials += [(i, Settings(**{k: rng.choice(v) for k, v in SPACE.items()})) for i in range(1, args.trials)]
 
     def teams(setting, enemy, stats, seed):
@@ -84,7 +97,7 @@ def main():
         if isinstance(setting, Settings):
             return [(team, win) for team, win, *_ in counters(space, enemy, count=args.top, restarts=args.restarts,
                                                               settings=setting, seed=seed, enemy_stats=stats)]
-        evolved = model_search(space, enemy, [], evaluations=setting, enemy_stats=stats, seed=seed, catalog=catalog)
+        evolved = model_search(space, enemy, [], enemy_stats=stats, seed=seed, catalog=catalog, **setting)
         return [evolved[i] for i in distinct([team for team, _ in evolved], range(len(evolved)), args.top)]
 
     results = []

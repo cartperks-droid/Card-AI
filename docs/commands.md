@@ -148,6 +148,10 @@ Tune the generator's settings by the engine: each trial generates counters to to
 ```
 python3 scripts/tune_generator.py --checkpoint data/training_10s/step298k_ema.checkpoint --trials 24 --workers 2
 ```
+The model search's own settings (population, parents, children, stat-ignoring prior, size), with no ascent trials; the winner's values go to `generate.py --search-population --search-parents --search-children --search-prior --model-search`:
+```
+python3 scripts/tune_generator.py --checkpoint data/training_10s/report_ema.checkpoint --trials 0 --model-search 50000 --search-trials 12 --workers 2
+```
 
 The raw log, and the trainer's output (loading progress and errors):
 ```

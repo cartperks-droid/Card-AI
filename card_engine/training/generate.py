@@ -603,6 +603,11 @@ def main():
     parser.add_argument("--model-search", type=int, default=0, metavar="N",
                         help="also run an evolution of N teams scored by the model (fast: 100000 is about a minute), "
                         "from the ascent's teams; its distinct best go to the engine check and the engine search")
+    parser.add_argument("--search-population", type=int, default=512, help="model search: members kept per generation")
+    parser.add_argument("--search-parents", type=int, default=128, help="model search: best members mutated per generation")
+    parser.add_argument("--search-children", type=int, default=4, help="model search: mutations per parent")
+    parser.add_argument("--search-prior", type=float, default=0.0,
+                        help="model search: chance a drawn card is a stat-ignoring one (labels.STAT_IGNORING)")
     parser.add_argument("--engine-search", type=int, default=0, metavar="N",
                         help="also run an engine-guided search of N engine evaluations from the model's teams (see above)")
     parser.add_argument("--workers", type=int, default=max(1, (os.cpu_count() or 2) - 1))
@@ -641,7 +646,8 @@ def main():
             from .hard import distinct
             evolved = model_search(space, enemy, [team for team, *_ in found], evaluations=args.model_search,
                                    role=args.role, enemy_stats=enemy_stats, seed=args.seed + 104729 * (index + 1),
-                                   catalog=catalog)
+                                   catalog=catalog, population=args.search_population, parents=args.search_parents,
+                                   children=args.search_children, prior=args.search_prior)
             known = {_key(team) for team, *_ in found}
             evolved = [(team, win) for team, win in evolved if _key(team) not in known]
             picks = distinct([team for team, _ in evolved], range(len(evolved)), args.counters)
