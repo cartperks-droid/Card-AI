@@ -9,13 +9,23 @@ unobtainable, expiring, boss or holiday cards, nor Vampire Lord, Parallax or Sam
 borderless, unmutated and without supports. Hard depths (user, 2026-10-07: the mode of most interest) keeps the
 floor's pool but takes the stats of floor x 10.
 
-A floor's enemies are independent of the others, so a team reaches floor F with probability prod_{f <= F} p(f),
+A floor's enemies are independent of the others, so a team reaches floor F with probability prod_{f < F} p(f),
 p(f) its mean win chance over the floor's draws. The curve is sampled at a geometric grid of floors (p held between
 grid floors); expected floors cleared is the sum of the survival curve.
 
-    python -m card_engine.depths run --ally Parallax "Judgment Day" "Judgment Day" "Robin Hood" --ally-red Fate --checkpoint data/training_10s/ema.checkpoint
-    python -m card_engine.depths run --ally ... --checkpoint ... --simulate      # the engine's curve too
+Speed (user, 2026-10-07: speedrun teams such as Triceratops, a dinosaur and two Julius trade depth for floors per
+hour, since most floors are far weaker than they): our engine also gives each battle's expected length in turns, and
+his timing model (depths-time.ts) turns it into seconds: battle speed 3 (Depths' cap), +1 with the Chrono Shard, +0.25
+per battle-speed structure level, the skill tree's bonus, +0.25 per 100 floors up to +4.5; 1.1 s per attack at 1x,
+2x/3x/5x/10x faster from the 10th/20th/40th/60th attack; 0.5 s battle start; 0.9 s between floors. A floor's aura packs
+are ceil(ceil(sqrt((3000 + floor^2.7 x 40) / 2)) / 500), flat from floor 5,000 (depths-rewards.ts), counted through
+the floor a run dies on as his batch summary does. Runs restart from floor 1, so the long-run rate is a run's expected
+packs over its expected time.
+
+    python -m card_engine.depths run --ally Parallax "Judgement Day" "Judgement Day" "Robin Hood" --ally-blue Fate --checkpoint data/training_10s/ema.checkpoint
+    python -m card_engine.depths run --ally ... --checkpoint ... --simulate      # the engine's curve, speed and packs too
     python -m card_engine.depths search --checkpoint data/training_10s/ema.checkpoint --pool own
+    python -m card_engine.depths search --objective speed --ally Tricerotops ... --bans speedrun --checkpoint ... --pool own
 """
 
 import argparse
@@ -33,6 +43,19 @@ MAX_BANS = 14
 FLOOR_RANGE = (1, 10_000)  # training draws: floors log-uniform over this range (hard depths ~5,000 is about tower
 # 105 Impossible's stats; the pool is complete from about floor 150)
 HARD_SHARE = 0.8  # training draws that are hard depths (user: of most interest); the rest are normal depths
+# Popular ban lists (user, 2026-10-07, from in-game screenshots); --bans takes a name or cards. Odin and Achyls are
+# ours; a ban of a card his pool lacks changes nothing.
+BAN_PRESETS = {
+    "speedrun": ["Achyls", "Amaterasu", "Gilgamesh", "Inari", "Kuchisake-onna", "Limitless Rivals", "Loki", "Mastermind",
+                 "Odin", "Pandora", "Piccolo", "Surtr", "The Awakened One", "Zombie Dragon"],
+    "pro": ["A0-ON1", "AK4-ON1", "Astraeus", "Immortal Witch", "Julius Leader", "Pangu", "Piccolo", "Priest", "Sciron",
+            "Sekhmet", "Shu", "Susanoo", "Yamato no Orochi"],  # a pro's suggestion, likely for the deepest runs (user)
+}
+# Timing (his depths-time.ts)
+BASE_SPEED, CHRONO_SHARD, STRUCTURE_STEP, SKILL_TREE = 3, 1, 0.25, (0, 0.5, 1, 1.5, 2.5)
+FLOOR_SPEED_STEP, FLOOR_SPEED_CAP = 0.25, 4.5
+ATTACK_SECONDS, START_SECONDS, BETWEEN_FLOORS = 1.1, 0.5, 0.9
+REWARD_CAP_FLOOR = 5000
 
 
 def budget(floor):
@@ -125,37 +148,105 @@ def model_wins(classifier, teams, drawn, hard=True):
     return out
 
 
-def engine_wins(catalog, team, drawn, hard=True, workers=None, seed=1):
-    """[floors]: the engine's mean win chance per grid floor against the same draws."""
+def _init():
+    global _CATALOG
+    from .catalog import load_catalog
+    _CATALOG = load_catalog()
+
+
+def _battle(job):
+    """(win chance, expected turns) of the player, attacking first, against one floor's draw."""
+    from .training.labels import evaluate
+    team, foe, seed, per_card = job
+    probs, _, turns = evaluate(_CATALOG, {key: [team[key], foe[key]] for key in team}, seed, fixed=(1, per_card), turns=True)
+    finished = probs[0] + probs[1]
+    return (probs[0] / finished if finished > 0 else 0.0), turns
+
+
+def engine_pool(workers=None):
     import multiprocessing as mp
     from concurrent.futures import ProcessPoolExecutor
+    return ProcessPoolExecutor(workers, mp_context=mp.get_context("spawn"), initializer=_init)
+
+
+def engine_curves(catalog, teams, drawn, pool, hard=True, seed=1):
+    """([teams, floors] win chance, [teams, floors] expected turns): the engine's means per grid floor against the
+    same draws."""
     from . import tower
-    from .training.counter import _init
-    from .training.generate import _role_win
+    per_card = {floor: [tower.engine_stats(catalog, foe["cards"], stats(floor, hard)) for foe in foes]
+                for floor, foes in drawn.items()}
     jobs, owners = [], []
-    for j, (floor, foes) in enumerate(drawn.items()):
-        for foe in foes:
-            jobs.append((team, foe, seed + 2 * len(jobs), tower.engine_stats(catalog, foe["cards"], stats(floor, hard)), 0))
-            owners.append(j)
-    with ProcessPoolExecutor(workers, mp_context=mp.get_context("spawn"), initializer=_init) as pool:
-        wins = list(pool.map(_role_win, jobs, chunksize=4))
-    out = np.zeros(len(drawn))
-    for j, win in zip(owners, wins):
-        out[j] += win
-    return out / np.bincount(owners, minlength=len(drawn))
+    for t, team in enumerate(teams):
+        for j, (floor, foes) in enumerate(drawn.items()):
+            for k, foe in enumerate(foes):
+                jobs.append((team, foe, seed + 2 * (j * len(foes) + k), per_card[floor][k]))
+                owners.append((t, j))
+    wins, turns = np.zeros((len(teams), len(drawn))), np.zeros((len(teams), len(drawn)))
+    counts = np.zeros((len(teams), len(drawn)))
+    for (t, j), (win, length) in zip(owners, pool.map(_battle, jobs, chunksize=4)):
+        wins[t, j] += win
+        if length == length:  # nan: unsupported
+            turns[t, j] += length
+            counts[t, j] += 1
+    return wins / max(1, len(next(iter(drawn.values())))), turns / np.maximum(counts, 1)
+
+
+def battle_speed(floors, chrono=True, structure=0, skill=0):
+    """His effective Depths battle speed at each floor."""
+    floors = np.asarray(floors)
+    return (BASE_SPEED + (CHRONO_SHARD if chrono else 0) + STRUCTURE_STEP * min(7, structure) + SKILL_TREE[min(4, skill)]
+            + np.minimum(FLOOR_SPEED_CAP, (floors // 100) * FLOOR_SPEED_STEP))
+
+
+_ACCELERATED = np.concatenate([[0.0], np.cumsum([1 / (10 if k >= 60 else 5 if k >= 40 else 3 if k >= 20 else 2 if k >= 10
+                                                       else 1) for k in range(1, 4001)])])
+
+
+def battle_seconds(floors, turns, **speed):
+    """His estimated seconds per floor: between-floor wait, battle start and the attacks (accelerated in long fights;
+    fractional turns as he interpolates)."""
+    v = battle_speed(floors, **speed)
+    attacks = np.interp(np.asarray(turns, dtype=float), np.arange(len(_ACCELERATED)), _ACCELERATED)
+    return BETWEEN_FLOORS + START_SECONDS / v + ATTACK_SECONDS * attacks / v
+
+
+def aura_packs(floors):
+    """Aura packs a floor gives (his depthsRewardStageAttack / 500, flat from floor 5,000)."""
+    f = np.minimum(np.asarray(floors), REWARD_CAP_FLOOR)
+    return np.ceil(np.ceil(np.sqrt((3000 + f ** 2.7 * 40) / 2)) / 500)
+
+
+def run_value(floors, wins, turns, cap, **speed):
+    """A run from floor 1 with each grid floor's win chance and expected turns held to the next grid floor:
+    {"expected_floors" cleared, "minutes" per run, "packs" per run, "packs_per_hour", "floors_per_hour"}."""
+    every = np.arange(1, cap + 1)
+    at = np.searchsorted(floors, every, side="right") - 1
+    p, t = np.clip(np.asarray(wins)[at], 0, 1), np.asarray(turns)[at]
+    alive = np.cumprod(p)  # survived through floor f
+    reach = np.concatenate([[1.0], alive[:-1]])  # played floor f
+    seconds = float((reach * battle_seconds(every, t, **speed)).sum())
+    packs = float((reach * aura_packs(every)).sum())
+    cleared = float(alive.sum())
+    return {"expected_floors": round(cleared, 1), "minutes": round(seconds / 60, 1), "packs": round(packs, 1),
+            "packs_per_hour": round(packs / seconds * 3600, 1), "floors_per_hour": round(cleared / seconds * 3600, 1)}
 
 
 def add_arguments(parser):
     parser.add_argument("--normal", action="store_true", help="normal depths (default: hard depths, stats of floor x 10)")
-    parser.add_argument("--bans", nargs="+", default=[], metavar="CARD", help=f"the player's Depth bans (up to {MAX_BANS})")
+    parser.add_argument("--bans", nargs="+", default=[], metavar="CARD",
+                        help=f"the player's Depth bans (up to {MAX_BANS}), or a preset: {', '.join(BAN_PRESETS)}")
     parser.add_argument("--cap", type=int, default=FLOOR_RANGE[1], help="last floor of the curve")
-    parser.add_argument("--points", type=int, default=24, help="grid floors sampled")
-    parser.add_argument("--samples", type=int, default=32, help="enemy draws per grid floor")
+    parser.add_argument("--points", type=int, help="grid floors sampled (24; 12 for the speed search)")
+    parser.add_argument("--samples", type=int, help="enemy draws per grid floor (32; 8 for the speed search)")
     parser.add_argument("--seed", type=int, default=1)
+    parser.add_argument("--no-chrono-shard", action="store_true", help="speed: without the Chrono Shard (+1 speed)")
+    parser.add_argument("--structure", type=int, default=0, help="speed: battle-speed structure level (0-7)")
+    parser.add_argument("--skill-tree", type=int, default=0, help="speed: battle-speed skill-tree level (0-4)")
 
 
 def parse_bans(catalog, names):
     from .deck import _match
+    names = [card for name in names for card in BAN_PRESETS.get(name, [name])]
     if len(names) > MAX_BANS:
         raise SystemExit(f"At most {MAX_BANS} Depth bans")
     return [_match(name, [(c.id, c.name) for c in catalog.cards], "Card")[0] for name in names]
@@ -167,69 +258,94 @@ def main():
     from .training.predict import Classifier
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     commands = parser.add_subparsers(dest="command", required=True)
-    run = commands.add_parser("run", help="a team's depth curve")
-    run.add_argument("--ally", nargs=4, required=True, metavar="CARD", help="four cards, Name[@Border][/Mutation]")
-    run.add_argument("--ally-red")
-    run.add_argument("--ally-blue")
-    run.add_argument("--simulate", action="store_true", help="also the engine's curve, on the same draws")
-    run.add_argument("--workers", type=int)
-    search = commands.add_parser("search", help="the model search for the team that goes deepest, engine-verified")
+    run = commands.add_parser("run", help="a team's depth curve (and with --simulate the engine's, speed and packs)")
+    run.add_argument("--simulate", action="store_true", help="also the engine's curve, speed and aura packs")
+    search = commands.add_parser("search", help="the team that goes deepest (model search) or earns aura packs "
+                                 "fastest (engine search), engine-verified")
+    search.add_argument("--objective", choices=("depth", "speed"), default="depth",
+                        help="depth: expected floors cleared, by the model; speed: aura packs per hour, by the engine "
+                        "(the model gives no battle length)")
     search.add_argument("--pool", choices=("own", "custom", "restricted", "all"), default="own")
     search.add_argument("--borders", nargs="+", default=["none"])
     search.add_argument("--mutations", nargs="+", default=["None"])
     search.add_argument("--support-tiers", nargs="+", default=["base"])
-    search.add_argument("--evaluations", type=int, default=5_000, help="teams the model scores")
-    search.add_argument("--top", type=int, default=4, help="best distinct teams the engine plays")
-    search.add_argument("--workers", type=int)
+    search.add_argument("--evaluations", type=int, help="teams scored (depth: 5,000 by the model; speed: 300 by the engine)")
+    search.add_argument("--top", type=int, default=4, help="best distinct teams reported")
     for command in (run, search):
+        command.add_argument("--ally", nargs=4, required=command is run, metavar="CARD",
+                             help="four cards, Name[@Border][/Mutation] (search: a starting team)")
+        command.add_argument("--ally-red")
+        command.add_argument("--ally-blue")
         command.add_argument("--checkpoint", required=True)
         command.add_argument("--device")
+        command.add_argument("--workers", type=int, help="engine processes")
         add_arguments(command)
     args = parser.parse_args()
     catalog = load_catalog()
     hard = not args.normal
+    fast = args.command == "search" and args.objective == "speed"
+    speed = dict(chrono=not args.no_chrono_shard, structure=args.structure, skill=args.skill_tree)
     bans = parse_bans(catalog, args.bans)
-    floors = grid(args.cap, args.points)
-    drawn = enemies(catalog, floors, args.samples, bans, args.seed)
+    floors = grid(args.cap, args.points or (12 if fast else 24))
+    drawn = enemies(catalog, floors, args.samples or (8 if fast else 32), bans, args.seed)
     classifier = Classifier(args.checkpoint, args.device)
     missing = pool(catalog)[1]
     if missing:
         print(f"his Depths pool has cards our catalog lacks (never drawn): {', '.join(missing)}", file=sys.stderr)
+    start = parse_side(catalog, args.ally, args.ally_red, args.ally_blue) if args.ally else None
 
     def report(team, model, engine=None):
         result = {"team": describe(catalog, team), "mode": "hard" if hard else "normal"}
-        for name, wins in (("model", model), ("engine", engine)):
+        for name, wins in (("model", model), ("engine", engine and engine[0])):
             if wins is None:
                 continue
             expected, curve, median = survival(floors, wins, args.cap)
             result[name] = {"expected_floors": round(expected, 1), "median_death_floor": median,
                             "floors": {f: [round(float(w), 3), round(c, 4)] for f, w, c in zip(floors, wins, curve)}}
+        if engine is not None:
+            result["engine"].update(run_value(floors, engine[0], engine[1], args.cap, **speed),
+                                    turns={f: round(float(t), 1) for f, t in zip(floors, engine[1])})
         print(json.dumps(result), flush=True)
 
-    if args.command == "run":
-        team = parse_side(catalog, args.ally, args.ally_red, args.ally_blue)
-        model = model_wins(classifier, [team], drawn, hard)[0]
-        report(team, model, engine_wins(catalog, team, drawn, hard, args.workers, args.seed) if args.simulate else None)
-        print("floors: grid floor -> [mean win chance there, chance to have survived through the floors it covers]")
-        return
-    from types import SimpleNamespace
-    from .training.generate import _team, evolve, make_pool, masks
-    from .training.hard import distinct
-    borders, mutations, tiers = masks(args.borders, args.mutations, args.support_tiers)
-    space = SimpleNamespace(classifier=classifier, pool=make_pool(catalog, args.pool, borders=borders, mutations=mutations,
-                                                                  tiers=tiers))
+    with engine_pool(args.workers) as engine:
+        curves = lambda teams: engine_curves(catalog, teams, drawn, engine, hard, args.seed)
+        if args.command == "run":
+            model = model_wins(classifier, [start], drawn, hard)[0]
+            report(start, model, tuple(c[0] for c in curves([start])) if args.simulate else None)
+            print("floors: grid floor -> [mean win chance there, chance to have survived through the floors it covers]; "
+                  "turns: expected battle length per grid floor")
+            return
+        from types import SimpleNamespace
+        from .training.generate import _ids, _team, evolve, make_pool, masks
+        from .training.hard import distinct
+        borders, mutations, tiers = masks(args.borders, args.mutations, args.support_tiers)
+        space = SimpleNamespace(classifier=classifier, pool=make_pool(catalog, args.pool, borders=borders,
+                                                                      mutations=mutations, tiers=tiers))
+        starts = []
+        if start is not None:
+            try:
+                _ids(space.pool, start)
+                starts = [start]
+            except (KeyError, ValueError):
+                raise SystemExit("The starting team is not in the pool (its cards, borders, mutations or supports)")
 
-    def score(members, done):
-        teams = [_team(space, *m) for m in members]
-        return [survival(floors, wins, args.cap)[0] for wins in model_wins(classifier, teams, drawn, hard)]
+        def score(members, done):
+            teams = [_team(space, *m) for m in members]
+            if fast:
+                wins, turns = curves(teams)
+                return [run_value(floors, w, t, args.cap, **speed)["packs_per_hour"] for w, t in zip(wins, turns)]
+            return [survival(floors, wins, args.cap)[0] for wins in model_wins(classifier, teams, drawn, hard)]
 
-    seen = evolve(space, [], score, evaluations=args.evaluations, seed=args.seed, prior=0.0, catalog=catalog,
-                  population=128, parents=32, children=4)
-    ranked = sorted(seen, key=lambda m: -seen[m])
-    teams = [_team(space, *m) for m in ranked]
-    for i in distinct(teams, range(len(teams)), args.top):
-        team = teams[i]
-        report(team, model_wins(classifier, [team], drawn, hard)[0], engine_wins(catalog, team, drawn, hard, args.workers, args.seed))
+        evaluations = args.evaluations or (300 if fast else 5_000)
+        seen = evolve(space, starts, score, evaluations=evaluations, seed=args.seed, prior=0.0, catalog=catalog,
+                      **(dict(population=32, parents=8, children=4) if fast else dict(population=128, parents=32, children=4)))
+        teams = [_team(space, *m) for m in sorted(seen, key=lambda m: -seen[m])]
+        best = [teams[i] for i in distinct(teams, range(len(teams)), args.top)]
+        if start is not None and start not in best:
+            best.append(start)  # the starting team, for comparison
+        wins, turns = curves(best)
+        for team, w, t in zip(best, wins, turns):
+            report(team, model_wins(classifier, [team], drawn, hard)[0], (w, t))
 
 
 if __name__ == "__main__":

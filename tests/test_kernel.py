@@ -15,7 +15,7 @@ class KernelTests(unittest.TestCase):
         cls.pool = tuple(sorted(drago.supported(cls.catalog)[0]))
 
     def same(self, spec, seed, **tweaks):
-        options = {"nodeBudget": 2000}
+        options = {"nodeBudget": 2000, "turns": True}  # the expected battle length too (depths speed)
         self.assertEqual(kernel.evaluate(self.catalog, spec, seed, **tweaks, **options),
                          drago.evaluate(self.catalog, spec, seed, **tweaks, **options))
 

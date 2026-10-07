@@ -16,7 +16,8 @@ export interface Options extends Tweaks { nodeBudget: number; sampleBelow: numbe
   maxTurns: number; seed: number; snapshots: boolean }  // snapshots false: replay every branch from turn 1 (tests)
 export const DEFAULTS: Options = { nodeBudget: 20000, sampleBelow: 1e-3, rollouts: 1024, rolloutError: 0.03, maxTurns: 2000, seed: 1,
   snapshots: true }
-export interface Result { a: number; b: number; draw: number; exact: boolean; nodes: number; playouts: number }
+// turns: the expected battle length in his turns (state.turn at the end), weighted like the outcomes (depths speed)
+export interface Result { a: number; b: number; draw: number; turns: number; exact: boolean; nodes: number; playouts: number }
 
 // A battle saved at the start of a turn (never mutated: resuming works on a copy) with the battle loop's counters.
 interface Saved { state: any; counters: TurnCounters }
@@ -147,7 +148,7 @@ export function startState(a: any, b: any, tweaks: Tweaks = {}) {
   return state
 }
 
-function play(a: any, b: any, node: Node, random: (() => number) | null, o: Options): 'a' | 'b' | 'draw' {
+function play(a: any, b: any, node: Node, random: (() => number) | null, o: Options): ['a' | 'b' | 'draw', number] {
   const tape = new Tape(node.choices, random)
   const resume = o.snapshots ? node.saved : null
   const state = resume ? copyState(resume.state) : startState(a, b, o)
@@ -158,7 +159,7 @@ function play(a: any, b: any, node: Node, random: (() => number) | null, o: Opti
   try {
     const r = simulateBattleV2(a, [], 1, o.maxTurns, false, false, undefined,
       { state, chance: chanceFor(tape), resume: resume?.counters, onTurn })
-    return r.winner === 'Allies' ? 'a' : r.winner === 'Enemies' ? 'b' : 'draw'
+    return [r.winner === 'Allies' ? 'a' : r.winner === 'Enemies' ? 'b' : 'draw', r.turns]
   } catch (e) {
     if (e instanceof Branch) { e.saved = saved; e.choices = node.choices.slice(from) }
     throw e
@@ -167,7 +168,7 @@ function play(a: any, b: any, node: Node, random: (() => number) | null, o: Opti
 
 export function solve(a: any, b: any, options: Partial<Options> = {}): Result {
   const o = { ...DEFAULTS, ...options }
-  const out = { a: 0, b: 0, draw: 0 }
+  const out = { a: 0, b: 0, draw: 0, turns: 0 }
   const open: Node[] = [{ p: 1, saved: null, choices: [] }]
   const rare: Node[] = []
   let nodes = 0
@@ -176,7 +177,7 @@ export function solve(a: any, b: any, options: Partial<Options> = {}): Result {
     for (let i = 1; i < open.length; i++) if (open[i].p > open[best].p) best = i
     const node = open[best]; open[best] = open[open.length - 1]; open.pop()
     nodes++
-    try { out[play(a, b, node, null, o)] += node.p }
+    try { const [winner, turns] = play(a, b, node, null, o); out[winner] += node.p; out.turns += node.p * turns }
     catch (e) {
       if (!(e instanceof Branch)) throw e
       e.probs.forEach((q, k) => {
@@ -190,17 +191,20 @@ export function solve(a: any, b: any, options: Partial<Options> = {}): Result {
   // pooled playouts: each picks an open branch in proportion to its probability, then plays on at random
   const random = mulberry(o.seed), cum: number[] = []
   left.reduce((s, n) => { cum.push(s + n.p); return s + n.p }, 0)
-  const tally = { a: 0, b: 0, draw: 0 }
+  const tally = { a: 0, b: 0, draw: 0, turns: 0 }
   let n = 0
   while (n < o.rollouts) {
     for (let j = 0; j < 32 && n < o.rollouts; j++, n++) {
       const u = random() * mass
       let lo = 0, hi = cum.length - 1
       while (lo < hi) { const mid = (lo + hi) >> 1; if (cum[mid] < u) lo = mid + 1; else hi = mid }
-      tally[play(a, b, left[lo], random, o)]++
+      const [winner, turns] = play(a, b, left[lo], random, o)
+      tally[winner]++
+      tally.turns += turns
     }
     const pa = tally.a / n
     if (mass * Math.sqrt(Math.max(pa * (1 - pa), 1 / n) / n) <= o.rolloutError) break
   }
-  return { a: out.a + mass * tally.a / n, b: out.b + mass * tally.b / n, draw: out.draw + mass * tally.draw / n, exact: false, nodes, playouts: n }
+  return { a: out.a + mass * tally.a / n, b: out.b + mass * tally.b / n, draw: out.draw + mass * tally.draw / n,
+    turns: out.turns + mass * tally.turns / n, exact: false, nodes, playouts: n }
 }

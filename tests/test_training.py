@@ -423,6 +423,12 @@ class TrainingTests(unittest.TestCase):
         expected, curve, median = depths.survival([1, 10, 100], [1.0, 0.9, 0.5], 1000)
         self.assertAlmostEqual(expected, 9 + 0.9 * (1 - 0.9 ** 90) / 0.1 + 0.9 ** 90 * 1.0, places=6)
         self.assertEqual(median, 16)  # 0.9^7 < 1/2: the seventh floor from 10
+        # his timing: speed 4 (3 + Chrono Shard) at floor 1; 12 attacks are 9 at 1x and 3 at 2x
+        self.assertAlmostEqual(float(depths.battle_seconds([1], [12])[0]), 0.9 + 0.5 / 4 + 1.1 * 10.5 / 4)
+        self.assertEqual(depths.aura_packs([1, 5000, 9000]).tolist(), [1.0, 882.0, 882.0])
+        value = depths.run_value([1, 10], [1.0, 0.0], [5, 5], 100)  # clears 1-9, dies on 10: ten floors' packs
+        self.assertEqual((value["expected_floors"], value["packs"]), (9.0, 10.0))
+        self.assertEqual(len(depths.parse_bans(catalog, ["speedrun"])), 14)
         side, fixed = labels.fixed_battle(random.Random(0), catalog, labels.random_spec(random.Random(0), catalog))
         self.assertIn(side, (0, 1))
         from card_engine.training.hard import draw_enemy

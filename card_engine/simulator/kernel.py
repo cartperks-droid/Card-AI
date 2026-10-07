@@ -11,7 +11,7 @@ import sys
 from . import drago
 
 LIBRARY = drago.ROOT / "sim_c" / "build" / ("libcardsim.dylib" if sys.platform == "darwin" else "libcardsim.so")
-VERSION = b"card-engine-c-3"
+VERSION = b"card-engine-c-4"
 CODES = ["", "Pl", "Cr", "CrPl", "Ru", "RuPl", "RuCr", "RuCrPl", "Ga", "GaPl", "GaCr", "GaCrPl", "GaRu", "GaRuPl", "GaRuCr",
          "GaRuCrPl"]
 ABBREVIATION = {"Galaxy": "Ga", "Ruby": "Ru", "Crystal": "Cr", "Platinum": "Pl"}
@@ -124,13 +124,14 @@ class Battle:
             lib.ce_set_counter(self.state, c, _index("counter", name), float(value))
 
     def solve(self, nodeBudget, sampleBelow, rollouts, rolloutError, maxTurns, seed):
-        """{"a", "b", "draw", "exact", "nodes", "playouts"}, as sim_js/search.ts solve."""
-        out = (ctypes.c_double * 7)()
+        """{"a", "b", "draw", "turns", "exact", "nodes", "playouts"}, as sim_js/search.ts solve."""
+        out = (ctypes.c_double * 8)()
         library().ce_solve(self.state, nodeBudget, sampleBelow, rollouts, rolloutError, maxTurns, seed, out)
         if out[6]:
             raise RuntimeError("C engine: more cards, deeper recursion or more operations in one playthrough than it allows "
                                "(sim_c/engine.h MAXC, engine.c MAXDEPTH, MAXOPS)")
-        return {"a": out[0], "b": out[1], "draw": out[2], "exact": bool(out[3]), "nodes": int(out[4]), "playouts": int(out[5])}
+        return {"a": out[0], "b": out[1], "draw": out[2], "turns": out[7], "exact": bool(out[3]), "nodes": int(out[4]),
+                "playouts": int(out[5])}
 
     def close(self):
         if self.state:
@@ -150,17 +151,18 @@ def start(a, b, tweaks=None):
     return Battle(exported), exported["unsupported"]
 
 
-def evaluate(catalog, spec, seed, *, fixed=None, scale=None, strip=None, **overrides):
-    """drago.evaluate on the C engine: ((P(A wins), P(B wins), 0, unfinished), exact); a draw is A's loss."""
+def evaluate(catalog, spec, seed, *, fixed=None, scale=None, strip=None, turns=False, **overrides):
+    """drago.evaluate on the C engine: ((P(A wins), P(B wins), 0, unfinished), exact); a draw is A's loss. turns: also
+    the expected battle length in his turns, a third item (nan when unsupported)."""
     a, b = drago.loadouts(catalog, spec)
     battle, unsupported = start(a, b, drago._tweaks(fixed, scale, strip))
     with battle:
         if unsupported:
-            return (0.0, 0.0, 0.0, 1.0), False
+            return ((0.0, 0.0, 0.0, 1.0), False) + ((float("nan"),) if turns else ())
         unknown = set(overrides) - set(drago.SEARCH)
         if unknown:
             raise TypeError(f"unknown search options {sorted(unknown)}")
         options = {**drago.SEARCH, **overrides}
         r = battle.solve(options["nodeBudget"], options["sampleBelow"], options["rollouts"], options["rolloutError"],
                          options["maxTurns"], int(seed) % 2 ** 31 or 1)
-    return (r["a"], r["b"] + r["draw"], 0.0, 0.0), r["exact"]
+    return ((r["a"], r["b"] + r["draw"], 0.0, 0.0), r["exact"]) + ((r["turns"],) if turns else ())

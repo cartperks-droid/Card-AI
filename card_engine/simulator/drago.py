@@ -208,16 +208,17 @@ def stat_tables(catalog):
     return base, table, prehistoric, jurassic
 
 
-def evaluate(catalog, spec, seed, *, fixed=None, scale=None, strip=None, **overrides):
+def evaluate(catalog, spec, seed, *, fixed=None, scale=None, strip=None, turns=False, **overrides):
     """((P(A wins), P(B wins), 0, unfinished), exact) for a label spec; side A moves first, and a draw counts as A's loss.
 
     Optional tweaks, each naming a side (0 = A, 1 = B): fixed=(side, [(HP, ATK) per card]) sets that side's stats
     (event or Tower teams); scale=(side, factor) multiplies its HP and ATK; strip=(side, slot) removes one card's
-    ability, stats kept. A battle with an ability or aura his engine marks unsupported gets no answer: ((0,0,0,1), False)."""
+    ability, stats kept. A battle with an ability or aura his engine marks unsupported gets no answer: ((0,0,0,1), False).
+    turns: also the expected battle length in his turns (state.turn at the end), a third item (nan when unsupported)."""
     a, b = loadouts(catalog, spec)
     options = {**SEARCH, **overrides, **_tweaks(fixed, scale, strip), "seed": int(seed) % 2 ** 31 or 1}
     reply = worker().request({"a": a, "b": b, "options": options})
     if reply["unsupported"]:
-        return (0.0, 0.0, 0.0, 1.0), False
+        return ((0.0, 0.0, 0.0, 1.0), False) + ((float("nan"),) if turns else ())
     # User (2026-10-03): a draw (both wiped out, or the turn cap) counts as the attacker A's loss.
-    return (reply["a"], reply["b"] + reply["draw"], 0.0, 0.0), bool(reply["exact"])
+    return ((reply["a"], reply["b"] + reply["draw"], 0.0, 0.0), bool(reply["exact"])) + ((reply["turns"],) if turns else ())

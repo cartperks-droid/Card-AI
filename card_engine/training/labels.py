@@ -196,7 +196,7 @@ def evaluate(catalog, spec, seed, **overrides):
         ENGINE_ERRORS.parent.mkdir(parents=True, exist_ok=True)
         with open(ENGINE_ERRORS, "a") as log:
             log.write(json.dumps({"error": str(error), "seed": int(seed), "spec": spec}) + "\n")
-        return (0.0, 0.0, 0.0, 1.0), False
+        return ((0.0, 0.0, 0.0, 1.0), False) + ((float("nan"),) if overrides.get("turns") else ())
 
 
 def label_specs(catalog, specs, *, seed, tablebase=None, **overrides):

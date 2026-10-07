@@ -214,7 +214,12 @@ Depths (hard depths by default: the floor's enemy pool, the stats of floor × 10
 python3 -m card_engine.depths run --checkpoint data/training_10s/ema.checkpoint --ally Parallax "Judgement Day" "Judgement Day" "Robin Hood" --ally-blue Fate --simulate
 python3 -m card_engine.depths search --checkpoint data/training_10s/ema.checkpoint --pool own --device cpu
 ```
-Options: `--bans CARD ...` (your Depth bans, up to 14), `--cap 10000` (last floor), `--points 24` (floors sampled, geometric), `--samples 32` (enemy draws per floor), `--evaluations 5000` (search). Output: `expected_floors` (floors cleared on average), `median_death_floor`, and per sampled floor the mean win chance and the chance to have survived that far.
+Speedrun teams (aura packs per hour, Drago's timing and rewards, battle lengths from our engine; it searches with the engine, since the model gives no battle length, starting from `--ally`):
+```
+python3 -m card_engine.depths run --checkpoint data/training_10s/ema.checkpoint --ally Tricerotops DINO "Julius Leader" "Julius Leader" --bans speedrun --simulate
+python3 -m card_engine.depths search --objective speed --checkpoint data/training_10s/ema.checkpoint --ally Tricerotops DINO "Julius Leader" "Julius Leader" --bans speedrun --pool own --device cpu
+```
+Options: `--bans CARD ...` (your Depth bans, up to 14) or a preset (`speedrun`, `pro`), `--cap 10000` (last floor), `--points` (floors sampled, geometric; 24, or 12 for the speed search), `--samples` (enemy draws per floor; 32, or 8), `--evaluations` (5,000 teams by the model; 300 by the engine for speed), `--no-chrono-shard`, `--structure N` (battle-speed structure 0-7), `--skill-tree N` (0-4). Output: `expected_floors` (cleared on average), `median_death_floor`, per sampled floor the mean win chance and the chance to have survived that far; with the engine also `turns` per floor, `minutes` and `packs` per run, `packs_per_hour` and `floors_per_hour` (runs restart from floor 1).
 
 Model against engine on a suite of battles:
 ```

@@ -11,7 +11,7 @@
 typedef struct Saved { int refs; Counters counters; char state[]; } Saved;  // state: the battle, packed (state_pack)
 typedef struct { double p; Saved *saved; int n; int *choices; } Node;
 typedef struct { int nodeBudget, rollouts, maxTurns; double sampleBelow, rolloutError; unsigned seed; } Options;
-typedef struct { double a, b, draw; int exact, nodes, playouts, overflow; } Result;
+typedef struct { double a, b, draw, turns; int exact, nodes, playouts, overflow; } Result;  // turns: expected battle length
 
 #define MAXPROBS 512
 typedef struct {
@@ -113,8 +113,8 @@ static int play(const char *start, Node *node, uint32_t *random, const Options *
 static void release(Saved *s) { if (s && --s->refs <= 0) free(s); }
 
 Result solve(const State *start, const Options *o) {
-  Result out = {0, 0, 0, 0, 0, 0, 0};
-  double win[3] = {0, 0, 0};
+  Result out = {0, 0, 0, 0, 0, 0, 0, 0};
+  double win[3] = {0, 0, 0}, turns = 0;
   int cap_open = 64, cap_rare = 64, nopen = 1, nrare = 0;
   Node *open = malloc(sizeof(Node) * cap_open), *rare = malloc(sizeof(Node) * cap_rare);
   open[0] = (Node){1, NULL, 0, NULL};
@@ -136,7 +136,7 @@ Result solve(const State *start, const Options *o) {
     nodes++;
     int r = play(packed, &node, NULL, o, rt, tape);
     if (r == -2) { out.overflow = 1; release(node.saved); free(node.choices); break; }
-    if (r >= 0) win[r] += node.p;
+    if (r >= 0) { win[r] += node.p; turns += node.p * rt->s.turn; }
     else {
       Saved *saved = node.saved;
       int from = 0;
@@ -171,13 +171,13 @@ Result solve(const State *start, const Options *o) {
   out.nodes = nodes;
   if (out.overflow) {
   } else if (!nleft || !(mass > 0)) {
-    out.a = win[0]; out.b = win[1]; out.draw = win[2]; out.exact = 1;
+    out.a = win[0]; out.b = win[1]; out.draw = win[2]; out.turns = turns; out.exact = 1;
   } else {
     // pooled playouts: each picks an open branch in proportion to its probability, then plays on at random
     uint32_t random = o->seed;
     double *cum = malloc(sizeof(double) * nleft), s = 0;
     for (int i = 0; i < nleft; i++) { s += left[i].p; cum[i] = s; }
-    double tally[3] = {0, 0, 0};
+    double tally[3] = {0, 0, 0}, tally_turns = 0;
     int n = 0;
     while (n < o->rollouts) {
       for (int j = 0; j < 32 && n < o->rollouts; j++, n++) {
@@ -187,12 +187,14 @@ Result solve(const State *start, const Options *o) {
         int r = play(packed, &left[lo], &random, o, rt, tape);
         if (r < 0) { out.overflow = 1; break; }
         tally[r]++;
+        tally_turns += rt->s.turn;
       }
       if (out.overflow) break;
       double pa = tally[0] / n;
       if (mass * sqrt(jmax(pa * (1 - pa), 1.0 / n) / n) <= o->rolloutError) break;
     }
     out.a = win[0] + mass * tally[0] / n; out.b = win[1] + mass * tally[1] / n; out.draw = win[2] + mass * tally[2] / n;
+    out.turns = turns + mass * tally_turns / n;
     out.playouts = n;
     free(cum);
   }
@@ -202,7 +204,7 @@ Result solve(const State *start, const Options *o) {
 }
 
 // ---- Python interface (card_engine/simulator/kernel.py) ----
-const char *ce_version(void) { return "card-engine-c-3"; }
+const char *ce_version(void) { return "card-engine-c-4"; }
 State *ce_state_new(void) { State *s = calloc(1, sizeof(State)); return s; }
 void ce_state_free(State *s) { free(s); }
 void ce_state_set(State *s, double turn, int moving) { s->turn = turn; s->moving = moving; }
@@ -236,8 +238,8 @@ void ce_set_boosts(State *s, int team, const double *v, int composer_threshold_s
   b->composerThresholdSet = composer_threshold_set; b->skillAura = skill_aura;
 }
 void ce_solve(const State *start, int nodeBudget, double sampleBelow, int rollouts, double rolloutError, int maxTurns,
-              unsigned seed, double *out) {  // out[7]: a, b, draw, exact, nodes, playouts, overflow
+              unsigned seed, double *out) {  // out[8]: a, b, draw, exact, nodes, playouts, overflow, turns
   Options o = {nodeBudget, rollouts, maxTurns, sampleBelow, rolloutError, seed};
   Result r = solve(start, &o);
-  out[0] = r.a; out[1] = r.b; out[2] = r.draw; out[3] = r.exact; out[4] = r.nodes; out[5] = r.playouts; out[6] = r.overflow;
+  out[0] = r.a; out[1] = r.b; out[2] = r.draw; out[3] = r.exact; out[4] = r.nodes; out[5] = r.playouts; out[6] = r.overflow; out[7] = r.turns;
 }
