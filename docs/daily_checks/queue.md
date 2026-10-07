@@ -3,6 +3,7 @@
 These are open rule and class questions, most important first. The daily task picks from here and adds new ones as they come up. Once a check is answered, move it to "Answered" with the date and result.
 
 ## Open
+0. **Achyls (Achlys) against tower enemies** (2026-10-07). Card text: "On entry, 70% chance to set enemy stats to its base borderless stats." DaddyDrago's engine rebuilds the facing enemy from its card definition, which discards a tower floor's fixed stats (11M HP at floor 105) as well as borders; the model search's best floor-105 teams (Achyls / Achyls / Parallax / Frank with Flame Wizard: engine 0.525) rest on that. The user reads it as borders only, a no-op on borderless tower enemies. Check in game: on a high tower floor, does the enemy facing Achyls drop to its normal card stats when Divine Mist procs, or keep the floor's stats?
 1. **Class spot-checks.** Next is toy (7 reviewed), then avian (3), dragon (5) and demon (7). Only check the *Reviewed* rows in `docs/classes.md` (`python -m card_engine.class_report` regenerates it).
 
 2. **Odin's dodge cost.** Is it 20% of current HP (it can never die to normal attacks) or 20% of max HP (dead after 5 dodges)?
