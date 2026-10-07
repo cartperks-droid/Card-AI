@@ -244,10 +244,10 @@ def add_arguments(parser):
     parser.add_argument("--skill-tree", type=int, default=0, help="speed: battle-speed skill-tree level (0-4)")
 
 
-def expand_packs(catalog, cards, red=None, blue=None, orders=False):
+def expand_packs(catalog, cards, red=None, blue=None):
     """Teams from four card names, where a "pack:NAME[@Border][/Mutation]" slot stands for every card of that pack
-    (user, 2026-10-07: a speedrun team's "1 dino" is any Prehistoric card, in any slot), one team per card; at most one
-    of each single-copy card. orders: also every distinct lineup order of each team (the front card fights first)."""
+    (user, 2026-10-07: a speedrun team's "1 dino" is any Prehistoric card, in whichever slot the lineup puts it), one
+    team per card, the lineup as given; at most one of each single-copy card."""
     from .teams import SINGLE_COPY, parse_side
     from itertools import product
     options = []
@@ -266,18 +266,11 @@ def expand_packs(catalog, cards, red=None, blue=None, orders=False):
             packs = sorted({p for c in catalog.cards for p in (c.packs or ())})
             raise SystemExit(f"No pack {name!r}; one of {', '.join(packs)}")
         options.append([f"{member}{mark}" for member in members])
-    from itertools import permutations
-    teams, seen = [], set()
+    teams = []
     for names in product(*options):
         team = parse_side(catalog, list(names), red, blue)
-        if any(team["cards"].count(card) > 1 for card in SINGLE_COPY):
-            continue
-        slots = list(zip(team["cards"], team["borders"], team["mutations"], team["arts"]))
-        for order in (dict.fromkeys(permutations(slots)) if orders else [tuple(slots)]):
-            if order not in seen:
-                seen.add(order)
-                teams.append({**team, **{key: [slot[i] for slot in order]
-                                         for i, key in enumerate(("cards", "borders", "mutations", "arts"))}})
+        if not any(team["cards"].count(card) > 1 for card in SINGLE_COPY):
+            teams.append(team)
     return teams
 
 
@@ -297,7 +290,6 @@ def main():
     commands = parser.add_subparsers(dest="command", required=True)
     run = commands.add_parser("run", help="a team's depth curve (and with --simulate the engine's, speed and packs)")
     run.add_argument("--simulate", action="store_true", help="also the engine's curve, speed and aura packs")
-    run.add_argument("--orders", action="store_true", help="also every distinct lineup order of each team, ranked")
     search = commands.add_parser("search", help="the team that goes deepest (model search) or earns aura packs "
                                  "fastest (engine search), engine-verified")
     search.add_argument("--objective", choices=("depth", "speed"), default="depth",
@@ -331,7 +323,7 @@ def main():
     missing = pool(catalog)[1]
     if missing:
         print(f"his Depths pool has cards our catalog lacks (never drawn): {', '.join(missing)}", file=sys.stderr)
-    variants = expand_packs(catalog, args.ally, args.ally_red, args.ally_blue, getattr(args, "orders", False)) if args.ally else []
+    variants = expand_packs(catalog, args.ally, args.ally_red, args.ally_blue) if args.ally else []
     if args.command == "search" and len(variants) > 1:
         raise SystemExit("search takes one starting team: name its cards (pack: slots are for run)")
     start = variants[0] if variants else None
@@ -365,7 +357,7 @@ def main():
                 rows.append(row)
             print("floors: grid floor -> [mean win chance there, chance to have survived through the floors it covers]; "
                   "turns: expected battle length per grid floor")
-            if len(rows) > 1:  # a pack slot or --orders: every team, best first
+            if len(rows) > 1:  # a pack slot: every card of the pack, best first
                 key = "packs_per_hour" if engines else "model_floors"
                 print(f"\n{'team':<60} {'model floors':>12}" + (f" {'engine floors':>13} {'median death':>12} {'min/run':>8} "
                                                                  f"{'packs/h':>9} {'floors/h':>9}" if engines else ""))
