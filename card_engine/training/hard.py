@@ -217,7 +217,9 @@ def proposals(rng, classifier, catalog, pool, enemy, fixed, per_card, seed, spac
     if key not in spaces:  # one slot space per mask and shard (the classifier is reloaded per shard)
         spaces[key] = SlotSpace(classifier, make_pool(catalog, "all", borders=list(borders), tiers=tiers,
                                                       mutations=None if mutations is None else list(mutations)))
-    settings = Settings(steps=300, noise_levels=12, sigma_max=4.0)
+    # The tuner's best finder of overrated teams (scripts/tune_generator.py, step-298,000 model, 2026-10-07): its
+    # floor-100 teams averaged 0.325 by the model and 0.000 by the engine; the earlier settings here were not measured.
+    settings = Settings(steps=600, lr=0.05, temperature=0.2, commitment=2.0, nearest=5, noise_levels=24, sigma_max=4.0)
     teams = [team for team, *_ in counters(spaces[key], enemy, count=32, restarts=32, settings=settings,
                                            seed=seed, enemy_stats=fixed)]
     jobs = [(spec(team, enemy), seed + i, per_card) for i, team in enumerate(teams)]
