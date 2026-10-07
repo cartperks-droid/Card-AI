@@ -25,6 +25,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))  # run as a script: the project root holds card_engine
 from card_engine import tower
 from card_engine.catalog import load_catalog
+from card_engine.teams import describe
 from card_engine.training.counter import _init
 from card_engine.training.generate import Settings, SlotSpace, _role_win, counters, make_pool, masks, model_search
 from card_engine.training.hard import distinct
@@ -46,7 +47,7 @@ def main():
     parser.add_argument("--checkpoint", required=True)
     parser.add_argument("--floors", nargs="+", default=["105 Impossible", "100 Impossible", "95 Impossible"],
                         help="tower floors with fixed teams (every fifth), as 'FLOOR DIFFICULTY'")
-    parser.add_argument("--trials", type=int, default=24)
+    parser.add_argument("--trials", type=int, default=24, help="ascent trials, the defaults first (0: model search only)")
     parser.add_argument("--top", type=int, default=8, help="teams per floor the engine plays")
     parser.add_argument("--restarts", type=int, default=64)
     parser.add_argument("--pool", choices=("own", "custom", "restricted", "all"), default="restricted")
@@ -75,7 +76,7 @@ def main():
     space = SlotSpace(Classifier(args.checkpoint, args.device),
                       make_pool(catalog, args.pool, borders=borders, mutations=mutations, tiers=tiers))
     rng = random.Random(args.seed)
-    trials = [(f"M{n}", n) for n in args.model_search] + [(0, Settings())]
+    trials = [(f"M{n}", n) for n in args.model_search] + [(0, Settings())] * (args.trials > 0)
     trials += [(i, Settings(**{k: rng.choice(v) for k, v in SPACE.items()})) for i in range(1, args.trials)]
 
     def teams(setting, enemy, stats, seed):
@@ -97,7 +98,9 @@ def main():
                 wins = list(engine.map(_role_win, jobs)) or [0.0]
                 model = [win for _, win in found] or [0.0]
                 per_floor[name] = {"best": round(max(wins), 3), "mean": round(sum(wins) / len(wins), 3),
-                                   "model_mean": round(sum(model) / len(model), 3)}
+                                   "model_mean": round(sum(model) / len(model), 3),
+                                   "teams": [{**describe(catalog, team), "model": round(m, 3), "engine": round(w, 3)}
+                                             for (team, m), w in zip(found, wins)]}
             score = sum(v["best"] for v in per_floor.values()) / len(per_floor)
             mean = sum(v["mean"] for v in per_floor.values()) / len(per_floor)
             record = {"trial": index, "score": round(score, 3), "mean": round(mean, 3), "floors": per_floor,
