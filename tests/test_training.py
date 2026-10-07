@@ -176,6 +176,20 @@ class TrainingTests(unittest.TestCase):
         team, stats = draw_enemy(rng, catalog, (104, "Hell"))  # no fixed team there: random enemies at its stats
         self.assertEqual((len(team["cards"]), stats), (4, tower.stats(104, "Hell")))
 
+    def test_mined_teams_are_also_labelled_defending(self):
+        import multiprocessing as mp
+        from concurrent.futures import ProcessPoolExecutor
+        from card_engine.catalog import load_catalog
+        from card_engine.training import hard
+        with ProcessPoolExecutor(2, mp_context=mp.get_context("spawn"), initializer=hard._init) as pool:
+            arrays, probs, exact, extra, *_ = hard.hard_shard(None, load_catalog(), 3, 1, pool, candidates=80, keep=2,
+                                                              keep_random=2)
+        kept = len(probs) // 2  # each kept team again with the fixed-stat enemy attacking first, the engine's own label
+        self.assertEqual(extra["fixed_side"].tolist(), [1] * kept + [0] * kept)
+        np.testing.assert_array_equal(arrays["cards"][kept:, 0], arrays["cards"][:kept, 1])
+        np.testing.assert_array_equal(arrays["cards"][kept:, 1], arrays["cards"][:kept, 0])
+        np.testing.assert_array_equal(extra["fixed_stats"][kept:], extra["fixed_stats"][:kept])
+
     def test_hard_examples_take_a_share_of_each_batch(self):
         import numpy as np
         root = Path(self.temp.name) / "hardmix"

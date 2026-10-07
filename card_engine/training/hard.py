@@ -99,8 +99,8 @@ def draw_candidate(rng, catalog, borders, mutate, tiered, prior=PRIOR):
 
 
 def _label(job):
-    battle, seed, per_card = job
-    return evaluate(_CATALOG, battle, seed, fixed=(1, per_card))
+    battle, seed, per_card, *fixed_side = job
+    return evaluate(_CATALOG, battle, seed, fixed=(fixed_side[0] if fixed_side else 1, per_card))
 
 
 _CATALOG = None
@@ -265,14 +265,23 @@ def hard_shard(classifier, catalog, seed, rounds, pool, candidates=1024, keep=16
         gaps_all.append(float(np.nanmean(gap)) if classifier is not None else float("nan"))
         gaps_kept.append(float(np.mean(gap[chosen[:keep]])) if chosen and classifier is not None else float("nan"))
         best_found.append(float(np.nanmax([e for e, x in zip(engine, evaluated) if x[4] == fixed] or [np.nan])))
-        rows += [(spec(teams[i], enemy), (evaluated[i][1], evaluated[i][3]), evaluated[i][4], float(model[i])) for i in chosen]
+        rows += [(spec(teams[i], enemy), (evaluated[i][1], evaluated[i][3]), evaluated[i][4], float(model[i]), 1)
+                 for i in chosen]
+        # The same battles with the roles reversed, the enemy attacking first (user, 2026-10-07: the player always
+        # starts in the tower, but the reversed battles teach a near-symmetry; at step 48,000 the model gave
+        # Parallax/JD/JD/Robin Hood 0.54 attacking and 0.01 defending at floor 105, the engine 0.316 both). Each is
+        # the engine's own label for that order, never 1 - p: who attacks first and who loses a draw both change.
+        swapped = [(spec(enemy, teams[i]), seed * 1_000_003 + r * 4 * candidates + candidates + j,
+                    tower.engine_stats(catalog, enemy["cards"], evaluated[i][4]), 0) for j, i in enumerate(chosen)]
+        rows += [(battle, result, evaluated[i][4], float("nan"), 0)
+                 for (battle, *_), result, i in zip(swapped, pool.map(_label, swapped, chunksize=8), chosen)]
     arrays = {name: np.array([b[name] for b, *_ in rows], dtype=np.int16) for name in FIELDS}
     probs = np.array([res[0] for _, res, *_ in rows], dtype=np.float32)
     exact = np.array([res[1] for _, res, *_ in rows], dtype=bool)
-    extra = {"fixed_side": np.ones(len(rows), dtype=np.int8),
-             "fixed_stats": np.array([f[:2] for *_, f, _ in rows], dtype=np.float32),
-             "fixed_hp_mult": np.array([f[2] for *_, f, _ in rows], dtype=np.int8),
-             "model_win": np.array([m for *_, m in rows], dtype=np.float32)}
+    extra = {"fixed_side": np.array([side for *_, side in rows], dtype=np.int8),
+             "fixed_stats": np.array([f[:2] for _, _, f, _, _ in rows], dtype=np.float32),
+             "fixed_hp_mult": np.array([f[2] for _, _, f, _, _ in rows], dtype=np.int8),
+             "model_win": np.array([m for _, _, _, m, _ in rows], dtype=np.float32)}
     reached = float(np.mean([not np.isnan(b) for b in best_found])) if best_found else float("nan")
     best = float(np.nanmean(best_found)) if reached else float("nan")
     return arrays, probs, exact, extra, float(np.mean(gaps_all)), float(np.nanmean(gaps_kept)), (best, reached)
