@@ -84,9 +84,12 @@ def pool(catalog):
     if id(catalog) not in _POOL:
         from .simulator import drago
         reply = drago.worker().request({"op": "depths"})
-        ours = {his: card for card, his in drago.names(catalog)[0].items()}
-        entries = [(ours[name], weight, threshold) for name, weight, threshold in reply["pool"] if name in ours]
-        missing = [name for name, *_ in reply["pool"] if name not in ours]
+        # by his names as the card mapping folds them (drago.CARD_ALIASES): ours map to his old "Tyranodon",
+        # identical to the live "Tyrannodon" his pool fields but for the name and its unobtainable flag
+        key = lambda name: drago.CARD_ALIASES.get(drago._norm(name), drago._norm(name))
+        ours = {key(his): card for card, his in drago.names(catalog)[0].items()}
+        entries = [(ours[key(name)], weight, threshold) for name, weight, threshold in reply["pool"] if key(name) in ours]
+        missing = [name for name, *_ in reply["pool"] if key(name) not in ours]
         _POOL[id(catalog)] = entries, missing
     return _POOL[id(catalog)]
 
@@ -403,6 +406,7 @@ def main():
     search.add_argument("--borders", nargs="+", default=["none"])
     search.add_argument("--mutations", nargs="+", default=["None"])
     search.add_argument("--support-tiers", nargs="+", default=["base"])
+    search.add_argument("--no-limited", action="store_true", help="restricted pool without its Limited exceptions")
     search.add_argument("--evaluations", type=int, help="teams the model scores per team step (5,000)")
     search.add_argument("--engine-evaluations", type=int, default=300,
                         help="speed: teams the engine scores per team step, starting from the model's best distinct 32")
@@ -496,7 +500,8 @@ def main():
         from .training.hard import distinct
         borders, mutations, tiers = masks(args.borders, args.mutations, args.support_tiers)
         space = SimpleNamespace(classifier=classifier, pool=make_pool(catalog, args.pool, borders=borders,
-                                                                      mutations=mutations, tiers=tiers))
+                                                                      limited=not args.no_limited, mutations=mutations,
+                                                                      tiers=tiers))
         starts = []
         if start is not None:
             for key, supports in (("red", space.pool.reds), ("blue", space.pool.blues)):  # yours, owned or none
