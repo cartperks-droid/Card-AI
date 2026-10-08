@@ -215,6 +215,12 @@ A card slot can be a whole pack, `pack:Prehistoric` (with `@Border` or `/Mutatio
 ```
 python3 -m card_engine.depths run --checkpoint data/training_10s/ema.checkpoint --device cpu --ally Tricerotops pack:Prehistoric "Julius Leader" "Julius Leader" --bans speedrun --simulate --workers 2
 ```
+Search for a faster team and its bans together: `--optimize-bans N` alternates a ban step (the N bans that raise your team's packs per hour most) and a team step (the engine search under those bans), `--rounds` times, then plays the final team and bans on fresh draws. Bans you give with `--bans` are kept and count toward the 14. A ban step plays no new battles: banning a card leaves every remaining draw equally more likely, so a ban list is scored on the team's battles against draws without the banned cards; each ban is chosen on half the draws and kept only if it also helps on the other half. The output shows each round, the final bans, the teams (with your starting team under the final bans) and your starting team with only your own bans as the baseline:
+```
+python3 -m card_engine.depths search --objective speed --optimize-bans 14 --checkpoint data/training_10s/ema.checkpoint --device cpu --pool own --ally Tricerotops Velociraptor "Julius Leader" "Julius Leader" --workers 2
+```
+Its options: `--optimize-bans N`, `--rounds 2`, `--ban-samples 64` (draws per floor the ban step scores on), `--evaluations 300` (teams per team step), `--restart-seconds S` (time from a death to the next run's first floor, so fast-dying teams are charged for restarting; 0 until measured). With `--objective depth` the bans raise expected floors instead.
+
 Options: `--bans CARD ...` (your Depth bans, up to 14) or a preset (`speedrun`, `pro`), `--cap 10000` (last floor), `--points` (floors sampled, geometric; 24, or 12 for the speed search), `--samples` (enemy draws per floor; 32, or 8), `--evaluations` (5,000 teams by the model; 300 by the engine for speed), `--no-chrono-shard`, `--structure N` (battle-speed structure 0-7), `--skill-tree N` (0-4). Output: `expected_floors` (cleared on average), `median_death_floor`, per sampled floor the mean win chance and the chance to have survived that far; with the engine also `turns` per floor, `minutes` and `packs` per run, `packs_per_hour` and `floors_per_hour` (runs restart from floor 1).
 
 Model against engine on a suite of battles:

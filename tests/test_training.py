@@ -433,6 +433,15 @@ class TrainingTests(unittest.TestCase):
         teams = depths.expand_packs(catalog, ["pack:Prehistoric@Ga", "Tricerotops", "Julius Leader", "Julius Leader"])
         self.assertEqual(sorted(t["cards"][0] for t in teams), sorted(prehistoric))
         self.assertTrue(all(t["borders"][0] != 1 for t in teams))  # the pack slot keeps its border
+        # bans from battles already played: card 9 loses every battle it is in, the rest are harmless
+        import numpy as np
+        drawn = {1: [{"cards": [9 if k % 4 == 0 else 2, 3, 4, 5]} for k in range(16)],
+                 10: [{"cards": [9 if k % 4 == 1 else 6, 3, 4, 5]} for k in range(16)]}
+        wins = np.array([[0.0 if foe["cards"][0] == 9 else 1.0 for foe in foes] for foes in drawn.values()])
+        value = lambda w, t: float(w.sum())
+        bans, best = depths.ban_search(catalog, wins, np.ones_like(wins), drawn, value, 3)
+        self.assertEqual((bans, best), ([9], 2.0))  # banning 3, 4 or 5 empties the pool: no gain, never chosen
+        self.assertEqual(depths.ban_search(catalog, wins, np.ones_like(wins), drawn, value, 3, fixed=[9])[0], [])
         side, fixed = labels.fixed_battle(random.Random(0), catalog, labels.random_spec(random.Random(0), catalog))
         self.assertIn(side, (0, 1))
         from card_engine.training.hard import draw_enemy

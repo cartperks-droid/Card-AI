@@ -169,9 +169,9 @@ def engine_pool(workers=None):
     return ProcessPoolExecutor(workers, mp_context=mp.get_context("spawn"), initializer=_init)
 
 
-def engine_curves(catalog, teams, drawn, pool, hard=True, seed=1):
-    """([teams, floors] win chance, [teams, floors] expected turns): the engine's means per grid floor against the
-    same draws."""
+def engine_battles(catalog, teams, drawn, pool, hard=True, seed=1):
+    """([teams, floors, draws] win chance, same shape expected turns, nan where unsupported): every battle of each team
+    against the same draws."""
     from . import tower
     per_card = {floor: [tower.engine_stats(catalog, foe["cards"], stats(floor, hard)) for foe in foes]
                 for floor, foes in drawn.items()}
@@ -180,15 +180,56 @@ def engine_curves(catalog, teams, drawn, pool, hard=True, seed=1):
         for j, (floor, foes) in enumerate(drawn.items()):
             for k, foe in enumerate(foes):
                 jobs.append((team, foe, seed + 2 * (j * len(foes) + k), per_card[floor][k]))
-                owners.append((t, j))
-    wins, turns = np.zeros((len(teams), len(drawn))), np.zeros((len(teams), len(drawn)))
-    counts = np.zeros((len(teams), len(drawn)))
-    for (t, j), (win, length) in zip(owners, pool.map(_battle, jobs, chunksize=4)):
-        wins[t, j] += win
-        if length == length:  # nan: unsupported
-            turns[t, j] += length
-            counts[t, j] += 1
-    return wins / max(1, len(next(iter(drawn.values())))), turns / np.maximum(counts, 1)
+                owners.append((t, j, k))
+    shape = (len(teams), len(drawn), len(next(iter(drawn.values()))))
+    wins, turns = np.zeros(shape), np.full(shape, np.nan)
+    for (t, j, k), (win, length) in zip(owners, pool.map(_battle, jobs, chunksize=4)):
+        wins[t, j, k], turns[t, j, k] = win, length
+    return wins, turns
+
+
+def means(wins, turns, keep=None):
+    """Per floor (last axis averaged): the win chance and expected turns over the draws `keep` marks (all if None; a
+    floor with none kept keeps all its draws)."""
+    if keep is not None:
+        keep = np.where(keep.any(-1, keepdims=True), keep, True)
+        wins, turns = np.where(keep, wins, np.nan), np.where(keep, turns, np.nan)
+    with np.errstate(invalid="ignore"):
+        return np.nanmean(wins, -1), np.nan_to_num(np.nanmean(turns, -1))
+
+
+def engine_curves(catalog, teams, drawn, pool, hard=True, seed=1):
+    """([teams, floors] win chance, [teams, floors] expected turns): the engine's means per grid floor against the
+    same draws."""
+    return means(*engine_battles(catalog, teams, drawn, pool, hard, seed))
+
+
+def ban_search(catalog, team_wins, team_turns, drawn, value, count, fixed=()):
+    """Greedy bans for one team from its battles against `drawn` (drawn without the `fixed` bans): a ban removes its
+    card from the pool, and every remaining draw becomes more likely by the same factor, so the team's results under
+    a ban list are its results over the draws holding none of the banned cards, with no new battles. Each step bans
+    the card that raises value(wins, turns) most on the even draws, kept only if it also raises it on the odd ones
+    (each ban drops the draws that hold it, so on one sample a ban can win by dropping slow or unlucky draws), until
+    `count` bans or none helps. Returns (bans, value on all draws)."""
+    cards = [[set(foe["cards"]) for foe in foes] for foes in drawn.values()]
+    candidates = sorted({card for floor in cards for foe in floor for card in foe} - set(fixed))
+    if not candidates:
+        return [], value(*means(team_wins, team_turns))
+    holds = {card: np.array([[card in foe for foe in floor] for floor in cards]) for card in candidates}
+    half = np.zeros_like(holds[candidates[0]])
+    half[:, ::2] = True
+    score = lambda keep, part: value(*means(team_wins, team_turns, keep & (half if part == 0 else ~half)))
+    banned, kept = [], np.ones_like(half)
+    while len(banned) < count:
+        fit = {card: score(kept & ~holds[card], 0) for card in candidates if card not in banned}
+        if not fit:
+            break
+        card = max(fit, key=fit.get)
+        if fit[card] <= score(kept, 0) or score(kept & ~holds[card], 1) <= score(kept, 1):
+            break
+        banned.append(card)
+        kept &= ~holds[card]
+    return banned, value(*means(team_wins, team_turns, kept))
 
 
 def battle_speed(floors, chrono=True, structure=0, skill=0):
@@ -216,15 +257,16 @@ def aura_packs(floors):
     return np.ceil(np.ceil(np.sqrt((3000 + f ** 2.7 * 40) / 2)) / 500)
 
 
-def run_value(floors, wins, turns, cap, **speed):
-    """A run from floor 1 with each grid floor's win chance and expected turns held to the next grid floor:
-    {"expected_floors" cleared, "minutes" per run, "packs" per run, "packs_per_hour", "floors_per_hour"}."""
+def run_value(floors, wins, turns, cap, restart=0.0, **speed):
+    """A run from floor 1 with each grid floor's win chance and expected turns held to the next grid floor, plus
+    `restart` seconds to start the next run: {"expected_floors" cleared, "minutes" per run, "packs" per run,
+    "packs_per_hour", "floors_per_hour"}."""
     every = np.arange(1, cap + 1)
     at = np.searchsorted(floors, every, side="right") - 1
     p, t = np.clip(np.asarray(wins)[at], 0, 1), np.asarray(turns)[at]
     alive = np.cumprod(p)  # survived through floor f
     reach = np.concatenate([[1.0], alive[:-1]])  # played floor f
-    seconds = float((reach * battle_seconds(every, t, **speed)).sum())
+    seconds = float((reach * battle_seconds(every, t, **speed)).sum()) + restart
     packs = float((reach * aura_packs(every)).sum())
     cleared = float(alive.sum())
     return {"expected_floors": round(cleared, 1), "minutes": round(seconds / 60, 1), "packs": round(packs, 1),
@@ -242,6 +284,8 @@ def add_arguments(parser):
     parser.add_argument("--no-chrono-shard", action="store_true", help="speed: without the Chrono Shard (+1 speed)")
     parser.add_argument("--structure", type=int, default=0, help="speed: battle-speed structure level (0-7)")
     parser.add_argument("--skill-tree", type=int, default=0, help="speed: battle-speed skill-tree level (0-4)")
+    parser.add_argument("--restart-seconds", type=float, default=0.0,
+                        help="speed: seconds from a run's death to the next run's first floor (not yet measured: 0)")
 
 
 def expand_packs(catalog, cards, red=None, blue=None):
@@ -301,6 +345,11 @@ def main():
     search.add_argument("--support-tiers", nargs="+", default=["base"])
     search.add_argument("--evaluations", type=int, help="teams scored (depth: 5,000 by the model; speed: 300 by the engine)")
     search.add_argument("--top", type=int, default=4, help="best distinct teams reported")
+    search.add_argument("--optimize-bans", type=int, default=0, metavar="N",
+                        help="also choose N bans (with any --bans kept, at most 14): ban steps and team steps alternate")
+    search.add_argument("--rounds", type=int, default=2, help="ban step + team step rounds with --optimize-bans")
+    search.add_argument("--ban-samples", type=int, default=64,
+                        help="enemy draws per grid floor that a ban step scores ban lists on (no new battles per list)")
     for command in (run, search):
         command.add_argument("--ally", nargs=4, required=command is run, metavar="CARD",
                              help="four cards, Name[@Border][/Mutation] (search: a starting team); in run, a "
@@ -315,8 +364,11 @@ def main():
     catalog = load_catalog()
     hard = not args.normal
     fast = args.command == "search" and args.objective == "speed"
-    speed = dict(chrono=not args.no_chrono_shard, structure=args.structure, skill=args.skill_tree)
+    speed = dict(chrono=not args.no_chrono_shard, structure=args.structure, skill=args.skill_tree,
+                 restart=args.restart_seconds)
     bans = parse_bans(catalog, args.bans)
+    if args.command == "search" and len(bans) + args.optimize_bans > MAX_BANS:
+        raise SystemExit(f"--bans and --optimize-bans together exceed the {MAX_BANS} ban slots")
     floors = grid(args.cap, args.points or (12 if fast else 24))
     drawn = enemies(catalog, floors, args.samples or (8 if fast else 32), bans, args.seed)
     classifier = Classifier(args.checkpoint, args.device)
@@ -376,30 +428,65 @@ def main():
                                                                       mutations=mutations, tiers=tiers))
         starts = []
         if start is not None:
+            for key, supports in (("red", space.pool.reds), ("blue", space.pool.blues)):  # yours, owned or none
+                if (start[key], start[f"{key}_tier"]) not in supports:
+                    supports.append((start[key], start[f"{key}_tier"]))
             try:
                 _ids(space.pool, start)
                 starts = [start]
             except (KeyError, ValueError):
                 raise SystemExit("The starting team is not in the pool (its cards, borders, mutations or supports)")
 
-        def score(members, done):
-            teams = [_team(space, *m) for m in members]
-            if fast:
-                wins, turns = curves(teams)
-                return [run_value(floors, w, t, args.cap, **speed)["packs_per_hour"] for w, t in zip(wins, turns)]
-            return [survival(floors, wins, args.cap)[0] for wins in model_wins(classifier, teams, drawn, hard)]
-
         evaluations = args.evaluations or (300 if fast else 5_000)
-        seen = evolve(space, starts, score, evaluations=evaluations, seed=args.seed, prior=0.0, catalog=catalog,
-                      **(dict(population=32, parents=8, children=4) if fast else dict(population=128, parents=32, children=4)))
-        teams = [_team(space, *m) for m in sorted(seen, key=lambda m: -seen[m])]
+
+        def team_search(drawn, starts, seed):
+            """The team search against `drawn`: teams best first."""
+            def score(members, done):
+                teams = [_team(space, *m) for m in members]
+                if fast:
+                    wins, turns = engine_curves(catalog, teams, drawn, engine, hard, seed)
+                    return [run_value(floors, w, t, args.cap, **speed)["packs_per_hour"] for w, t in zip(wins, turns)]
+                return [survival(floors, wins, args.cap)[0] for wins in model_wins(classifier, teams, drawn, hard)]
+
+            seen = evolve(space, starts, score, evaluations=evaluations, seed=seed, prior=0.0, catalog=catalog,
+                          **(dict(population=32, parents=8, children=4) if fast else dict(population=128, parents=32, children=4)))
+            return [_team(space, *m) for m in sorted(seen, key=lambda m: -seen[m])]
+
+        objective = "packs_per_hour" if fast else "expected_floors"
+        value = lambda wins, turns: run_value(floors, wins, turns, args.cap, **speed)[objective]
+        name = lambda cards: [catalog.card(card).name for card in cards]
+        chosen, teams = [], [start] if start is not None else []
+        for r in range(args.rounds if args.optimize_bans else 1):
+            if args.optimize_bans and teams:  # ban step: the best bans for the current team, from its own battles
+                big = enemies(catalog, floors, args.ban_samples, bans, args.seed + 100 + r)
+                w, t = engine_battles(catalog, teams[:1], big, engine, hard, args.seed)
+                chosen, best = ban_search(catalog, w[0], t[0], big, value, args.optimize_bans, bans)
+                print(json.dumps({"round": r + 1, "step": "bans", "team": describe(catalog, teams[0])["cards"],
+                                  "bans": name(chosen), objective: round(best, 1),
+                                  "before": round(value(*means(w[0], t[0])), 1)}), flush=True)
+            drawn_r = enemies(catalog, floors, args.samples or (8 if fast else 32), [*bans, *chosen], args.seed + r)
+            teams = team_search(drawn_r, teams[:1], args.seed + r)
+            print(json.dumps({"round": r + 1, "step": "team", "best": describe(catalog, teams[0])}), flush=True)
+        if args.optimize_bans:  # the final team's own bans
+            big = enemies(catalog, floors, args.ban_samples, bans, args.seed + 999)
+            w, t = engine_battles(catalog, teams[:1], big, engine, hard, args.seed)
+            chosen, _ = ban_search(catalog, w[0], t[0], big, value, args.optimize_bans, bans)
         best = [teams[i] for i in distinct(teams, range(len(teams)), args.top)]
         if start is not None and start not in best:
             best.append(start)  # the starting team, for comparison
-        wins, turns = curves(best)
-        for team, w, t in zip(best, wins, turns):
-            report(team, model_wins(classifier, [team], drawn, hard)[0], (w, t))
-
+        # verified on fresh draws from the final pool (the bans chosen on one sample are not scored on it)
+        final = enemies(catalog, floors, 32, [*bans, *chosen], args.seed + 12345)
+        if args.optimize_bans:
+            print(json.dumps({"final_bans": name([*bans, *chosen]), "chosen": name(chosen)}), flush=True)
+        wins, turns = engine_curves(catalog, best, final, engine, hard, args.seed)
+        models = model_wins(classifier, best, final, hard)
+        for team, m, w, t in zip(best, models, wins, turns):
+            report(team, m, (w, t))
+        if start is not None and args.optimize_bans:  # the baseline: the starting team with only the bans given
+            base = enemies(catalog, floors, 32, bans, args.seed + 12345)
+            w, t = engine_curves(catalog, [start], base, engine, hard, args.seed)
+            print(json.dumps({"baseline": describe(catalog, start)["cards"], "bans": name(bans),
+                              **run_value(floors, w[0], t[0], args.cap, **speed)}), flush=True)
 
 if __name__ == "__main__":
     main()
