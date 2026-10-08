@@ -43,6 +43,7 @@ HARD_STATS = 10  # hard depths: the stats of floor x 10 (his simulation.ts hardM
 SEARCH_LOG = Path(__file__).resolve().parents[1] / "data" / "depths_search.jsonl"  # every team the engine scored in a
 # search and every ban step's per-card gains, the evidence `depths stats` aggregates (user, 2026-10-08)
 MAX_BANS = 14
+MAX_COPIES = 4  # a team holds four cards
 FLOOR_RANGE = (1, 10_000)  # training draws: floors log-uniform over this range (hard depths ~5,000 is about tower
 # 105 Impossible's stats; the pool is complete from about floor 150)
 HARD_SHARE = 0.8  # training draws that are hard depths (user: of most interest); the rest are normal depths
@@ -329,6 +330,113 @@ def expand_packs(catalog, cards, red=None, blue=None):
     return teams
 
 
+def improve(catalog, start, collection, engine, *, hard=True, bans=(), objective="expected_floors", speed=None,
+            screen_draws=48, verify_draws=512, keep=6, rounds=4, ban_count=0, ban_draws=1024, seed=1, log=print):
+    """A team improved one change at a time by the engine (2026-10-08: DaddyDrago's team, +10,000 floors in game).
+    Each round: the team's wall (where its win chance falls) is found on a coarse curve; every single change (a slot
+    for the strongest owned version of any card, or a support) is screened on the same draws across the wall; the
+    `keep` best are then played on the full survival curve with fresh draws, and the best one is taken if it beats
+    the team there (screening at the wall alone once chose changes that added rare early losses and cost 400-700
+    floors). Then, with ban_count, the bans: greedy on ban_draws draws, each kept only if it helps on both halves,
+    verified on fresh draws. Returns (team, bans, value)."""
+    from .simulator import drago
+    from .teams import SINGLE_COPY, describe
+    speed = speed or {}
+    base = np.asarray(drago.stat_tables(catalog)[0])
+    strongest, owned = {}, {}
+    for i, (card, border, mutation, art) in enumerate(collection.entries):
+        entry = (int(card), int(border), int(mutation), int(art))
+        owned[entry] = int(collection.copies[i]) if collection.copies is not None else MAX_COPIES
+        power = float(base[card, border, mutation].prod())
+        if card not in strongest or power > strongest[card][1]:
+            strongest[card] = (entry, power)
+    choices = [entry for entry, _ in strongest.values()]
+    supports = {}
+    for key, table in (("red", collection.reds), ("blue", collection.blues)):
+        best = {}
+        for sid, tier in table:
+            best[sid] = max(best.get(sid, 0), tier)
+        supports[key] = sorted(best.items())
+    slots = ("cards", "borders", "mutations", "arts")
+    entries_of = lambda team: list(zip(*(team[k] for k in slots)))
+    every_bans = list(bans)
+
+    def allowed(team):
+        entries = entries_of(team)
+        if any(team["cards"].count(card) > 1 for card in SINGLE_COPY):
+            return False
+        return all(entries.count(e) <= owned.get(e, 0) or e in entries_of(start) for e in set(entries))
+
+    def changes(team):
+        out = []
+        for i in range(4):
+            for entry in choices:
+                if entry == entries_of(team)[i]:
+                    continue
+                t = {**team, **{k: [*team[k]] for k in slots}}
+                for k, v in zip(slots, entry):
+                    t[k][i] = v
+                if allowed(t):
+                    out.append(t)
+        for key in ("red", "blue"):
+            for sid, tier in supports[key]:
+                if (sid, tier) != (team[key], team[f"{key}_tier"]):
+                    out.append({**team, key: sid, f"{key}_tier": tier})
+        return out
+
+    def curve(teams, floors, draws, salt):
+        drawn = enemies(catalog, floors, draws, every_bans, seed * 1000 + salt)
+        return engine_curves(catalog, teams, drawn, engine, hard, seed)
+
+    def full(teams, salt):
+        """Each team's value on the full curve, and the grid used: floors to past the wall."""
+        wins, turns = curve(teams, coarse, 64, salt)
+        deepest = max(survival(coarse, w, coarse[-1])[2] for w in wins)
+        cap = int(min(coarse[-1], deepest * 3 + 100))
+        floors = [1] + sorted({int(x) for x in np.geomspace(max(2, deepest / 6), cap, 24)})
+        wins, turns = curve(teams, floors, verify_draws, salt + 1)
+        return [run_value(floors, w, t, cap, **speed)[objective] for w, t in zip(wins, turns)], floors, wins
+
+    coarse = grid(300_000 if not hard else 60_000, 40)
+    team = start
+    (value,), floors, wins = full([team], 0)
+    log({"start": describe(catalog, team), objective: value})
+    for r in range(rounds):
+        w = wins[0]
+        wall = [f for f, x in zip(floors, w) if 0.02 < x < 0.995] or floors[-4:]
+        wall = sorted({int(x) for x in np.geomspace(min(wall), max(wall) + 1, 6)})
+        candidates = changes(team)
+        screen = curve(candidates, wall, screen_draws, 10 + r)[0].mean(1)
+        best = [candidates[i] for i in np.argsort(-screen)[:keep]]
+        values, floors_r, wins_r = full([team, *best], 100 + r)
+        log({"round": r + 1, "screened": len(candidates), "current": round(values[0], 1),
+             "verified": [(describe(catalog, t), round(v, 1)) for t, v in zip(best, values[1:])]})
+        top = int(np.argmax(values[1:]))
+        if values[1 + top] <= values[0] * 1.005:
+            value, floors, wins = values[0], floors_r, wins_r[:1]
+            break
+        team, value, floors, wins = best[top], values[1 + top], floors_r, wins_r[1 + top:2 + top]
+    chosen = []
+    if ban_count:
+        drawn = enemies(catalog, floors, ban_draws, every_bans, seed * 1000 + 500)
+        bw, bt = engine_battles(catalog, [team], drawn, engine, hard, seed)
+        cap = floors[-1]
+        chosen, _, alone = ban_search(catalog, bw[0], bt[0], drawn, lambda w, t: run_value(floors, w, t, cap, **speed)[objective],
+                                      ban_count, every_bans)
+        verify = {}
+        for label, extra in (("without", []), ("with", chosen)):
+            drawn = enemies(catalog, floors, verify_draws * 2, [*every_bans, *extra], seed * 1000 + 600)
+            w, t = engine_curves(catalog, [team], drawn, engine, hard, seed)
+            verify[label] = round(run_value(floors, w[0], t[0], cap, **speed)[objective], 1)
+        top = sorted(alone.items(), key=lambda kv: -kv[1])[:ban_count + 6]
+        log({"bans": [catalog.card(c).name for c in chosen], objective + "_without_them": verify["without"],
+             objective + "_with_them": verify["with"],
+             "most_dangerous_alone": [(catalog.card(c).name, round(g, 1)) for c, g in top]})
+        if verify["with"] <= verify["without"]:
+            chosen = []
+    return team, chosen, value
+
+
 def evidence(path, objective, mode, min_count=5, top=15):
     """Statistics from the searches' own engine evidence (SEARCH_LOG; user, 2026-10-08): per card, card pair and
     support, the lift (mean score of the logged teams holding it minus the mean of all logged teams) with its count;
@@ -422,13 +530,31 @@ def main():
     search.add_argument("--rounds", type=int, default=2, help="ban step + team step rounds with --optimize-bans")
     search.add_argument("--ban-samples", type=int, default=64,
                         help="enemy draws per grid floor that a ban step scores ban lists on (no new battles per list)")
-    for command in (run, search):
-        command.add_argument("--ally", nargs=4, required=command is run, metavar="CARD",
+    better = commands.add_parser("improve", help="a team improved one change at a time by the engine, then its bans")
+    better.add_argument("--objective", choices=("depth", "speed"), default="depth",
+                        help="depth: expected floors cleared; speed: aura packs per hour")
+    better.add_argument("--rounds", type=int, default=4, help="changes at most (one per round)")
+    better.add_argument("--keep", type=int, default=6, help="screened changes verified on the full curve per round")
+    better.add_argument("--screen-draws", type=int, default=48, help="draws per wall floor for screening")
+    better.add_argument("--verify-draws", type=int, default=512, help="draws per floor on the full curve")
+    better.add_argument("--optimize-bans", type=int, default=0, metavar="N", help="then choose N bans for the team")
+    better.add_argument("--ban-draws", type=int, default=1024, help="draws per floor the ban choice is made on")
+    for command in (search, better):
+        if command is better:
+            command.add_argument("--pool", choices=("own", "custom", "restricted", "all", "progression"), default="own")
+            command.add_argument("--rolls", type=float, default=205e6, help="progression pool: the player's rolls")
+            command.add_argument("--luck", type=float, default=100.0, help="progression pool: the player's card luck")
+            command.add_argument("--borders", nargs="+", default=["all"])
+            command.add_argument("--mutations", nargs="+", default=["all"])
+            command.add_argument("--support-tiers", nargs="+", default=["all"])
+            command.add_argument("--no-limited", action="store_true")
+    for command in (run, search, better):
+        command.add_argument("--ally", nargs=4, required=command is not search, metavar="CARD",
                              help="four cards, Name[@Border][/Mutation] (search: a starting team); in run, a "
                              "pack:NAME[@Border] slot tries every card of that pack and ranks the teams")
         command.add_argument("--ally-red")
         command.add_argument("--ally-blue")
-        command.add_argument("--checkpoint", required=True)
+        command.add_argument("--checkpoint", required=command is not better, help="the model (improve: unused)")
         command.add_argument("--device")
         command.add_argument("--workers", type=int, help="engine processes")
         add_arguments(command)
@@ -444,21 +570,21 @@ def main():
         return evidence(args.log, args.objective, "normal" if args.normal else "hard", args.min_count, args.top)
     catalog = load_catalog()
     hard = not args.normal
-    fast = args.command == "search" and args.objective == "speed"
+    fast = args.command in ("search", "improve") and args.objective == "speed"
     speed = dict(chrono=not args.no_chrono_shard, structure=args.structure, skill=args.skill_tree,
                  restart=args.restart_seconds)
     bans = parse_bans(catalog, args.bans)
-    if args.command == "search" and len(bans) + args.optimize_bans > MAX_BANS:
+    if args.command in ("search", "improve") and len(bans) + args.optimize_bans > MAX_BANS:
         raise SystemExit(f"--bans and --optimize-bans together exceed the {MAX_BANS} ban slots")
     floors = grid(args.cap, args.points or (12 if fast else 24))
     drawn = enemies(catalog, floors, args.samples or (8 if fast else 32), bans, args.seed)
-    classifier = Classifier(args.checkpoint, args.device)
+    classifier = Classifier(args.checkpoint, args.device) if args.command != "improve" else None
     missing = pool(catalog)[1]
     if missing:
         print(f"his Depths pool has cards our catalog lacks (never drawn): {', '.join(missing)}", file=sys.stderr)
     variants = expand_packs(catalog, args.ally, args.ally_red, args.ally_blue) if args.ally else []
-    if args.command == "search" and len(variants) > 1:
-        raise SystemExit("search takes one starting team: name its cards (pack: slots are for run)")
+    if args.command != "run" and len(variants) > 1:
+        raise SystemExit(f"{args.command} takes one team: name its cards (pack: slots are for run)")
     start = variants[0] if variants else None
 
     def report(team, model, engine=None):
@@ -533,6 +659,15 @@ def main():
                 starts = [start]
             except (KeyError, ValueError):
                 raise SystemExit("The starting team is not in the pool (its cards, borders, mutations or supports)")
+        if args.command == "improve":
+            team, chosen, value = improve(catalog, start, space.pool, engine, hard=hard, bans=bans,
+                                          objective="packs_per_hour" if fast else "expected_floors", speed=speed,
+                                          screen_draws=args.screen_draws, verify_draws=args.verify_draws, keep=args.keep,
+                                          rounds=args.rounds, ban_count=args.optimize_bans, ban_draws=args.ban_draws,
+                                          seed=args.seed, log=lambda record: print(json.dumps(record), flush=True))
+            print(json.dumps({"final": describe(catalog, team), "bans": [catalog.card(c).name for c in [*bans, *chosen]],
+                              ("packs_per_hour" if fast else "expected_floors"): round(value, 1)}), flush=True)
+            return
 
 
         def team_search(drawn, starts, seed):

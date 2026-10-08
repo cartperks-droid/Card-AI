@@ -226,6 +226,13 @@ python3 -m card_engine.depths stats
 ```
 python3 -m card_engine.depths search --pool progression --rolls 205e6 --luck 100 --ally Fuxi "Cosmic Pop Star@RuPl" "Typhon@RuCrPl" "Julius Leader@RuCrPl" --ally-red "Desmond Of Despair@Galaxy" --ally-blue "Vampire Matron@Galaxy" --bans drago --checkpoint data/training_10s/depths_ema.checkpoint --device cpu --workers 2
 ```
+Improve a team you have, one change at a time, by the engine (no model needed, so no `--checkpoint`). It finds where the team starts dying, screens every single change (a slot for the strongest owned version of any card, or a support) on the same draws there, plays the best few on the full survival curve with fresh draws, and takes the best if it beats the team; then, with `--optimize-bans N`, it picks the bans for the final team and checks them on fresh draws (a ban that does not hold up on both halves of the draws is not taken, so fewer than N may come back). Give the team's supports and bans as they are, and the player's rolls and luck if you don't have their deck:
+```
+python3 -m card_engine.depths improve --pool progression --rolls 46e6 --luck 100 --ally Fuxi "Cosmic Pop Star@Pl" "Poison Witch@RuCrPl" "Julius Leader@RuPl" --ally-red "The One Ring@Galaxy" --optimize-bans 7 --workers 4
+python3 -m card_engine.depths improve --normal --pool own --ally ... --bans drago --workers 4
+```
+Options: `--normal` (default hard depths), `--objective depth|speed`, `--rounds 4` (one change per round), `--keep 6` (screened changes verified per round), `--screen-draws 48`, `--verify-draws 512`, `--ban-draws 1024`, `--pool own|custom|restricted|all|progression` (with `--rolls`, `--luck`), `--seed`. A run takes minutes (the C engine plays about 700 battles a second on 4 workers). Each round prints the verified candidates; the last line is the final team, its bans and its expected floors (or packs per hour).
+
 `stats` options: `--objective packs_per_hour|expected_floors`, `--normal`, `--min-count 5`, `--top 15`. Lifts come from teams a search chose, which cluster around what it liked: they say "teams with it scored higher", not that the card caused it.
 
 Its options: `--optimize-bans N`, `--rounds 2`, `--ban-samples 64` (draws per floor the ban step scores on), `--evaluations 5000` and `--engine-evaluations 300` (teams per team step), `--restart-seconds S` (time from a death to the next run's first floor, so fast-dying teams are charged for restarting; 0 until measured). With `--objective depth` the bans raise expected floors instead.
