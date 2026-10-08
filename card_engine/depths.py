@@ -53,6 +53,8 @@ BAN_PRESETS = {
                  "Odin", "Pandora", "Piccolo", "Surtr", "The Awakened One", "Zombie Dragon"],
     "pro": ["A0-ON1", "AK4-ON1", "Astraeus", "Immortal Witch", "Julius Leader", "Pangu", "Piccolo", "Priest", "Sciron",
             "Sekhmet", "Shu", "Susanoo", "Yamato no Orochi"],  # a pro's suggestion, likely for the deepest runs (user)
+    "drago": ["A0-ON1", "AK4-ON1", "Astraeus", "Immortal Witch", "Julius Leader", "Pangu", "Piccolo", "Priest", "Sciron",
+              "Sekhmet", "Shu", "Susanoo", "Yamato no Orochi", "Yeti"],  # DaddyDrago's own (user, 2026-10-08 screenshot)
 }
 # Timing (his depths-time.ts)
 BASE_SPEED, CHRONO_SHARD, STRUCTURE_STEP, SKILL_TREE = 3, 1, 0.25, (0, 0.5, 1, 1.5, 2.5)
