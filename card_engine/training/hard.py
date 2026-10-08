@@ -327,9 +327,10 @@ def run(shards, *, rounds=40, workers=None, checkpoint=None, out_dir=STORE, firs
                                                                               candidates, keep, keep_random,
                                                                               generator_every, prior, floor)
             target = out_dir / f"{kind}_{seed:08d}.npz"
-            tmp = target.with_name(f"partial_{target.name}")
-            np.savez_compressed(tmp, probs=probs, exact=exact, snapshot=np.array(snapshot(catalog)), **arrays, **extra)
-            os.replace(tmp, target)
+            if len(probs):  # a shard with no rows is not written (its arrays would be one-dimensional)
+                tmp = target.with_name(f"partial_{target.name}")
+                np.savez_compressed(tmp, probs=probs, exact=exact, snapshot=np.array(snapshot(catalog)), **arrays, **extra)
+                os.replace(tmp, target)
             print(json.dumps({"shard": target.name, "done": done, "of": shards, "rows": len(probs),
                               "model_step": classifier.metadata.get("step") if classifier else None, "seconds": round(time.time() - started),
                               "mean_gap_all": round(gap_all, 3), "mean_gap_kept": round(gap_kept, 3),

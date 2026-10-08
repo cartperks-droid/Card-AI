@@ -27,7 +27,7 @@ import torch.nn.functional as F
 from ..model import BattleModel, load_model_data
 from ..model.config import DescriptionConfig, StrategicConfig
 from ..model.checkpoint import load_checkpoint, save_checkpoint
-from .labels import FIELDS, BATTLE_FIELDS, GENERATION_SEEDS, SHARD_DIR, battle_arrays, possible_rows, shard_paths
+from .labels import FIELDS, BATTLE_FIELDS, GENERATION_SEEDS, SHARD_DIR, battle_arrays, possible_rows, shaped, shard_paths
 
 RUN_DIR = Path(__file__).resolve().parents[2] / "data" / "training"
 VALIDATION_EVERY = 25  # shard seeds divisible by this are held out
@@ -82,7 +82,7 @@ def _read_shard(item):
     catalog, current, changes, rules, pool_cards = _READER
     with np.load(path) as shard:
         arrays = {key: shard[key] for key in (*FIELDS, "probs")}
-        arrays.update(battle_arrays(shard, len(arrays["probs"])))
+        arrays = shaped({**arrays, **battle_arrays(shard, len(arrays["probs"]))})
         snapshot_id = str(shard["snapshot"])
     mask = valid_rows(arrays, snapshot_id, current, catalog=catalog, changes=changes, pool_cards=pool_cards)
     finished = arrays["probs"][:, :2].sum(1)  # A win, B win (ties cannot happen; unfinished mass is dropped)

@@ -48,6 +48,14 @@ FIELDS = ("cards", "borders", "mutations", "arts", "red", "red_tier", "blue", "b
 # hidden_side: -1, or the side the model cannot see (incomplete mode, training.incomplete): its fields hold
 # HIDDEN_TEAM, and the target is the visible team's mean result against a field of strong teams.
 BATTLE_FIELDS = ("fixed_side", "fixed_stats", "fixed_hp_mult", "hidden_side")
+ROW_SHAPES = {"cards": (2, 4), "borders": (2, 4), "mutations": (2, 4), "arts": (2, 4), "red": (2,), "red_tier": (2,),
+              "blue": (2,), "blue_tier": (2,), "probs": (4,), "fixed_stats": (2,)}  # a row's shape per field
+
+
+def shaped(arrays):
+    """A shard's arrays with their row shapes: one saved with no rows holds them one-dimensional (np.array of an empty
+    list), which indexing by row and column fails on (2026-10-08: such a hard shard stopped the trainer's load)."""
+    return {key: value.reshape(0, *ROW_SHAPES.get(key, ())) if value.size == 0 else value for key, value in arrays.items()}
 
 
 AURA_TIERS = tuple(drago.AURA_BORDERS)  # support cards: Base, Platinum, Crystal, Ruby, Galaxy
@@ -309,7 +317,7 @@ def load_shards(directory=STORE):
     for path in sorted(shard_paths(directory)):
         with np.load(path) as shard:
             arrays = {name: shard[name] for name in (*FIELDS, "probs", "exact")}
-            arrays.update(battle_arrays(shard, len(arrays["probs"])))
+            arrays = shaped({**arrays, **battle_arrays(shard, len(arrays["probs"]))})
             mask = valid_rows(arrays, str(shard["snapshot"]), current) & possible_rows(arrays["cards"])
         parts.append({k: v[mask] for k, v in arrays.items()})
     if not parts:

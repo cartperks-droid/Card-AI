@@ -484,6 +484,10 @@ class TrainingTests(unittest.TestCase):
         labels._worker((2, 6, str(directory), snapshot(), True))
         with np.load(directory / "fixed_00000002.npz") as shard:  # stands in for a found shard
             np.savez(directory / "found_00000003.npz", **{k: shard[k] for k in shard.files})
+        empty = {key: np.array([], dtype=np.int16) for key in labels.FIELDS}  # a shard saved with no rows
+        np.savez(directory / "hard_00000004.npz", probs=np.array([], dtype=np.float32), exact=np.array([], dtype=bool),
+                 snapshot=np.array(snapshot()), fixed_side=np.array([], dtype=np.int8),
+                 fixed_stats=np.array([], dtype=np.float32), fixed_hp_mult=np.array([], dtype=np.int8), **empty)
         from card_engine.training.train import mix_rows
         train_rows, _ = load_split(directory, "cpu")
         mixed = mix_rows(train_rows)
