@@ -404,6 +404,18 @@ class TrainingTests(unittest.TestCase):
         draws = np.array([incomplete.draw_attacker(rng, 1e7, 3) for _ in range(2000)])
         self.assertTrue(((draws[:, 0] >= 1e5) & (draws[:, 0] <= 1e9) & (draws[:, 1] >= 1) & (draws[:, 1] <= 100)).all())
         self.assertLess(np.log10(draws[:, 0]).std(), np.log10(draws[:, 1]).std())  # luck varies more than rolls
+        # borders: each its own chance; a pro (luck 100) gets Platinum half the time (user)
+        np.testing.assert_allclose(progression.border_chances(100), [0.5, 0.1, 0.01, 0.001])
+        likely = progression.likely(205e6, 100)
+        julius = next(c.id for c in load_catalog().cards if c.name == "Julius Leader")
+        ruby_crystal_platinum = next(b for b in range(1, 17) if load_catalog().border(b).code == "RuCrPl")
+        self.assertTrue(any(e[0] == julius and e[1] == ruby_crystal_platinum for e in likely.entries))
+        # borders: each its own chance; a pro (luck 100) gets Platinum half the time (user)
+        np.testing.assert_allclose(progression.border_chances(100), [0.5, 0.1, 0.01, 0.001])
+        likely = progression.likely(205e6, 100)
+        julius = next(c.id for c in load_catalog().cards if c.name == "Julius Leader")
+        ruby_crystal_platinum = next(b for b in range(1, 17) if load_catalog().border(b).code == "RuCrPl")
+        self.assertTrue(any(e[0] == julius and e[1] == ruby_crystal_platinum for e in likely.entries))
 
     def test_depths_floors_follow_his_pool_and_formula(self):
         from card_engine import depths

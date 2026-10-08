@@ -5,7 +5,8 @@ In PvP a defender does not know who will attack it, while the attacker sees the 
   - The defender is a player at a progression: rolls log-uniform from 100k to 1B (no player has reached 400M; 1B is
     the cap) and luck log-uniform from 1x to 100x. Its pool (Progression.pool) is a random draw: each rollable
     card x border x mutation is obtained Poisson(rolls x luck / expected rolls) times, so two players at one level
-    own slightly different collections. Supports, every tier, are always owned (user). The defender's one team is
+    own slightly different collections. Each border is its own chance on a roll (BORDERS, Progression). Supports,
+    every tier, are always owned (user). The defender's one team is
     the model search's best in incomplete mode (generate.model_search, Classifier.defend_win), against the attackers
     it cannot see.
   - 32 attackers, each a player near the defender's progression, its own draw: log10 rolls the defender's plus
@@ -52,6 +53,15 @@ LUCK_RANGE = (1.0, 100.0)  # a defender's luck, log-uniform (user)
 ROLL_SPREAD, LUCK_SPREAD = 0.25, 0.5  # attackers: sd of log10 around the defender's; luck varies more (user)
 MUTATION_CHANCE = (1 / 2000, 1 / 150)  # a roll's chance of any mutation at the lowest and highest luck, log-linear (user)
 MAX_COPIES = 4  # a team holds four cards
+# Borders (user, 2026-10-08): each border is its own chance on a roll, from his base odds (depths-ui.js
+# CARD_BORDER_MULT: Platinum 1/100, Crystal 1/10,000, Ruby 1/100,000, Galaxy 1/1,000,000) times that border's luck.
+# A pro's Platinum is about 50/50, and pros build around Platinum-Crystal-Ruby or Platinum-Crystal-Galaxy (user);
+# Crystal, Ruby and Galaxy share one multiplier, fitted to the one deck known (DaddyDrago's at 205M rolls, 2026-10-08):
+# at luck PRO_LUCK, Crystal 1/10, Ruby 1/100, Galaxy 1/1,000. Below it border luck scales with card luck (assumed).
+BORDERS = ("Pl", "Cr", "Ru", "Ga")
+BORDER_BASE = (1e-2, 1e-4, 1e-5, 1e-6)
+BORDER_LUCK = (50.0, 1000.0, 1000.0, 1000.0)  # each border's luck multiplier at PRO_LUCK
+PRO_LUCK = 100.0
 ATTACKERS = 32
 PVP_GENERATION_STEPS = 50_000  # hidden rows' generation: the model's step // this
 
@@ -65,33 +75,54 @@ def mutation_chance(luck):
 
 class Progression:
     """Every rollable entry (the player base's cards and borders, restricted.py; mutations on base-weather cards;
-    Astraeus once per art) with its expected rolls at luck 1, unmutated, and what a player at some rolls and luck
-    owns."""
+    Astraeus once per art) with the card's expected rolls at luck 1, borderless and unmutated, and its borders; what a
+    player at some rolls and luck owns. A roll is a card (luck divides its rarity), each border with its own chance
+    (BORDER_BASE x BORDER_LUCK, scaled by luck / PRO_LUCK), and a mutation with the luck-scaled chance."""
 
     def __init__(self, catalog):
-        rows, cost, mutation = [], [], []
+        rows, cost, mutation, bits = [], [], [], []
         for card, border in restricted_entries(load_restricted(), catalog):
             arts = range(1, len(ASTRAEUS_ARTS) + 1) if card == ASTRAEUS else (0,)  # a roll gets one art
-            rolls = roll_rarity(catalog, card, border) * len(arts)
+            rolls = roll_rarity(catalog, card, 1) * len(arts)
+            code = catalog.border(border).code
             for m in range(len(MUTATION_NAMES)) if catalog.card(card).weather_id == 1 else (0,):
                 for art in arts:
                     rows.append((card, border, m, art))
                     cost.append(rolls)
                     mutation.append(m > 0)
+                    bits.append([b in code for b in BORDERS])
         self.entries = np.array(rows, dtype=np.int64)
-        self.cost, self.mutated = np.array(cost), np.array(mutation)
+        self.cost, self.mutated, self.bits = np.array(cost), np.array(mutation), np.array(bits)
         every = lambda table: [(s.id, tier) for s in table for tier in range(1, 6)]
         self.reds, self.blues = every(catalog.red_supports), every(catalog.blue_supports)
 
-    def pool(self, rng, rolls, luck):
-        """A player's collection (generate.Pool): each entry obtained Poisson(rolls x luck / expected rolls) times,
-        a mutated one times its mutation's share of the mutation chance at that luck; at most MAX_COPIES kept."""
-        from .generate import Pool
+    @staticmethod
+    def border_chances(luck, luck_multipliers=BORDER_LUCK):
+        """Each border's chance on a roll at `luck`."""
+        return np.minimum(1.0, np.array(BORDER_BASE) * np.array(luck_multipliers) * luck / PRO_LUCK)
+
+    def expected(self, rolls, luck, luck_multipliers=BORDER_LUCK):
+        """Each entry's expected copies after `rolls` rolls at `luck`."""
+        chance = self.border_chances(luck, luck_multipliers)
+        borders = np.where(self.bits, chance, 1 - chance).prod(1)
         each = mutation_chance(luck) / (len(MUTATION_NAMES) - 1)  # split evenly over the mutations (user)
-        expected = rolls * luck / self.cost * np.where(self.mutated, each, 1.0)
-        copies = np.minimum(rng.poisson(expected), MAX_COPIES)
+        return rolls * luck / self.cost * borders * np.where(self.mutated, each, 1.0)
+
+    def pool(self, rng, rolls, luck):
+        """A player's collection (generate.Pool): each entry obtained Poisson(expected copies) times, at most
+        MAX_COPIES kept."""
+        from .generate import Pool
+        copies = np.minimum(rng.poisson(self.expected(rolls, luck)), MAX_COPIES)
         owned = copies > 0
         return Pool(self.entries[owned], copies[owned], self.reds, self.blues)
+
+    def likely(self, rolls, luck, luck_multipliers=BORDER_LUCK, at_least=1.0):
+        """What such a player can be expected to own (generate.Pool): the entries with at least `at_least` expected
+        copies, each with its expected copies (at most MAX_COPIES)."""
+        from .generate import Pool
+        expected = self.expected(rolls, luck, luck_multipliers)
+        owned = expected >= at_least
+        return Pool(self.entries[owned], np.minimum(np.floor(expected[owned]), MAX_COPIES).astype(int), self.reds, self.blues)
 
 
 def draw_defender(rng):

@@ -222,6 +222,10 @@ It builds its own teams; `--ally` is optional, a starting team to beat (user, 20
 python3 -m card_engine.depths search --objective speed --optimize-bans 14 --checkpoint data/training_10s/depths_ema.checkpoint --device cpu --pool own --workers 2
 python3 -m card_engine.depths stats
 ```
+`--pool progression` searches what a player at `--rolls` (205M) and `--luck` (100) can expect to own: every card × border × mutation with at least one expected copy, borders rolled each with its own chance (a pro's: Platinum 1/2, Crystal 1/10, Ruby 1/100, Galaxy 1/1,000; `card_engine/training/incomplete.py` Progression), every support tier. A starting team's own cards are always added, since a pro shows his luckiest pulls. For a player whose deck you don't have:
+```
+python3 -m card_engine.depths search --pool progression --rolls 205e6 --luck 100 --ally Fuxi "Cosmic Pop Star@RuPl" "Typhon@RuCrPl" "Julius Leader@RuCrPl" --ally-red "Desmond Of Despair@Galaxy" --ally-blue "Vampire Matron@Galaxy" --bans drago --checkpoint data/training_10s/depths_ema.checkpoint --device cpu --workers 2
+```
 `stats` options: `--objective packs_per_hour|expected_floors`, `--normal`, `--min-count 5`, `--top 15`. Lifts come from teams a search chose, which cluster around what it liked: they say "teams with it scored higher", not that the card caused it.
 
 Its options: `--optimize-bans N`, `--rounds 2`, `--ban-samples 64` (draws per floor the ban step scores on), `--evaluations 5000` and `--engine-evaluations 300` (teams per team step), `--restart-seconds S` (time from a death to the next run's first floor, so fast-dying teams are charged for restarting; 0 until measured). With `--objective depth` the bans raise expected floors instead.

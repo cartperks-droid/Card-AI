@@ -404,7 +404,11 @@ def main():
     search.add_argument("--objective", choices=("depth", "speed"), default="depth",
                         help="depth: expected floors cleared, by the model; speed: aura packs per hour, by the engine "
                         "(the model gives no battle length)")
-    search.add_argument("--pool", choices=("own", "custom", "restricted", "all"), default="own")
+    search.add_argument("--pool", choices=("own", "custom", "restricted", "all", "progression"), default="own",
+                        help="progression: what a player at --rolls and --luck can expect to own (incomplete.Progression: "
+                        "border chances fitted to a pro's, every support tier); the masks do not apply")
+    search.add_argument("--rolls", type=float, default=205e6, help="progression pool: the player's rolls")
+    search.add_argument("--luck", type=float, default=100.0, help="progression pool: the player's card luck")
     search.add_argument("--borders", nargs="+", default=["none"])
     search.add_argument("--mutations", nargs="+", default=["None"])
     search.add_argument("--support-tiers", nargs="+", default=["base"])
@@ -501,14 +505,29 @@ def main():
         from .training.generate import _ids, _team, evolve, make_pool, masks
         from .training.hard import distinct
         borders, mutations, tiers = masks(args.borders, args.mutations, args.support_tiers)
-        space = SimpleNamespace(classifier=classifier, pool=make_pool(catalog, args.pool, borders=borders,
-                                                                      limited=not args.no_limited, mutations=mutations,
-                                                                      tiers=tiers))
+        if args.pool == "progression":
+            from .training.incomplete import Progression
+            collection = Progression(catalog).likely(args.rolls, args.luck)
+        else:
+            collection = make_pool(catalog, args.pool, borders=borders, limited=not args.no_limited, mutations=mutations,
+                                   tiers=tiers)
+        space = SimpleNamespace(classifier=classifier, pool=collection)
         starts = []
         if start is not None:
             for key, supports in (("red", space.pool.reds), ("blue", space.pool.blues)):  # yours, owned or none
                 if (start[key], start[f"{key}_tier"]) not in supports:
                     supports.append((start[key], start[f"{key}_tier"]))
+            pool_ = space.pool  # the starting team's own cards are owned, whatever the pool expects
+            have = {tuple(int(v) for v in entry) for entry in pool_.entries}
+            for slot in set(zip(start["cards"], start["borders"], start["mutations"], start["arts"])):
+                count = sum(1 for other in zip(start["cards"], start["borders"], start["mutations"], start["arts"]) if other == slot)
+                if slot not in have:
+                    pool_.entries = np.vstack([pool_.entries, np.array(slot, dtype=pool_.entries.dtype)])
+                    if pool_.copies is not None:
+                        pool_.copies = np.append(pool_.copies, count)
+                elif pool_.copies is not None:
+                    i = next(i for i, e in enumerate(pool_.entries) if tuple(int(v) for v in e) == slot)
+                    pool_.copies[i] = max(pool_.copies[i], count)
             try:
                 _ids(space.pool, start)
                 starts = [start]
