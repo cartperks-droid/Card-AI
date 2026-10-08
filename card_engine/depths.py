@@ -25,7 +25,7 @@ packs over its expected time.
     python -m card_engine.depths run --ally Parallax "Judgement Day" "Judgement Day" "Robin Hood" --ally-blue Fate --checkpoint data/training_10s/ema.checkpoint
     python -m card_engine.depths run --ally ... --checkpoint ... --simulate      # the engine's curve, speed and packs too
     python -m card_engine.depths search --checkpoint data/training_10s/ema.checkpoint --pool own
-    python -m card_engine.depths search --objective speed --ally Tricerotops ... --bans speedrun --checkpoint ... --pool own
+    python -m card_engine.depths search --objective speed --optimize-bans 14 --checkpoint ... --pool own   # it builds its own teams
 """
 
 import argparse
@@ -33,12 +33,15 @@ import json
 import math
 import random
 import sys
+from pathlib import Path
 
 import numpy as np
 
 from .teams import ASTRAEUS, ASTRAEUS_ARTS, side
 
 HARD_STATS = 10  # hard depths: the stats of floor x 10 (his simulation.ts hardMode)
+SEARCH_LOG = Path(__file__).resolve().parents[1] / "data" / "depths_search.jsonl"  # every team the engine scored in a
+# search and every ban step's per-card gains, the evidence `depths stats` aggregates (user, 2026-10-08)
 MAX_BANS = 14
 FLOOR_RANGE = (1, 10_000)  # training draws: floors log-uniform over this range (hard depths ~5,000 is about tower
 # 105 Impossible's stats; the pool is complete from about floor 150)
@@ -210,12 +213,15 @@ def ban_search(catalog, team_wins, team_turns, drawn, value, count, fixed=()):
     a ban list are its results over the draws holding none of the banned cards, with no new battles. Each step bans
     the card that raises value(wins, turns) most on the even draws, kept only if it also raises it on the odd ones
     (each ban drops the draws that hold it, so on one sample a ban can win by dropping slow or unlucky draws), until
-    `count` bans or none helps. Returns (bans, value on all draws)."""
+    `count` bans or none helps. Returns (bans, value on all draws, {card: gain when banned alone, on all draws}), the
+    last for the search's statistics."""
     cards = [[set(foe["cards"]) for foe in foes] for foes in drawn.values()]
     candidates = sorted({card for floor in cards for foe in floor for card in foe} - set(fixed))
     if not candidates:
-        return [], value(*means(team_wins, team_turns))
+        return [], value(*means(team_wins, team_turns)), {}
     holds = {card: np.array([[card in foe for foe in floor] for floor in cards]) for card in candidates}
+    base = value(*means(team_wins, team_turns))
+    alone = {card: value(*means(team_wins, team_turns, ~holds[card])) - base for card in candidates}
     half = np.zeros_like(holds[candidates[0]])
     half[:, ::2] = True
     score = lambda keep, part: value(*means(team_wins, team_turns, keep & (half if part == 0 else ~half)))
@@ -229,7 +235,7 @@ def ban_search(catalog, team_wins, team_turns, drawn, value, count, fixed=()):
             break
         banned.append(card)
         kept &= ~holds[card]
-    return banned, value(*means(team_wins, team_turns, kept))
+    return banned, value(*means(team_wins, team_turns, kept)), alone
 
 
 def battle_speed(floors, chrono=True, structure=0, skill=0):
@@ -318,6 +324,60 @@ def expand_packs(catalog, cards, red=None, blue=None):
     return teams
 
 
+def evidence(path, objective, mode, min_count=5, top=15):
+    """Statistics from the searches' own engine evidence (SEARCH_LOG; user, 2026-10-08): per card, card pair and
+    support, the lift (mean score of the logged teams holding it minus the mean of all logged teams) with its count;
+    per ban, the mean gain banning that card alone gave the teams it was weighed for; the best distinct decks. Teams
+    from one search cluster around what it liked, so a lift says "teams with it scored higher", not "it causes that"."""
+    from itertools import combinations
+    records = [json.loads(line) for line in Path(path).read_text().splitlines() if line.strip()] if Path(path).exists() else []
+    teams = [r for r in records if r["kind"] == "team" and r["objective"] == objective and r["mode"] == mode]
+    ban_steps = [r for r in records if r["kind"] == "bans" and r["objective"] == objective and r["mode"] == mode]
+    if not teams:
+        raise SystemExit(f"No {mode} {objective} evidence in {path} yet: run depths search first")
+    scores = np.array([r[objective] for r in teams])
+    overall = float(scores.mean())
+    print(f"{len(teams)} engine-scored teams, {len(ban_steps)} ban steps; mean {objective} {overall:.1f}")
+
+    def table(title, keys_of):
+        groups = {}
+        for r, score in zip(teams, scores):
+            for key in set(keys_of(r)):
+                groups.setdefault(key, []).append(score)
+        rows = sorted(((key, len(v), float(np.mean(v)) - overall) for key, v in groups.items() if len(v) >= min_count),
+                      key=lambda row: -row[2])
+        print(f"\n{title} (at least {min_count} teams; lift = mean with it - mean of all)")
+        for key, n, lift in rows[:top]:
+            print(f"  {key:<58} {n:>6} {lift:>+9.1f}")
+        if len(rows) > top:
+            print("  ...")
+            for key, n, lift in rows[-3:]:
+                print(f"  {key:<58} {n:>6} {lift:>+9.1f}")
+
+    strip = lambda card: card.split("@")[0].split("/")[0]
+    table("cards", lambda r: [strip(c) for c in r["team"]["cards"]])
+    table("card pairs", lambda r: [" + ".join(pair) for pair in combinations(sorted(strip(c) for c in r["team"]["cards"]), 2)])
+    table("supports", lambda r: [f"{color}: {r['team'][color]}" for color in ("red", "blue") if r["team"].get(color)])
+    gains = {}
+    for r in ban_steps:
+        for card, gain in r["gain"].items():
+            gains.setdefault(card, []).append(gain)
+    rows = sorted(((card, len(v), float(np.mean(v))) for card, v in gains.items()), key=lambda row: -row[2])
+    print(f"\nbans (mean gain in {objective} from banning the card alone, over the teams it was weighed for)")
+    for card, n, gain in rows[:top]:
+        print(f"  {card:<58} {n:>6} {gain:>+9.1f}")
+    seen, decks = set(), []
+    for r, score in sorted(zip(teams, scores), key=lambda item: -item[1]):
+        key = json.dumps(r["team"], sort_keys=True)
+        if key not in seen:
+            seen.add(key)
+            decks.append((r, score))
+    print(f"\nbest decks")
+    for r, score in decks[:top]:
+        supports = ", ".join(f"{r['team'][c]}" for c in ("red", "blue") if r["team"].get(c))
+        print(f"  {score:>8.1f}  {' / '.join(r['team']['cards'])}  [{supports}]  bans: {', '.join(r['bans']) or 'none'}")
+
+
 def parse_bans(catalog, names):
     from .deck import _match
     names = [card for name in names for card in BAN_PRESETS.get(name, [name])]
@@ -343,7 +403,9 @@ def main():
     search.add_argument("--borders", nargs="+", default=["none"])
     search.add_argument("--mutations", nargs="+", default=["None"])
     search.add_argument("--support-tiers", nargs="+", default=["base"])
-    search.add_argument("--evaluations", type=int, help="teams scored (depth: 5,000 by the model; speed: 300 by the engine)")
+    search.add_argument("--evaluations", type=int, help="teams the model scores per team step (5,000)")
+    search.add_argument("--engine-evaluations", type=int, default=300,
+                        help="speed: teams the engine scores per team step, starting from the model's best distinct 32")
     search.add_argument("--top", type=int, default=4, help="best distinct teams reported")
     search.add_argument("--optimize-bans", type=int, default=0, metavar="N",
                         help="also choose N bans (with any --bans kept, at most 14): ban steps and team steps alternate")
@@ -360,7 +422,16 @@ def main():
         command.add_argument("--device")
         command.add_argument("--workers", type=int, help="engine processes")
         add_arguments(command)
+    stats = commands.add_parser("stats", help="statistics from the searches' own engine evidence (cards, pairs, "
+                                "supports, bans, decks)")
+    stats.add_argument("--objective", choices=("packs_per_hour", "expected_floors"), default="packs_per_hour")
+    stats.add_argument("--normal", action="store_true", help="normal depths (default: hard depths)")
+    stats.add_argument("--min-count", type=int, default=5, help="teams a card, pair or support needs to be listed")
+    stats.add_argument("--top", type=int, default=15)
+    stats.add_argument("--log", default=str(SEARCH_LOG))
     args = parser.parse_args()
+    if args.command == "stats":
+        return evidence(args.log, args.objective, "normal" if args.normal else "hard", args.min_count, args.top)
     catalog = load_catalog()
     hard = not args.normal
     fast = args.command == "search" and args.objective == "speed"
@@ -437,22 +508,48 @@ def main():
             except (KeyError, ValueError):
                 raise SystemExit("The starting team is not in the pool (its cards, borders, mutations or supports)")
 
-        evaluations = args.evaluations or (300 if fast else 5_000)
 
         def team_search(drawn, starts, seed):
-            """The team search against `drawn`: teams best first."""
-            def score(members, done):
+            """A team step against `drawn`, teams best first. The model builds them (user, 2026-10-08: no reference
+            team, it builds its own): its search by expected floors. For speed, which the model cannot score (no
+            battle length), its best distinct 32 then seed an engine search by aura packs per hour."""
+            def by_model(members, done):
                 teams = [_team(space, *m) for m in members]
-                if fast:
-                    wins, turns = engine_curves(catalog, teams, drawn, engine, hard, seed)
-                    return [run_value(floors, w, t, args.cap, **speed)["packs_per_hour"] for w, t in zip(wins, turns)]
                 return [survival(floors, wins, args.cap)[0] for wins in model_wins(classifier, teams, drawn, hard)]
 
-            seen = evolve(space, starts, score, evaluations=evaluations, seed=seed, prior=0.0, catalog=catalog,
-                          **(dict(population=32, parents=8, children=4) if fast else dict(population=128, parents=32, children=4)))
+            def by_engine(members, done):
+                teams = [_team(space, *m) for m in members]
+                wins, turns = engine_curves(catalog, teams, drawn, engine, hard, seed)
+                values = [run_value(floors, w, t, args.cap, **speed) for w, t in zip(wins, turns)]
+                log_teams(teams, values, banned_now)
+                return [v["packs_per_hour"] for v in values]
+
+            seen = evolve(space, starts, by_model, evaluations=args.evaluations or 5_000, seed=seed, prior=0.0,
+                          catalog=catalog, population=128, parents=32, children=4)
+            teams = [_team(space, *m) for m in sorted(seen, key=lambda m: -seen[m])]
+            if not fast:
+                return teams
+            seeds = [*starts, *(teams[i] for i in distinct(teams, range(len(teams)), 32))][:32]
+            seen = evolve(space, seeds, by_engine, evaluations=args.engine_evaluations, seed=seed, prior=0.0,
+                          catalog=catalog, population=32, parents=8, children=4)
             return [_team(space, *m) for m in sorted(seen, key=lambda m: -seen[m])]
 
         objective = "packs_per_hour" if fast else "expected_floors"
+        context = {"mode": "hard" if hard else "normal", "objective": objective, "pool": args.pool, "cap": args.cap,
+                   "speed": {k: v for k, v in speed.items()}}
+        banned_now = list(bans)
+
+        def log_teams(teams, values, in_force):
+            with open(SEARCH_LOG, "a") as log:
+                for team, v in zip(teams, values):
+                    log.write(json.dumps({"kind": "team", **context, "bans": sorted(name(in_force)),
+                                          "team": describe(catalog, team), **v}) + "\n")
+
+        def log_bans(team, alone):
+            with open(SEARCH_LOG, "a") as log:
+                log.write(json.dumps({"kind": "bans", **context, "fixed": sorted(name(bans)),
+                                      "team": describe(catalog, team),
+                                      "gain": {catalog.card(c).name: round(g, 2) for c, g in alone.items()}}) + "\n")
         value = lambda wins, turns: run_value(floors, wins, turns, args.cap, **speed)[objective]
         name = lambda cards: [catalog.card(card).name for card in cards]
         chosen, teams = [], [start] if start is not None else []
@@ -460,17 +557,20 @@ def main():
             if args.optimize_bans and teams:  # ban step: the best bans for the current team, from its own battles
                 big = enemies(catalog, floors, args.ban_samples, bans, args.seed + 100 + r)
                 w, t = engine_battles(catalog, teams[:1], big, engine, hard, args.seed)
-                chosen, best = ban_search(catalog, w[0], t[0], big, value, args.optimize_bans, bans)
+                chosen, best, alone = ban_search(catalog, w[0], t[0], big, value, args.optimize_bans, bans)
+                log_bans(teams[0], alone)
                 print(json.dumps({"round": r + 1, "step": "bans", "team": describe(catalog, teams[0])["cards"],
                                   "bans": name(chosen), objective: round(best, 1),
                                   "before": round(value(*means(w[0], t[0])), 1)}), flush=True)
-            drawn_r = enemies(catalog, floors, args.samples or (8 if fast else 32), [*bans, *chosen], args.seed + r)
+            banned_now[:] = [*bans, *chosen]
+            drawn_r = enemies(catalog, floors, args.samples or (8 if fast else 32), banned_now, args.seed + r)
             teams = team_search(drawn_r, teams[:1], args.seed + r)
             print(json.dumps({"round": r + 1, "step": "team", "best": describe(catalog, teams[0])}), flush=True)
         if args.optimize_bans:  # the final team's own bans
             big = enemies(catalog, floors, args.ban_samples, bans, args.seed + 999)
             w, t = engine_battles(catalog, teams[:1], big, engine, hard, args.seed)
-            chosen, _ = ban_search(catalog, w[0], t[0], big, value, args.optimize_bans, bans)
+            chosen, _, alone = ban_search(catalog, w[0], t[0], big, value, args.optimize_bans, bans)
+            log_bans(teams[0], alone)
         best = [teams[i] for i in distinct(teams, range(len(teams)), args.top)]
         if start is not None and start not in best:
             best.append(start)  # the starting team, for comparison
@@ -480,6 +580,7 @@ def main():
             print(json.dumps({"final_bans": name([*bans, *chosen]), "chosen": name(chosen)}), flush=True)
         wins, turns = engine_curves(catalog, best, final, engine, hard, args.seed)
         models = model_wins(classifier, best, final, hard)
+        log_teams(best, [run_value(floors, w, t, args.cap, **speed) for w, t in zip(wins, turns)], [*bans, *chosen])
         for team, m, w, t in zip(best, models, wins, turns):
             report(team, m, (w, t))
         if start is not None and args.optimize_bans:  # the baseline: the starting team with only the bans given

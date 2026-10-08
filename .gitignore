@@ -20,3 +20,6 @@ data/raw/**/*.mp4
 /card-engine/
 sim_js/vendor/
 sim_js/node_modules/
+
+# depths search evidence, grown locally by every search (card_engine/depths.py SEARCH_LOG)
+data/depths_search.jsonl

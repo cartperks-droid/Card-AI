@@ -439,9 +439,24 @@ class TrainingTests(unittest.TestCase):
                  10: [{"cards": [9 if k % 4 == 1 else 6, 3, 4, 5]} for k in range(16)]}
         wins = np.array([[0.0 if foe["cards"][0] == 9 else 1.0 for foe in foes] for foes in drawn.values()])
         value = lambda w, t: float(w.sum())
-        bans, best = depths.ban_search(catalog, wins, np.ones_like(wins), drawn, value, 3)
-        self.assertEqual((bans, best), ([9], 2.0))  # banning 3, 4 or 5 empties the pool: no gain, never chosen
+        bans, best, alone = depths.ban_search(catalog, wins, np.ones_like(wins), drawn, value, 3)
+        self.assertEqual((bans, best, alone[9]), ([9], 2.0, 0.5))  # banning 3, 4 or 5 empties the pool: no gain, never chosen
         self.assertEqual(depths.ban_search(catalog, wins, np.ones_like(wins), drawn, value, 3, fixed=[9])[0], [])
+        # statistics from a search's own evidence: the card in the faster teams has the positive lift
+        import contextlib, io, json
+        log = Path(self.temp.name) / "depths_search.jsonl"
+        rows = [{"kind": "team", "mode": "hard", "objective": "packs_per_hour", "bans": [],
+                 "team": {"cards": [card, "Archer", "Set", "Good Boy"]}, "packs_per_hour": pph}
+                for card, pph in [("Zeus", 900)] * 5 + [("Kira", 1100)] * 5]
+        rows.append({"kind": "bans", "mode": "hard", "objective": "packs_per_hour", "gain": {"Loki": 12.0}})
+        log.write_text("".join(json.dumps(r) + "\n" for r in rows))
+        out = io.StringIO()
+        with contextlib.redirect_stdout(out):
+            depths.evidence(log, "packs_per_hour", "hard", min_count=5)
+        lines = out.getvalue()
+        self.assertRegex(lines, r"Kira\s+5\s+\+100\.0")
+        self.assertRegex(lines, r"Zeus\s+5\s+-100\.0")
+        self.assertRegex(lines, r"Loki\s+1\s+\+12\.0")
         side, fixed = labels.fixed_battle(random.Random(0), catalog, labels.random_spec(random.Random(0), catalog))
         self.assertIn(side, (0, 1))
         from card_engine.training.hard import draw_enemy
