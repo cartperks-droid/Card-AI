@@ -118,6 +118,11 @@ exact("        const hp = getHealth(enemy.definition, [])\n        enemy.power =
 // floor 65 Impossible 17.8% of the time on a third Armageddon it never gets in game.
 exact("    : [...fallen].reverse().find((card) => card !== attacker)\n",
       "    : [...fallen].filter((card) => card !== attacker).sort((a, b) => a.index - b.index)[0]\n")
+// And it revives once per turn whenever an ally is dead (user, 2026-10-09: "once per turn if any ally is dead";
+// 2026-10-02: "one per turn in setup order"), not once per battle: his engine allowed one revive, to stop Buddha and
+// Hades (copying Lotus Sutra) reviving each other forever; such a loop now ends at the 100-turn stalemate.
+exact("  // A Lotus Sutra user can perform its revive once per battle. This prevents\n  // Buddha and Hades (after copying Lotus Sutra) from reviving each other forever.\n  const deadAlly = attacker.flags.lotusReviveUsed\n    ? undefined\n    : ",
+      "  // Every turn an ally is dead, the first fallen in setup order (user, 2026-10-09; see codemod.mjs).\n  const deadAlly = ")
 
 // The runtime carries the chance source; a battle may arrive with a prebuilt (two-sided) state.
 exact('  rng: SeededRng\n', '  rng: SeededRng\n  chance: any\n')
