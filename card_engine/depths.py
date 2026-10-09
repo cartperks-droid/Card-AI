@@ -147,12 +147,20 @@ def enemies(catalog, floors, samples, bans=(), seed=1):
     return {floor: [draw_team(rng, catalog, floor, bans) for _ in range(samples)] for floor in floors}
 
 
-def model_wins(classifier, teams, drawn, hard=True):
-    """[teams, floors]: the model's mean win chance per grid floor, attacking first against the floor's draws."""
+CERTAIN = 1e-3  # a model win chance within this of 1 counts as certain (model_wins)
+
+
+def model_wins(classifier, teams, drawn, hard=True, certain=CERTAIN):
+    """[teams, floors]: the model's mean win chance per grid floor, attacking first against the floor's draws. A
+    battle's win chance within `certain` of 1 counts as 1 (2026-10-09): trained on win probabilities, the model
+    leaves about 1e-5 to 1e-4 of loss on battles the engine never loses, which costs nothing in training but compounds
+    over tens of thousands of floors (DaddyDrago's improved team: the model put the wall where the engine does, near
+    floor 58,000 in normal depths, yet expected 22,000 floors against the engine's 58,000)."""
     from .teams import spec
     out = np.zeros((len(teams), len(drawn)))
     for j, (floor, foes) in enumerate(drawn.items()):
         wins = classifier.win_a([spec(team, foe) for team in teams for foe in foes], fixed=(1, stats(floor, hard)))
+        wins = np.where(wins >= 1 - certain, 1.0, wins)
         out[:, j] = wins.reshape(len(teams), len(foes)).mean(1)
     return out
 
@@ -296,6 +304,8 @@ def add_arguments(parser):
     parser.add_argument("--no-chrono-shard", action="store_true", help="speed: without the Chrono Shard (+1 speed)")
     parser.add_argument("--structure", type=int, default=0, help="speed: battle-speed structure level (0-7)")
     parser.add_argument("--skill-tree", type=int, default=0, help="speed: battle-speed skill-tree level (0-4)")
+    parser.add_argument("--certain", type=float, default=CERTAIN,
+                        help="model: a battle's win chance within this of 1 counts as a sure win (0: the raw model)")
     parser.add_argument("--restart-seconds", type=float, default=0.0,
                         help="speed: seconds from a run's death to the next run's first floor (not yet measured: 0)")
 
@@ -603,7 +613,7 @@ def main():
     with engine_pool(args.workers) as engine:
         curves = lambda teams: engine_curves(catalog, teams, drawn, engine, hard, args.seed)
         if args.command == "run":
-            models = model_wins(classifier, variants, drawn, hard)
+            models = model_wins(classifier, variants, drawn, hard, args.certain)
             engines = curves(variants) if args.simulate else None
             rows = []
             for i, team in enumerate(variants):
@@ -676,7 +686,7 @@ def main():
             battle length), its best distinct 32 then seed an engine search by aura packs per hour."""
             def by_model(members, done):
                 teams = [_team(space, *m) for m in members]
-                return [survival(floors, wins, args.cap)[0] for wins in model_wins(classifier, teams, drawn, hard)]
+                return [survival(floors, wins, args.cap)[0] for wins in model_wins(classifier, teams, drawn, hard, args.certain)]
 
             def by_engine(members, done):
                 teams = [_team(space, *m) for m in members]
@@ -740,7 +750,7 @@ def main():
         if args.optimize_bans:
             print(json.dumps({"final_bans": name([*bans, *chosen]), "chosen": name(chosen)}), flush=True)
         wins, turns = engine_curves(catalog, best, final, engine, hard, args.seed)
-        models = model_wins(classifier, best, final, hard)
+        models = model_wins(classifier, best, final, hard, args.certain)
         log_teams(best, [run_value(floors, w, t, args.cap, **speed) for w, t in zip(wins, turns)], [*bans, *chosen])
         for team, m, w, t in zip(best, models, wins, turns):
             report(team, m, (w, t))
