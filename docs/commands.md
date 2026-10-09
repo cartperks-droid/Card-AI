@@ -180,6 +180,14 @@ python3 -c 'import torch; print(torch.load("data/training_10s/watch_best_ema.che
 
 ## 6. Using the model
 
+The website does everything in this section and in depths (section 9) without commands: battles, counters, depth curves, improving a team, the team search and its statistics. Start it, and it opens http://localhost:8765:
+```
+python3 -m card_engine.web
+```
+Pick the team in the slots at the top (it is remembered), choose a tab, press Run. Each run is the same command shown under its output, so you can copy it. Keep the device on `cpu` while the trainer uses the GPU. Stop the site with Ctrl+C; `--port N` picks another port, `--no-open` skips opening the browser. It answers only this computer.
+
+The commands, for reference:
+
 A matchup's win chance in both turn orders. `--simulate` adds the engine's answer:
 ```
 python3 -m card_engine.training.predict --checkpoint data/training_10s/ema.checkpoint --ally "Fate Seamstress" "Judgement Day" Parallax "Robin Hood" --ally-blue Fate --tower 105 Impossible --simulate
