@@ -187,18 +187,26 @@ python3 -m card_engine.training.predict --checkpoint data/training_10s/ema.check
 ```
 Cards are written `Name[@Border][/Mutation]`, supports `Name[@Tier]`. A fixed-stat enemy: `--enemy-stats HP ATK`.
 
-Generate counters (the engine verifies every team):
+Generate counters (the engine verifies every team). Use the model search (`--model-search`, an evolution scored by the model) and the engine search (`--engine-search`, which keeps improving the model's best teams by real battles); the gradient ascent alone never finds cheese teams (every ascent setting scored 0 at floors 95-105 in the 2026-10-07 tuning). You own no Limited cards, so add `--no-limited`:
 ```
-python3 -m card_engine.training.generate --checkpoint data/training_10s/ema.checkpoint --tower 105 Impossible
-python3 -m card_engine.training.generate --checkpoint data/training_10s/ema.checkpoint --enemy "Immortal Witch" Archer "Good Boy" Set --pool own
-python3 -m card_engine.training.generate --checkpoint data/training_10s/ema.checkpoint --enemies 8 --pool restricted --role defend
+python3 -m card_engine.training.generate --checkpoint data/training_10s/depths_ema.checkpoint --tower 65 Impossible --pool restricted --no-limited --borders none --support-tiers base --model-search 50000 --engine-search 4000 --counters 8 | python3 -c "import json,sys; d=json.loads(sys.stdin.read()); [print(' ', c['model'], c['simulator'], c['cards'], c['red'], c['blue']) for c in d['counters'][:8]]"
+python3 -m card_engine.training.generate --checkpoint data/training_10s/depths_ema.checkpoint --enemy "Immortal Witch" Archer "Good Boy" Set --pool own --model-search 50000
+python3 -m card_engine.training.generate --checkpoint data/training_10s/depths_ema.checkpoint --enemies 8 --pool restricted --no-limited --role defend --model-search 50000
 ```
+Each printed line is the model's win chance, the engine's, the four cards, and the two supports. Your real borders and support tiers matter more than any search setting: with your deck entered use `--pool own`, otherwise widen the masks (`--borders none Pl Cr --support-tiers base Platinum Crystal`).
+
+If the engine column stays at 0.0, the floor may have no win within those masks. The annealed miner discovers wins best: it starts from random teams at a fraction of the enemy's stats and raises them as its best teams start winning (how floor 105's wins were found). It writes the battles as training data; in its log, `mean_best_engine_win` is how well its best teams did and `reached_full_stats` how often they got to the floor's real stats (0: nothing within its borders wins there):
+```
+python3 -m card_engine.training.hard --select engine --tower 65 Impossible --prior 0 --rounds 4 --shards 1 --workers 4 --first-seed 9400000
+```
+Pick a `--first-seed` no other miner uses (the running ones: 9,000,000 floor 105, 9,500,000 floor 100, 9,600,000 floor 105 engine, 9,700,000 to 9,900,000 blind spots, 8,500,000 depths).
+
 Generator options:
 - Pools: `--pool own|custom|restricted|all`, `--enemy-pool ...`.
 - Masks: `--borders none Pl Cr`, `--mutations None Storm`, `--support-tiers base Crystal`, `--max-rarity 2.5M`, `--no-limited`.
 - Role: `--role attack|defend`.
-- Search: `--counters 32`, `--restarts`, `--steps`, `--noise-levels`, `--sigma-max 8`, `--temperature`, `--nearest`.
-- Engine: `--engine-search` (adds an engine search, slower), `--no-verify`.
+- Search: `--model-search N` (teams the model scores; 50,000 is about a minute), `--search-population 512`, `--search-parents 128`, `--search-children 4`, `--counters 32`; the gradient ascent's `--restarts`, `--steps`, `--noise-levels`, `--sigma-max 8`, `--temperature`, `--nearest`.
+- Engine: `--engine-search N` (engine battles that keep improving the model's best teams; slower), `--no-verify`.
 - Close the trainer's GPU work first, or add `--device cpu`.
 
 Depths (hard depths by default: the floor's enemy pool, the stats of floor × 10; `--normal` for normal depths). A team's depth curve, the model's and with `--simulate` the engine's on the same enemy draws, and the model search for the team that goes deepest (its best `--top` engine-verified):
