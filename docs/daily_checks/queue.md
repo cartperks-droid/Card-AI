@@ -3,14 +3,15 @@
 These are open rule and class questions, most important first. The daily task picks from here and adds new ones as they come up. Once a check is answered, move it to "Answered" with the date and result.
 
 ## Open
-1. **Class spot-checks.** Next is toy (7 reviewed), then avian (3), dragon (5) and demon (7). Only check the *Reviewed* rows in `docs/classes.md` (`python -m card_engine.class_report` regenerates it).
+1. **Buddha's revives: once per battle, or one per turn?** DaddyDrago's engine (and so ours) lets Lotus Sutra revive once per battle (its comment: to stop Buddha and Hades reviving each other forever); the user's 2026-10-02 evidence (Answered below) was one revive per turn while Buddha stays in front. It decides floor 65 Impossible's best borderless team, Buddha / Parallax / Judgement Day / Judgement Day with Fate (2026-10-09: 17.8% in our engine; its wins are Buddha's turn-1 heal of a full-HP Parallax moving Buddha to the back, Paradox killing the first Astraeus, then Judgement Day's coin flips plus one revived Judgement Day). Watch a battle where Buddha is in front with two allies dead: does it revive both on consecutive turns? Also: does a 0 HP heal on a full-HP ally move Buddha to the back on its first turn?
 
-2. **Odin's dodge cost.** Is it 20% of current HP (it can never die to normal attacks) or 20% of max HP (dead after 5 dodges)?
-3. **Skipped turns and the stalemate.** Do skipped turns (e.g. Arcane Avian) count toward the 100-turn stalemate?
-4. **Kira vs Noveau Riche.** Does Kira's doom kill Noveau Riche through its 3 lives?
-5. **Parallax and status damage.** Does burn or poison kill Parallax without triggering "the enemy dies instead"?
-6. **Border rarities.** RuPl was corrected to 1e7 and GaCrPl to 1e12, from the deck screenshots. Confirm with a stat readout of one RuPl or GaCrPl card.
-7. **Cross-check with DaddyDrago's engine** (`docs/drago_crosscheck.md`). His stats, rarities and Final Testament values are adopted (user, 2026-10-03). Still open:
+2. **Class spot-checks.** Next is toy (7 reviewed), then avian (3), dragon (5) and demon (7). Only check the *Reviewed* rows in `docs/classes.md` (`python -m card_engine.class_report` regenerates it).
+3. **Odin's dodge cost.** Is it 20% of current HP (it can never die to normal attacks) or 20% of max HP (dead after 5 dodges)?
+4. **Skipped turns and the stalemate.** Do skipped turns (e.g. Arcane Avian) count toward the 100-turn stalemate?
+5. **Kira vs Noveau Riche.** Does Kira's doom kill Noveau Riche through its 3 lives?
+6. **Parallax and status damage.** Does burn or poison kill Parallax without triggering "the enemy dies instead"?
+7. **Border rarities.** RuPl was corrected to 1e7 and GaCrPl to 1e12, from the deck screenshots. Confirm with a stat readout of one RuPl or GaCrPl card.
+8. **Cross-check with DaddyDrago's engine** (`docs/drago_crosscheck.md`). His stats, rarities and Final Testament values are adopted (user, 2026-10-03). Still open:
    - **Double KO:** is it a draw (his) or a loss for the attacker (ours)?
    - **New cards:** about 16 cards in his data but not ours. Do they exist in game?
 
