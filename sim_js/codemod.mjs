@@ -112,6 +112,13 @@ exact("        const hp = getHealth(enemy.definition, [])\n        enemy.power =
       + "        if (ratio > 0 && Number.isFinite(ratio)) {\n"
       + "          enemy.power *= ratio\n          enemy.damage *= ratio\n          enemy.maxHp *= ratio\n          enemy.hp *= ratio\n        }\n")
 
+// Buddha's Lotus Sutra revives the first fallen ally in setup (lineup) order, not the most recently fallen (user,
+// 2026-10-09: with Buddha / Parallax / Judgement Day / Judgement Day "budda revives parallax not judgement day";
+// 2026-10-02: "one per turn in setup order"). His engine revived the latest to fall, a Judgement Day, so the team won
+// floor 65 Impossible 17.8% of the time on a third Armageddon it never gets in game.
+exact("    : [...fallen].reverse().find((card) => card !== attacker)\n",
+      "    : [...fallen].filter((card) => card !== attacker).sort((a, b) => a.index - b.index)[0]\n")
+
 // The runtime carries the chance source; a battle may arrive with a prebuilt (two-sided) state.
 exact('  rng: SeededRng\n', '  rng: SeededRng\n  chance: any\n')
 // Ability lookups (user: precomputed entries, as a chess engine's lookup tables): an entry holds a card's ability, its

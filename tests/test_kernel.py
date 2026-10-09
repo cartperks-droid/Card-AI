@@ -95,6 +95,21 @@ class KernelTests(unittest.TestCase):
             battle["borders"][1] = [9, 3, 2, 16]
             self.same(battle, seed + 20)
 
+    def test_buddha_revives_in_setup_order(self):
+        # user, 2026-10-09: Buddha revives Parallax, the first fallen in lineup order, not the latest Judgement Day; his
+        # engine revived the latest, a third Armageddon that won floor 65 Impossible 17.8% of the time
+        from card_engine import tower
+        from card_engine.teams import parse_side, spec
+        enemy = tower.fixed_team(self.catalog, 65)
+        enemy.update(borders=[1] * 4, mutations=[0] * 4, red=0, red_tier=0, blue=0, blue_tier=0)
+        per_card = tower.engine_stats(self.catalog, enemy["cards"], tower.stats(65, "Impossible"))
+        buddha = spec(parse_side(self.catalog, ["Buddha", "Parallax", "Judgement Day", "Judgement Day"], None, "Fate"), enemy)
+        three = spec(parse_side(self.catalog, ["Parallax", "Judgement Day", "Judgement Day", "Judgement Day"], None, "Fate"), enemy)
+        self.same(buddha, 7, fixed=(1, per_card))
+        self.same(three, 7, fixed=(1, per_card))
+        self.assertEqual(kernel.evaluate(self.catalog, buddha, 7, fixed=(1, per_card))[0][0], 0.0)
+        self.assertGreater(kernel.evaluate(self.catalog, three, 7, fixed=(1, per_card))[0][0], 0.17)
+
     def test_a_runaway_battle_with_hundreds_of_created_cards(self):
         rng = random.Random(22883)  # label shard 22883, row 1219: Pandora's rolls create 836 cards
         spec = [labels.random_spec(rng, self.catalog) for _ in range(1220)][-1]

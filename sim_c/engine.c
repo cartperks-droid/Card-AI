@@ -1873,8 +1873,11 @@ static int can_normal_attack(Runtime *rt, int attacker) {
 static void do_lotus_sutra(Runtime *rt, int attacker) {
   Card *a = CARD(attacker);
   int team = a->team, dead_ally = NOCARD;
-  if (!a->flag[F_lotusReviveUsed])
-    for (int i = S->nfallen[team] - 1; i >= 0; i--) if (S->fallen[team][i] != attacker) { dead_ally = S->fallen[team][i]; break; }
+  if (!a->flag[F_lotusReviveUsed])  // the first fallen ally in setup order (user, 2026-10-09; codemod.mjs), the earliest
+    for (int i = 0; i < S->nfallen[team]; i++) {  // to fall among equal indices (his stable sort)
+      int c = S->fallen[team][i];
+      if (c != attacker && (dead_ally == NOCARD || CARD(c)->index < CARD(dead_ally)->index)) dead_ally = c;
+    }
   if (dead_ally != NOCARD) {
     a->flag[F_lotusReviveUsed] = 1;
     int idx = index_of(S->fallen[team], S->nfallen[team], dead_ally);
