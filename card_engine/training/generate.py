@@ -84,7 +84,7 @@ from ..catalog import load_catalog
 from ..deck import BORDERS, CUSTOM_FILE, DECK_FILE, TIERS, _border, _mutation, _tier, load as load_deck, shell_words
 from ..mutations import MUTATION_NAMES
 from ..ownership import parse_rarity
-from ..restricted import entries as restricted_entries, load as load_restricted
+from ..restricted import cards as restricted_cards, entries as restricted_entries, load as load_restricted
 from .. import tower
 from ..teams import ASTRAEUS, ASTRAEUS_ARTS, SINGLE_COPY, describe, fixed_stats, parse_side, side
 from .predict import Classifier
@@ -99,11 +99,22 @@ class Pool:
     blues: list
 
 
-def make_pool(catalog, kind, borders=None, limited=True, deck_path=None, mutations=None, tiers=None, max_rarity=None):
+def make_pool(catalog, kind, borders=None, limited=True, deck_path=None, mutations=None, tiers=None, max_rarity=None,
+              rolls=None, luck=None):
     """The pool's entries and supports. borders (IDs), mutations (indices), tiers (1-5) and max_rarity mask the open
-    pools (restricted, all); None allows all. A deck pool (own, custom) is used as it is: the deck overrides them."""
+    pools (restricted, all); None allows all. A deck pool (own, custom) is used as it is: the deck overrides them, as
+    does the progression pool: what a player at `rolls` and `luck` can expect to own (incomplete.Progression)."""
     every_support = lambda table: [(s.id, tier) for s in table for tier in range(1, 6)]
     copies = None
+    if kind == "progression":
+        from .incomplete import Progression
+        pool = Progression(catalog).likely(rolls, luck)
+        if not limited:
+            keep = np.isin(pool.entries[:, 0], list(restricted_cards(load_restricted(), catalog, limited=False)))
+            pool = Pool(pool.entries[keep], pool.copies[keep], pool.reds, pool.blues)
+        if not len(pool.entries):
+            raise SystemExit(f"A player at {rolls:,.0f} rolls and luck {luck:g} owns nothing yet")
+        return pool
     if kind in ("own", "custom"):
         deck_path = deck_path or (DECK_FILE if kind == "own" else CUSTOM_FILE)
         if not Path(deck_path).exists():
@@ -593,9 +604,11 @@ def main():
     parser.add_argument("--enemy-blue")
     tower.add_arguments(parser)
     parser.add_argument("--enemies", type=int, help="generate this many broad enemies instead of --enemy")
-    pools = ("own", "custom", "restricted", "all")
+    pools = ("own", "custom", "restricted", "all", "progression")
     parser.add_argument("--enemy-pool", choices=pools, help="pool for --enemies (default: --pool)")
     parser.add_argument("--pool", choices=pools, default="restricted")
+    parser.add_argument("--rolls", type=float, default=205e6, help="progression pool: the player's rolls")
+    parser.add_argument("--luck", type=float, default=100.0, help="progression pool: the player's card luck")
     parser.add_argument("--borders", nargs="+", default=["none"], help=f"allowed borders (default none), from "
                         f"{' '.join(BORDERS)}, or all")
     parser.add_argument("--mutations", nargs="+", default=["None"], help=f"allowed mutations (default None), from "
@@ -654,13 +667,14 @@ def main():
     classifier = Classifier(args.checkpoint, args.device)
     settings = Settings(steps=args.steps, temperature=args.temperature, nearest=args.nearest, role=args.role,
                         noise_levels=args.noise_levels, sigma_max=args.sigma_max)
-    space = SlotSpace(classifier, make_pool(catalog, args.pool, limited=not args.no_limited, **mask))
+    progression = dict(rolls=args.rolls, luck=args.luck)
+    space = SlotSpace(classifier, make_pool(catalog, args.pool, limited=not args.no_limited, **mask, **progression))
     if enemy is not None:
         enemies = [enemy]
     else:
         enemy_pool = args.enemy_pool or args.pool
         enemy_space = space if enemy_pool == args.pool else SlotSpace(
-            classifier, make_pool(catalog, enemy_pool, limited=not args.no_limited, **mask))
+            classifier, make_pool(catalog, enemy_pool, limited=not args.no_limited, **mask, **progression))
         enemies = broad_enemies(enemy_space, args.enemies, settings=settings, seed=args.seed, stats=enemy_stats)
         for team in enemies if enemy_stats is not None else ():  # as tower.enemy: a fixed-stat enemy is borderless, a
             team["borders"] = [border] * 4                      # tower enemy carries its difficulty's border and is

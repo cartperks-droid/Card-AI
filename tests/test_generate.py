@@ -126,6 +126,15 @@ class GeneratorTests(unittest.TestCase):
         for team in enemies:
             self.assertTrue(all(e in allowed for e in zip(team["cards"], team["borders"], team["mutations"], team["arts"])))
 
+    def test_progression_pool(self):
+        small, large = (generate.make_pool(self.catalog, "progression", rolls=r, luck=100) for r in (1e6, 5e7))
+        self.assertGreater(len(large.entries), len(small.entries))
+        self.assertTrue((large.copies >= 1).all())
+        unlimited = generate.make_pool(self.catalog, "progression", rolls=5e7, luck=100, limited=False)
+        self.assertLessEqual(len(unlimited.entries), len(large.entries))
+        allowed = generate.restricted_cards(generate.load_restricted(), self.catalog, limited=False)
+        self.assertTrue(set(unlimited.entries[:, 0].tolist()) <= set(allowed))
+
     def test_single_copy_cards_appear_once(self):
         pool = generate.make_pool(self.catalog, "all", borders=[1, 2])
         space = generate.SlotSpace(self.classifier, pool)

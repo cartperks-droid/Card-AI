@@ -641,12 +641,8 @@ def main():
         from .training.generate import _ids, _team, evolve, make_pool, masks
         from .training.hard import distinct
         borders, mutations, tiers = masks(args.borders, args.mutations, args.support_tiers)
-        if args.pool == "progression":
-            from .training.incomplete import Progression
-            collection = Progression(catalog).likely(args.rolls, args.luck)
-        else:
-            collection = make_pool(catalog, args.pool, borders=borders, limited=not args.no_limited, mutations=mutations,
-                                   tiers=tiers)
+        collection = make_pool(catalog, args.pool, borders=borders, limited=not args.no_limited, mutations=mutations,
+                               tiers=tiers, rolls=args.rolls, luck=args.luck)
         space = SimpleNamespace(classifier=classifier, pool=collection)
         starts = []
         if start is not None:

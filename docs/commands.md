@@ -100,7 +100,7 @@ CARD_ENGINE_TRACE=1 python3 -m card_engine.training.labels --fixed --shards 1 --
 
 The current run (10s: 10 layers at width 256, stat comparisons in the stat MLP, the smooth stat prior, its own description transformer thawed and frozen by the stat MLP, all five batch shares). The same command resumes it after a stop; new-run settings (layers, width, priors) are read from the run, the rest (rates, shares, data, the language budget) take effect on a restart:
 ```
-python3 -m card_engine.training.train --run-dir data/training_10s --layers 10 --width 256 --stat-pairs --smooth-prior --language-after-plateau --language-budget 120000 --batch-size 512 --lr 3e-4 --lr-decay 330000 370000 --lr-floor 0.33 --weight-decay 0.05 --dropout 0.1 --mix-start 0.03 0.42 0.42 0 0.01 --mix-until 60000 --mix 0.03 0.1 0.1 0.05 0.06 --max-rows 75000000 --eval-rows 100000 --eval-every 2000 >> data/training_10s.out 2>&1 &
+python3 -m card_engine.training.train --run-dir data/training_10s --layers 10 --width 256 --stat-pairs --smooth-prior --language-after-plateau --language-budget 180000 --batch-size 512 --lr 3e-4 --lr-decay 330000 370000 --lr-floor 0.33 --weight-decay 0.05 --dropout 0.1 --mix-start 0.03 0.42 0.42 0 0.01 --mix-until 60000 --mix 0.03 0.1 0.1 0.05 0.06 --max-rows 75000000 --eval-rows 100000 --eval-every 2000 >> data/training_10s.out 2>&1 &
 ```
 The learning rate decayed from 3e-4 between steps 330,000 and 370,000 and holds at `--lr-floor` of it since: 0.33 is about 1e-4 (2026-10-07: at 0.1, 3e-5, new hard, PvP and depths rows were absorbed too slowly and the curves went flat). If the averaged weights' probe KL climbs and stays up, lower it to 0.2.
 
