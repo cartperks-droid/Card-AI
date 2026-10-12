@@ -112,6 +112,20 @@ class GeneratorTests(unittest.TestCase):
         np.testing.assert_allclose(logits.softmax(-1)[:, 0].numpy(), wins[:, 0], atol=1e-5)
         self.assertFalse(np.allclose(wins, self.classifier.ally_win([(ally, enemy) for ally in allies])))
 
+    def test_generated_side_at_fixed_stats(self):
+        rng = np.random.default_rng(6)
+        teams = [generate.random_team(self.pool, rng) for _ in range(3)]
+        index = {tuple(e): i for i, e in enumerate(self.pool.entries.tolist())}
+        for stats in ((2.5e6, 4e5, True), (1e4, 3e3, False)):
+            entries = [[index[e] for e in zip(t["cards"], t["borders"], t["mutations"], t["arts"])] for t in teams]
+            expected = self.space.fixed(teams, stats)[1]  # [N, 4, 2], the discrete side's log stats at fixed stats
+            torch.testing.assert_close(self.space.log_fixed(stats)[torch.tensor(entries)], expected)
+        allowed = {tuple(e) for e in self.pool.entries.tolist()}
+        enemies = generate.broad_enemies(self.space, 2, settings=generate.Settings(steps=20), stats=(1e6, 5e5, True))
+        self.assertEqual(len(enemies), 2)
+        for team in enemies:
+            self.assertTrue(all(e in allowed for e in zip(team["cards"], team["borders"], team["mutations"], team["arts"])))
+
     def test_single_copy_cards_appear_once(self):
         pool = generate.make_pool(self.catalog, "all", borders=[1, 2])
         space = generate.SlotSpace(self.classifier, pool)

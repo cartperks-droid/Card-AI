@@ -184,7 +184,7 @@ The website does everything in this section and in depths (section 9) without co
 ```
 python3 -m card_engine.web
 ```
-Pick the team in the slots at the top (it is remembered), choose a tab, press Run. The Deck tab builds your collection (the searches' "My deck" pool) or the custom pool: add cards with borders, mutations and copies, and supports with tiers, then Save; "to team" puts a card in the first empty slot. "Copy team code" and "Copy deck code" give a code (`CA1.…`) that you can keep anywhere or send to someone; paste it into the Codes box and press Load to get the team or deck back (a loaded deck still needs Save). Each run is the same command shown under its output, so you can copy it. Keep the device on `cpu` while the trainer uses the GPU. Stop the site with Ctrl+C; `--port N` picks another port, `--no-open` skips opening the browser. It answers only this computer.
+Pick the team in the slots at the top (it is remembered), choose a tab, press Run. The Deck tab builds your collection (the searches' "My deck" pool) or the custom pool: add cards with borders, mutations and copies, and supports with tiers, then Save; "to team" puts a card in the first empty slot. Sort the deck by rarity (card × border), stats (HP × ATK in the engine, before supports), ATK, HP or name, and tick border combinations to show only those. "Copy team code" and "Copy deck code" give a code (`CA1.…`) that you can keep anywhere or send to someone; paste it into the Codes box and press Load to get the team or deck back (a loaded deck still needs Save). Each run is the same command shown under its output, so you can copy it. Keep the device on `cpu` while the trainer uses the GPU. Stop the site with Ctrl+C; `--port N` picks another port, `--no-open` skips opening the browser. It answers only this computer.
 
 The commands, for reference:
 
@@ -194,6 +194,11 @@ python3 -m card_engine.training.predict --checkpoint data/training_10s/ema.check
 python3 -m card_engine.training.predict --checkpoint data/training_10s/ema.checkpoint --ally "Vampire Lord@GaPl" Set "Good Boy@Pl/Storm" Archer --ally-red Stormcaller@Galaxy --enemy "Immortal Witch" Archer "Good Boy" Set --enemy-blue Fate@Crystal --simulate
 ```
 Cards are written `Name[@Border][/Mutation]`, supports `Name[@Tier]`. A fixed-stat enemy: `--enemy-stats HP ATK`.
+
+Counters to generated enemies at fixed stats: `--enemies N` with `--tower FLOOR DIFFICULTY` (a floor's stats, border and HP multiplier, no supports or mutations) or `--enemy-stats HP ATK`. The enemies are generated at those stats, so their cards are picked for their abilities:
+```
+python3 -m card_engine.training.generate --checkpoint data/training_10s/ema.checkpoint --enemies 4 --tower 104 Impossible --pool restricted --no-limited --model-search 50000 --engine-search 4000
+```
 
 Generate counters (the engine verifies every team). Use the model search (`--model-search`, an evolution scored by the model) and the engine search (`--engine-search`, which keeps improving the model's best teams by real battles); the gradient ascent alone never finds cheese teams (every ascent setting scored 0 at floors 95-105 in the 2026-10-07 tuning). You own no Limited cards, so add `--no-limited`:
 ```

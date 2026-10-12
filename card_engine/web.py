@@ -67,12 +67,40 @@ def _deck_files(which):
     return getattr(deck, path), getattr(deck, doc), title
 
 
+_TABLES = {}
+_TABLES_LOCK = threading.Lock()
+
+
+def annotate(cards):
+    """Each card entry with its rarity (card × border, as generate's --max-rarity) and its stats in his engine (HP and
+    ATK with its border and mutation, before supports), for sorting. The engine's tables are read once."""
+    from .catalog import load_catalog
+    from .deck import BORDERS
+    from .mutations import MUTATION_NAMES
+    with _TABLES_LOCK:
+        if not _TABLES:
+            from .simulator.drago import stat_tables
+            catalog = load_catalog()
+            _TABLES.update(catalog=catalog, base=stat_tables(catalog)[0], ids={c.name: c.id for c in catalog.cards})
+    catalog, base, ids = _TABLES["catalog"], _TABLES["base"], _TABLES["ids"]
+    out = []
+    for e in cards:
+        card, border = ids.get(e.get("name")), (BORDERS.index(e.get("border") or "none") + 1 if (e.get("border") or "none") in BORDERS else None)
+        mutation = MUTATION_NAMES.index(e.get("mutation") or "None") if (e.get("mutation") or "None") in MUTATION_NAMES else None
+        if None in (card, border, mutation):
+            out.append(e)
+            continue
+        hp, atk = base[card, border, mutation]
+        out.append({**e, "rarity": catalog.card(card).rarity * catalog.border(border).rarity, "hp": float(hp), "atk": float(atk)})
+    return out
+
+
 def deck_view(which):
     """A deck or the custom pool by names: the page's editor and its codes never see IDs."""
     from .deck import BORDERS, TIERS, load
     data = load(_deck_files(which)[0])
-    return {"cards": [{"name": e["name"], "border": BORDERS[e["border"] - 1], "mutation": e["mutation"], "count": e["count"]}
-                      for e in data["cards"]],
+    return {"cards": annotate([{"name": e["name"], "border": BORDERS[e["border"] - 1], "mutation": e["mutation"],
+                                "count": e["count"]} for e in data["cards"]]),
             "supports": [{"color": e["color"], "name": e["name"], "tier": TIERS[e["tier"] - 1], "count": e["count"]}
                          for e in data["supports"]]}
 
@@ -170,7 +198,15 @@ def command(tool, p):
         return ["card_engine.training.predict", *checkpoint, *device, *ally, *_enemy(p),
                 *(["--simulate"] if p.get("engine", True) else [])]
     if tool == "counters":
-        enemy = ["--enemies", _number(p.get("enemies", 4), int, 1, 32)] if p.get("enemy_mode") == "broad" else _enemy(p)
+        mode = p.get("enemy_mode")
+        if mode in ("broad", "broad_tower", "broad_stats"):  # generated enemies, at their cards', a floor's or fixed stats
+            enemy = ["--enemies", _number(p.get("enemies", 4), int, 1, 32)]
+            if mode == "broad_tower":
+                enemy += ["--tower", _number(p.get("floor", 105), int, 1, 105), _text(p.get("difficulty", "Impossible"))]
+            if mode == "broad_stats":
+                enemy += ["--enemy-stats", _number(p.get("hp"), float, 1), _number(p.get("atk"), float, 1)]
+        else:
+            enemy = _enemy(p)
         return ["card_engine.training.generate", *checkpoint, *device, *enemy, *_pool(p), "--role", _text(p.get("role", "attack")),
                 "--model-search", _number(p.get("model_search", 50000), int, 0, 2_000_000),
                 "--engine-search", _number(p.get("engine_search", 4000), int, 0, 200_000),
@@ -274,6 +310,8 @@ class Handler(BaseHTTPRequestHandler):
                 return self.send(public(start(body["tool"], body.get("params", {}))))
             except (KeyError, ValueError, TypeError) as error:
                 return self.send({"error": str(error)}, status=400)
+        if self.path == "/api/annotate":
+            return self.send(annotate(body.get("cards", [])[:5000]))
         if self.path == "/api/deck":
             try:
                 return self.send(deck_save(body.get("which", "own"), body.get("deck", {})))
@@ -435,12 +473,12 @@ td input { padding:3px 6px; width:72px; }
   <div class="tool" data-tool="counters" data-title="Find counters">
     <p class="help">Teams that beat an enemy: the model searches, the engine plays the best and keeps improving them.</p>
     <div class="grid">
-      <div><label>Enemy</label><select data-k="enemy_mode" class="enemyMode"><option value="tower">Tower floor</option><option value="team">Custom team</option><option value="stats">Custom team at fixed stats</option><option value="broad">Strong generated enemies</option></select></div>
-      <div data-show="tower"><label>Floor (1-105)</label><input data-k="floor" type="number" value="105" min="1" max="105"></div>
-      <div data-show="tower"><label>Difficulty</label><select data-k="difficulty" class="difficulties"></select></div>
-      <div data-show="stats"><label>Enemy HP</label><input data-k="hp" type="number" value="1000000"></div>
-      <div data-show="stats"><label>Enemy ATK</label><input data-k="atk" type="number" value="500000"></div>
-      <div data-show="broad"><label>How many enemies</label><input data-k="enemies" type="number" value="4"></div>
+      <div><label>Enemy</label><select data-k="enemy_mode" class="enemyMode"><option value="tower">Tower floor</option><option value="team">Custom team</option><option value="stats">Custom team at fixed stats</option><option value="broad">Strong generated enemies</option><option value="broad_tower">Generated enemies at a tower floor's stats</option><option value="broad_stats">Generated enemies at fixed stats</option></select></div>
+      <div data-show="tower broad_tower"><label>Floor (1-105)</label><input data-k="floor" type="number" value="105" min="1" max="105"></div>
+      <div data-show="tower broad_tower"><label>Difficulty</label><select data-k="difficulty" class="difficulties"></select></div>
+      <div data-show="stats broad_stats"><label>Enemy HP</label><input data-k="hp" type="number" value="1000000"></div>
+      <div data-show="stats broad_stats"><label>Enemy ATK</label><input data-k="atk" type="number" value="500000"></div>
+      <div data-show="broad broad_tower broad_stats"><label>How many enemies</label><input data-k="enemies" type="number" value="4"></div>
       <div><label>Cards to choose from</label><select data-k="pool" class="poolSel"><option value="restricted">Player base</option><option value="own">My deck</option><option value="custom">Custom pool</option><option value="progression">What a player like this owns</option><option value="all">Everything</option></select></div>
       <div data-show-pool="progression"><label>Rolls</label><input data-k="rolls" type="number" value="205000000"></div>
       <div data-show-pool="progression"><label>Luck</label><input data-k="luck" type="number" value="100"></div>
@@ -496,7 +534,11 @@ td input { padding:3px 6px; width:72px; }
     </div>
     <div class="buttons"><button class="btn primary" id="dSAdd">Add support</button></div>
     <h3 id="deckHead">Cards</h3>
-    <input id="deckFilter" placeholder="Filter by card, border or mutation">
+    <div class="grid">
+      <div><label>Sort by</label><select id="deckSort"><option value="rarity">Rarity (card × border)</option><option value="power">Stats (HP × ATK)</option><option value="atk">ATK</option><option value="hp">HP</option><option value="name">Name</option></select></div>
+      <div><label>Search</label><input id="deckFilter" placeholder="Card or mutation"></div>
+    </div>
+    <label>Border combinations (none picked: all)</label><div class="borders" id="deckBorderFilter"></div>
     <div class="scroll" id="deckCards"></div>
     <div class="scroll" id="deckSupports"></div>
     <div class="buttons"><button class="btn primary" id="deckSave">Save for the searches</button><button class="btn" id="deckReload">Undo unsaved changes</button>
@@ -592,7 +634,7 @@ async function poll(job, box) {
 
 const pct = x => x == null ? "" : (100 * x).toFixed(1) + "%";
 const num = x => x == null ? "" : Number(x).toLocaleString(undefined, { maximumFractionDigits: 1 });
-function teamLine(t) { return t ? `${(t.cards || []).map(esc).join(" / ")}${t.red ? ` <span class="pill">red ${esc(t.red)}</span>` : ""}${t.blue ? ` <span class="pill">blue ${esc(t.blue)}</span>` : ""}` : ""; }
+function teamLine(t) { return t ? `${(t.cards || []).map(esc).join(" / ")}${t.red ? ` <span class="pill">red ${esc(t.red)}</span>` : ""}${t.blue ? ` <span class="pill">blue ${esc(t.blue)}</span>` : ""}${t.stats ? ` <span class="pill">fixed ${num(t.stats.hp)} HP${t.stats.hp_times_card_multiplier ? " × card" : ""} / ${num(t.stats.attack)} ATK</span>` : ""}` : ""; }
 function parsed(lines) {
   const objs = [], text = []; let buf = "";
   for (const line of lines) {
@@ -701,17 +743,41 @@ function deckAddSupport(color, name, tier, count) {
   const hit = DECK.supports.find(e => e.color === color && e.name === name && e.tier === tier);
   if (hit) hit.count += count; else DECK.supports.push({ color, name, tier, count });
 }
+const short = x => {
+  if (x == null) return ""; if (x < 1000) return String(+x.toPrecision(3));
+  const units = ["k", "M", "B", "T", "Qa", "Qi", "Sx", "Sp", "Oc", "No", "Dc"], i = Math.floor(Math.log10(x) / 3);
+  return i <= units.length ? (+(x / 10 ** (3 * i)).toPrecision(3)) + units[i - 1] : x.toExponential(2);
+};
+const BORDER_PICKS = new Set();
+let ANNOTATING = false;
+async function deckAnnotate() {
+  const missing = DECK.cards.filter(e => e.rarity === undefined);
+  if (!missing.length || ANNOTATING) return;
+  ANNOTATING = true;
+  try {
+    const r = await (await fetch("/api/annotate", { method: "POST", headers: { "Content-Type": "application/json", "X-Card-AI": "1" }, body: JSON.stringify({ cards: missing }) })).json();
+    missing.forEach((e, i) => Object.assign(e, { rarity: r[i]?.rarity ?? null, hp: r[i]?.hp ?? null, atk: r[i]?.atk ?? null }));
+  } catch (error) { return; } finally { ANNOTATING = false; }
+  deckRender();
+}
 function deckRender() {
-  DECK.cards.sort((a, b) => a.name.localeCompare(b.name) || a.border.localeCompare(b.border) || a.mutation.localeCompare(b.mutation));
+  const key = $("#deckSort").value, value = e => key === "power" ? (e.hp ?? 0) * (e.atk ?? 0) : (e[key] ?? 0);
+  DECK.cards.sort((a, b) => (key === "name" ? 0 : value(b) - value(a)) || a.name.localeCompare(b.name) || a.border.localeCompare(b.border) || a.mutation.localeCompare(b.mutation));
+  const combos = [...new Set(DECK.cards.map(e => e.border))].sort((a, b) => a === "none" ? -1 : b === "none" ? 1 : b.length - a.length || a.localeCompare(b));
+  [...BORDER_PICKS].forEach(c => combos.includes(c) || BORDER_PICKS.delete(c));
+  $("#deckBorderFilter").innerHTML = combos.map(c => `<label><input type="checkbox" value="${esc(c)}" ${BORDER_PICKS.has(c) ? "checked" : ""}>${esc(c)} (${DECK.cards.filter(e => e.border === c).reduce((n, e) => n + e.count, 0)})</label>`).join("");
   DECK.supports.sort((a, b) => a.color.localeCompare(b.color) || a.name.localeCompare(b.name) || INFO.tiers.indexOf(a.tier) - INFO.tiers.indexOf(b.tier));
   const total = list => list.reduce((n, e) => n + e.count, 0);
   $("#deckHead").textContent = `Cards (${total(DECK.cards)}) and supports (${total(DECK.supports)})`;
-  const filter = $("#deckFilter").value.trim().toLowerCase(), shown = e => !filter || `${e.name} ${e.border} ${e.mutation}`.toLowerCase().includes(filter);
-  $("#deckCards").innerHTML = DECK.cards.length ? `<table><tr><th>Card</th><th>Border</th><th>Mutation</th><th class="n">Copies</th><th></th><th></th></tr>${DECK.cards.map((e, i) =>
-    `<tr${shown(e) ? "" : ' style="display:none"'}><td>${esc(e.name)}</td><td>${esc(e.border)}</td><td>${esc(e.mutation)}</td><td class="n"><input type="number" min="0" value="${e.count}" data-c="${i}"></td>
+  const filter = $("#deckFilter").value.trim().toLowerCase(),
+        shown = e => (!filter || `${e.name} ${e.mutation}`.toLowerCase().includes(filter)) && (!BORDER_PICKS.size || BORDER_PICKS.has(e.border));
+  $("#deckCards").innerHTML = DECK.cards.length ? `<table><tr><th>Card</th><th>Border</th><th>Mutation</th><th class="n">Rarity</th><th class="n">HP</th><th class="n">ATK</th><th class="n">Copies</th><th></th><th></th></tr>${DECK.cards.map((e, i) =>
+    `<tr${shown(e) ? "" : ' style="display:none"'}><td>${esc(e.name)}</td><td>${esc(e.border)}</td><td>${esc(e.mutation)}</td>
+     <td class="n" title="1 in ${e.rarity ?? ""}">${e.rarity ? "1/" + short(e.rarity) : ""}</td><td class="n">${short(e.hp)}</td><td class="n">${short(e.atk)}</td><td class="n"><input type="number" min="0" value="${e.count}" data-c="${i}"></td>
      <td><button class="btn" data-slot-from="${i}" title="Put in the first empty team slot">to team</button></td><td><button class="btn x" data-rm="${i}">×</button></td></tr>`).join("")}</table>` : `<p class="help">No cards yet.</p>`;
   $("#deckSupports").innerHTML = DECK.supports.length ? `<table><tr><th>Support</th><th>Colour</th><th>Tier</th><th class="n">Copies</th><th></th></tr>${DECK.supports.map((e, i) =>
     `<tr><td>${esc(e.name)}</td><td>${esc(e.color)}</td><td>${esc(e.tier)}</td><td class="n"><input type="number" min="0" value="${e.count}" data-s="${i}"></td><td><button class="btn x" data-srm="${i}">×</button></td></tr>`).join("")}</table>` : "";
+  deckAnnotate();
 }
 function deckUi() {
   $("#deckcardlist").innerHTML = INFO.deck_cards.map(c => opt(c)).join("");
@@ -753,6 +819,9 @@ function deckUi() {
   };
   $("#deckReload").onclick = () => deckLoad();
   $("#deckFilter").addEventListener("input", deckRender);
+  $("#deckSort").addEventListener("change", () => { store.set("deckSort", $("#deckSort").value); deckRender(); });
+  $("#deckSort").value = store.get("deckSort", "rarity");
+  $("#deckBorderFilter").addEventListener("change", e => { e.target.checked ? BORDER_PICKS.add(e.target.value) : BORDER_PICKS.delete(e.target.value); deckRender(); });
   let last = which();
   $("#deckWhich").addEventListener("change", () => {
     if (DIRTY && !confirm("Discard the unsaved changes?")) { $("#deckWhich").value = last; return; }
@@ -803,9 +872,9 @@ async function init() {
     if ($(".run", t)) $(".run", t).onclick = () => run(t.dataset.tool);
     const sync = () => {
       const mode = $(".enemyMode", t)?.value, pool = $(".poolSel", t)?.value;
-      $$("[data-show]", t).forEach(x => x.style.display = x.dataset.show === mode ? "" : "none");
+      $$("[data-show]", t).forEach(x => x.style.display = x.dataset.show.split(" ").includes(mode) ? "" : "none");
       $$("[data-show-pool]", t).forEach(x => x.style.display = x.dataset.showPool === pool ? "" : "none");
-      const et = $(".enemyTeam", t); if (et) { et.style.display = mode === "broad" ? "none" : ""; const d = $("details", et); if (d && mode !== "tower") d.open = true; }
+      const et = $(".enemyTeam", t); if (et) { et.style.display = mode?.startsWith("broad") ? "none" : ""; const d = $("details", et); if (d && mode !== "tower") d.open = true; }
       $$(".masks", t).forEach(m => m.style.display = ["restricted", "all"].includes(pool) ? "" : "none");
     };
     $$("select", t).forEach(s => s.addEventListener("change", sync)); sync();

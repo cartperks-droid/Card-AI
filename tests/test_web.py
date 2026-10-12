@@ -26,6 +26,20 @@ class WebTests(unittest.TestCase):
         self.assertIn("--no-limited", args)
         self.assertEqual(web.command("depths_stats", {"objective": "depth"})[-1], "expected_floors")
 
+    def test_counters_against_generated_enemies_at_fixed_stats(self):
+        args = web.command("counters", {"enemy_mode": "broad_tower", "floor": 104, "difficulty": "Impossible", "enemies": 3})
+        self.assertEqual(args[args.index("--enemies"):args.index("--enemies") + 5], ["--enemies", "3", "--tower", "104", "Impossible"])
+        args = web.command("counters", {"enemy_mode": "broad_stats", "hp": 2e6, "atk": 1e6})
+        self.assertEqual(args[args.index("--enemy-stats") + 1:args.index("--enemy-stats") + 3], ["2000000.0", "1000000.0"])
+        self.assertNotIn("--tower", web.command("counters", {"enemy_mode": "broad"}))
+
+    def test_annotate_rarity_and_stats(self):
+        parallax, plain, unknown = web.annotate([{"name": "Parallax", "border": "GaPl", "mutation": "None"},
+                                                 {"name": "Parallax", "border": "none", "mutation": "None"}, {"name": "?"}])
+        self.assertGreater(parallax["rarity"], plain["rarity"])
+        self.assertGreater(parallax["hp"], plain["hp"])
+        self.assertEqual(unknown, {"name": "?"})
+
     def test_rejects_bad_input(self):
         bad = dict(TEAM, cards=["--checkpoint", "x", "y", "z"])
         for tool, params in [("battle", {"team": bad, "enemy_mode": "tower"}),
@@ -46,7 +60,7 @@ class WebTests(unittest.TestCase):
                               {"name": "Good Boy", "border": "none", "mutation": "Storm", "count": 1}],
                     "supports": [{"color": "blue", "name": "Fate", "tier": "Crystal", "count": 1}]})
                 self.assertEqual(web.deck_view("own"), saved)
-                self.assertIn({"name": "Parallax", "border": "GaPl", "mutation": "None", "count": 3}, saved["cards"])
+                self.assertIn(("Parallax", "GaPl", "None", 3), [(e["name"], e["border"], e["mutation"], e["count"]) for e in saved["cards"]])
                 self.assertEqual(saved["supports"], [{"color": "blue", "name": "Fate", "tier": "Crystal", "count": 1}])
                 self.assertTrue((tmp / "deck.md").exists())
                 for bad in ({"cards": [{"name": "No Such Card"}]}, {"cards": [{"name": "Parallax", "border": "Xx"}]},

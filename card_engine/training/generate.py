@@ -58,10 +58,12 @@ changed), as training.hard mines hard examples. Its --counters best join the mod
 verified again with other dice, so a lucky estimate during the search does not rank a team.
 
 Enemies: an explicit team (--enemy), or --enemies N generated broadly. A broad enemy is a team ascended against
-a random pool opponent and decoded by sampling at a high temperature.
+a random pool opponent and decoded by sampling at a high temperature. With --tower or --enemy-stats, generated
+enemies play at those stats and are ascended at them, so their cards are chosen for their abilities.
 
     python -m card_engine.training.generate --enemy "Immortal Witch" Archer "Good Boy" Set --pool restricted
     python -m card_engine.training.generate --enemies 4 --pool own --borders all --support-tiers all
+    python -m card_engine.training.generate --enemies 4 --tower 104 Impossible --pool restricted --no-limited
     python -m card_engine.training.generate --enemy Odin Kira Set Archer --pool custom --borders none Pl Cr --mutations all
 """
 
@@ -84,7 +86,7 @@ from ..mutations import MUTATION_NAMES
 from ..ownership import parse_rarity
 from ..restricted import entries as restricted_entries, load as load_restricted
 from .. import tower
-from ..teams import ASTRAEUS, ASTRAEUS_ARTS, SINGLE_COPY, describe, parse_side, side
+from ..teams import ASTRAEUS, ASTRAEUS_ARTS, SINGLE_COPY, describe, fixed_stats, parse_side, side
 from .predict import Classifier
 from .train import RUN_DIR, card_stats
 
@@ -207,8 +209,16 @@ class SlotSpace:
             self.reds = torch.as_tensor(pool.reds, device=device)
             self.blues = torch.as_tensor(pool.blues, device=device)
             self.log_red = red[card[:, None], mutation[:, None], self.reds[None, :, 0], self.reds[None, :, 1]].log()  # [E, R, 2]
+            self.hp_multiplier = classifier.inputs.stat_tables[4][card]  # [E], for fixed stats on tower floors
             self.red_vectors = strategy.support_vectors(0, self.reds[:, 0], self.reds[:, 1])
             self.blue_vectors = strategy.support_vectors(1, self.blues[:, 0], self.blues[:, 1])
+
+    def log_fixed(self, stats):
+        """[E, 2]: every pool entry's log (HP, ATK) when its side's stats are fixed (as train.card_stats: the fixed
+        stats, HP times the card's HP multiplier where the mode applies it; supports add nothing)."""
+        hp, atk, multiplier = stats
+        scale = self.hp_multiplier if multiplier else torch.ones_like(self.hp_multiplier)
+        return torch.stack([(hp * scale).log(), torch.full_like(scale, float(atk)).log()], -1).float()
 
     def distances(self, vectors):
         """[N, 4, E]: each slot's factorised distance to every pool entry."""
@@ -278,11 +288,13 @@ class Settings:
     sigma_min: float = 0.02  # noise before the last level; levels between are geometric
 
 
-def ascend(space, opponents, settings, generator, enemy_stats=None):
+def ascend(space, opponents, settings, generator, enemy_stats=None, own_stats=None):
     """Relaxed ally slots ascended against one discrete opponent each; returns (distances [N,4,E], red, blue probs).
-    enemy_stats: the opponents' fixed stats (HP, ATK, HP multiplier applies), if the battle mode sets them."""
+    enemy_stats: the opponents' fixed stats (HP, ATK, HP multiplier applies), if the battle mode sets them; own_stats:
+    the relaxed side's, so its cards are chosen for what they do at those stats."""
     n = len(opponents)
     enemy = space.fixed(opponents, enemy_stats)
+    own_fixed = None if own_stats is None else space.log_fixed(own_stats)
     width = space.card_table.shape[1]
     z = [torch.randn(n, 4, width, generator=generator, device="cpu").to(space.device).requires_grad_() for _ in range(3)]
     red_logits = torch.zeros(n, len(space.reds), device=space.device, requires_grad=True)
@@ -298,7 +310,8 @@ def ascend(space, opponents, settings, generator, enemy_stats=None):
     def step(weight):
         vectors, distance, p, red, blue = state()
         log_red = torch.einsum("erk,nr->nek", space.log_red, red)
-        stats = torch.einsum("nse,ek->nsk", p, space.log_base) + torch.einsum("nse,nek->nsk", p, log_red)
+        stats = (torch.einsum("nse,ek->nsk", p, space.log_base) + torch.einsum("nse,nek->nsk", p, log_red)
+                 if own_fixed is None else torch.einsum("nse,ek->nsk", p, own_fixed))
         ally = (vectors[0] + vectors[1] + vectors[2], stats, red @ space.red_vectors, blue @ space.blue_vectors)
         hidden = 0 if settings.incomplete else None  # incomplete mode: the attacker (side A) is the hidden one
         if settings.role == "attack":
@@ -428,14 +441,16 @@ def counters(space, enemy, *, count=32, restarts=64, settings=Settings(), seed=1
     return sorted(best.values(), key=lambda r: -r[1])[:count]
 
 
-def broad_enemies(space, n, *, settings=Settings(), temperature=1.0, seed=1):
+def broad_enemies(space, n, *, settings=Settings(), temperature=1.0, seed=1, stats=None):
     """`n` diverse strong teams: each ascended against a random pool opponent, decoded by sampling. settings.role is
-    the ally's, so the enemies are ascended in the other role."""
+    the ally's, so the enemies are ascended in the other role. stats: the enemies' fixed stats (HP, ATK, HP
+    multiplier applies), so they are chosen for their abilities at those stats."""
     rng = np.random.default_rng(seed)
     opponents = [random_team(space.pool, rng) for _ in range(n)]
     generator = torch.Generator().manual_seed(seed)
     enemy_role = ROLES[1 - ROLES.index(settings.role)]
-    distance, red, blue, _ = ascend(space, opponents, dataclasses.replace(settings, role=enemy_role), generator)
+    distance, red, blue, _ = ascend(space, opponents, dataclasses.replace(settings, role=enemy_role), generator,
+                                    own_stats=stats)
     return decode_sample(space, distance, red, blue, temperature, generator)
 
 
@@ -617,11 +632,23 @@ def main():
     parser.add_argument("--output", help="also write the report here (JSON)")
     args = parser.parse_args(shell_words(sys.argv[1:]))
     catalog = load_catalog()
-    enemy, enemy_stats = tower.enemy(catalog, args, parser)
-    if (enemy is None) == (args.enemies is None):
-        parser.error("give either --enemy (or --tower with a fixed floor) or --enemies")
-    if enemy_stats is not None and enemy is None:
-        parser.error("--enemy-stats and --tower go with one enemy, not --enemies")
+    if args.enemies is not None and args.enemy:
+        parser.error("give either --enemy or --enemies")
+    if args.enemies is not None:  # generated enemies, at a tower floor's or fixed stats if given
+        enemy, enemy_stats, border = None, None, 1
+        if args.tower and args.enemy_stats:
+            parser.error("give --tower or --enemy-stats, not both")
+        if args.tower:
+            level = tower.difficulty(args.tower[1])
+            if not 1 <= int(args.tower[0]) <= tower.FLOORS:
+                parser.error(f"tower floors run 1-{tower.FLOORS}")
+            enemy_stats, border = tower.stats(int(args.tower[0]), level), tower.enemy_border(catalog, level)
+        elif args.enemy_stats:
+            enemy_stats = fixed_stats(*args.enemy_stats)
+    else:
+        enemy, enemy_stats = tower.enemy(catalog, args, parser)
+        if enemy is None:
+            parser.error("give either --enemy (or --tower with a fixed floor) or --enemies")
     mask = dict(zip(("borders", "mutations", "tiers"), masks(args.borders, args.mutations, args.support_tiers)),
                 max_rarity=parse_rarity(args.max_rarity) if args.max_rarity else None)
     classifier = Classifier(args.checkpoint, args.device)
@@ -634,7 +661,11 @@ def main():
         enemy_pool = args.enemy_pool or args.pool
         enemy_space = space if enemy_pool == args.pool else SlotSpace(
             classifier, make_pool(catalog, enemy_pool, limited=not args.no_limited, **mask))
-        enemies = broad_enemies(enemy_space, args.enemies, settings=settings, seed=args.seed)
+        enemies = broad_enemies(enemy_space, args.enemies, settings=settings, seed=args.seed, stats=enemy_stats)
+        for team in enemies if enemy_stats is not None else ():  # as tower.enemy: a fixed-stat enemy is borderless, a
+            team["borders"] = [border] * 4                      # tower enemy carries its difficulty's border and is
+            if args.tower:                                       # unmutated and without supports
+                team.update(mutations=[0] * 4, red=0, red_tier=0, blue=0, blue_tier=0)
     report = {"checkpoint_step": classifier.metadata.get("step"), "role": args.role, "pool": args.pool,
               "masks": {"borders": args.borders, "mutations": args.mutations, "support_tiers": args.support_tiers,
                         "max_rarity": args.max_rarity},
