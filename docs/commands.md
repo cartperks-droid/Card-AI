@@ -184,7 +184,7 @@ The website does everything in this section and in depths (section 9) without co
 ```
 python3 -m card_engine.web
 ```
-Pick the team in the slots at the top (it is remembered), choose a tab, press Run. Each run is the same command shown under its output, so you can copy it. Keep the device on `cpu` while the trainer uses the GPU. Stop the site with Ctrl+C; `--port N` picks another port, `--no-open` skips opening the browser. It answers only this computer.
+Pick the team in the slots at the top (it is remembered), choose a tab, press Run. The Deck tab builds your collection (the searches' "My deck" pool) or the custom pool: add cards with borders, mutations and copies, and supports with tiers, then Save; "to team" puts a card in the first empty slot. "Copy team code" and "Copy deck code" give a code (`CA1.…`) that you can keep anywhere or send to someone; paste it into the Codes box and press Load to get the team or deck back (a loaded deck still needs Save). Each run is the same command shown under its output, so you can copy it. Keep the device on `cpu` while the trainer uses the GPU. Stop the site with Ctrl+C; `--port N` picks another port, `--no-open` skips opening the browser. It answers only this computer.
 
 The commands, for reference:
 

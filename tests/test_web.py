@@ -1,4 +1,7 @@
+import tempfile
 import unittest
+from pathlib import Path
+from unittest import mock
 
 from card_engine import web
 
@@ -32,6 +35,28 @@ class WebTests(unittest.TestCase):
                              ("shell", {})]:
             with self.assertRaises(ValueError):
                 web.command(tool, params)
+
+    def test_deck_round_trip(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            tmp = Path(tmp)
+            with mock.patch.multiple("card_engine.deck", DECK_FILE=tmp / "deck.json", DECK_DOC=tmp / "deck.md"):
+                saved = web.deck_save("own", {
+                    "cards": [{"name": "Parallax", "border": "GaPl", "mutation": "None", "count": 2},
+                              {"name": "Parallax", "border": "GaPl", "mutation": "None", "count": 1},
+                              {"name": "Good Boy", "border": "none", "mutation": "Storm", "count": 1}],
+                    "supports": [{"color": "blue", "name": "Fate", "tier": "Crystal", "count": 1}]})
+                self.assertEqual(web.deck_view("own"), saved)
+                self.assertIn({"name": "Parallax", "border": "GaPl", "mutation": "None", "count": 3}, saved["cards"])
+                self.assertEqual(saved["supports"], [{"color": "blue", "name": "Fate", "tier": "Crystal", "count": 1}])
+                self.assertTrue((tmp / "deck.md").exists())
+                for bad in ({"cards": [{"name": "No Such Card"}]}, {"cards": [{"name": "Parallax", "border": "Xx"}]},
+                            {"supports": [{"color": "red", "name": "Fate"}]},
+                            {"cards": [{"name": "Judgement Day", "mutation": "Storm"}]}):
+                    with self.assertRaises(ValueError):
+                        web.deck_save("own", bad)
+                self.assertEqual(web.deck_view("own"), saved)
+        with self.assertRaises(ValueError):
+            web.deck_view("../../etc")
 
 
 if __name__ == "__main__":
