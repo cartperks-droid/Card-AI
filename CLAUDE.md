@@ -39,6 +39,7 @@ This project simulates a Roblox "Snap!"-style card game and trains an AI to pred
   - `docs/training.md`: the training pipeline.
   - `docs/runpod.md`: the pod run, Mac labelling and syncing, progress checks, the stop timer. Read it first when resuming the run.
   - `docs/commands.md`: every command, by task, for running the project without help.
+  - `docs/learning_rule_experiment.md`: a brief for testing a learning rule other than backpropagation on the model, with `scripts/learning_rule_bench.py`.
   - `docs/classes.md`: class memberships.
   - `docs/card_forms.md`: card forms.
 
