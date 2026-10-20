@@ -37,6 +37,9 @@ def last_step(path):
 
 
 def show(path):
+    if not path.exists():
+        print(f"\n== {path.name}  (not started)")
+        return
     rows = evaluations(path)
     state = "running" if running(path) else "stopped"
     step = last_step(path)
