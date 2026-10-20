@@ -71,7 +71,7 @@ def make_rule(name, model, args):
     return module.make_rule(model, args)
 
 
-def subset(store, shards, prefixes):
+def subset(store, shards, prefixes, val_shards=None):
     """A temporary folder of links to a fixed subset of the store's shards: `shards` training shards and a tenth as many
     validation ones (seeds divisible by VALIDATION_EVERY), spread evenly over the store, each kind in `prefixes`."""
     paths = sorted(p for p in store.glob("*.npz") if p.name.split("_")[0] in prefixes)
@@ -79,7 +79,7 @@ def subset(store, shards, prefixes):
     train = [p for p in paths if p not in set(val)]
     pick = lambda items, n: items[::max(1, len(items) // n)][:n] if n else []
     folder = tempfile.TemporaryDirectory()
-    for path in pick(train, shards) + pick(val, max(1, shards // 10)):
+    for path in pick(train, shards) + pick(val, val_shards or max(1, shards // 10)):
         (Path(folder.name) / path.name).symlink_to(path.resolve())
     return folder
 
@@ -92,6 +92,7 @@ def main():
     parser.add_argument("--batch-size", type=int, default=512)
     parser.add_argument("--eval-every", type=int, default=250)
     parser.add_argument("--shards", type=int, default=100, help="training shards read (about 2,000 battles each)")
+    parser.add_argument("--val-shards", type=int, help="validation shards (default: a tenth of --shards)")
     parser.add_argument("--kinds", nargs="+", default=["shard", "fixed"],
                         help="shard kinds by file prefix (shard: random battles, fixed, hard, found, pvp, hidden)")
     parser.add_argument("--from", dest="start", help="start from this checkpoint instead of a fresh model")
@@ -116,7 +117,7 @@ def main():
     device = torch.device(args.device or default_device())
     torch.manual_seed(args.seed)
 
-    folder = subset(latest_label_dir(), args.shards, set(args.kinds))
+    folder = subset(latest_label_dir(), args.shards, set(args.kinds), args.val_shards)
     train_rows, val_rows = load_split(Path(folder.name), device)
     if train_rows is None or val_rows is None:
         raise SystemExit("No valid labels in the subset: more --shards, or see python -m card_engine.training.flags status")
