@@ -17,9 +17,11 @@ def evaluations(path):
     for line in open(path):
         if line.startswith("{") and '"kl"' in line:
             try:
-                rows.append(json.loads(line))
+                row = json.loads(line)
             except json.JSONDecodeError:
-                pass
+                continue
+            if "step" in row and "upset_accuracy" in row:  # a training evaluation (not e.g. a hardened-search line)
+                rows.append(row)
     return rows
 
 
@@ -58,7 +60,8 @@ def show(path):
 
 
 def main():
-    paths = [Path(p) for p in sys.argv[1:]] or sorted((ROOT / "data/bench_discrete_mac").glob("*.log"),
+    paths = [Path(p) for p in sys.argv[1:]] or sorted((p for p in (ROOT / "data/bench_discrete_mac").glob("*.log")
+                                                     if not p.name.startswith("harden_")),
                                                     key=lambda p: p.stat().st_mtime)[-3:]
     for path in paths:
         show(path)
