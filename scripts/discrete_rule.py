@@ -54,6 +54,10 @@ def rule_args(args):
     parser.add_argument("--pflip", type=float, default=0.1, help="target change/flip rate at init")
     parser.add_argument("--strength", type=float, default=16.0, help="binary init: strong logit S")
     parser.add_argument("--bias", choices=["on", "off"], default="on", help="off: no bias bit in any gate")
+    parser.add_argument("--bias-init", choices=["graded", "binary"], default="graded",
+                        help="a neuron whose inputs alone fire it above its target: graded = its bias transmits 1 - t/p_in, "
+                             "so it fires at t from its inputs (user); binary = a strong bias on a fraction 1 - t/p_in of "
+                             "such neurons (constant neurons; the earlier runs)")
     parser.add_argument("--weak-block", type=float, default=0.0,
                         help="binary init: what a neuron's non-strong links block together (a m w_weak); 0: silent at -16")
     parser.add_argument("--init-spread", type=float, default=0.0,
@@ -142,6 +146,7 @@ class Gate(nn.Module):
         self.shape = (groups, nin, nout)
         self.target, self.strength, self.generator = target, cfg.strength, generator
         self.use_bias = cfg.bias == "on"
+        self.bias_init = getattr(cfg, "bias_init", "graded")
         self.weak_block, self.route, self.spread = cfg.weak_block, cfg.route, cfg.init_spread
         self.w = self.b = None
         fan = min(nout, FANCAP)
@@ -188,13 +193,20 @@ class Gate(nn.Module):
         if self.spread > 0:  # weak links on the sigmoid's exponential tail: centre lowered by spread^2 / 2 so their
             # expected transmission (what they block together) stays at its derived value
             w = torch.where(strong, w, w - self.spread ** 2 / 2) + self.spread * torch.randn(shape, generator=generator)
-        pin = (1 - a * q.clamp(max=1)) ** fanin
-        bias_strong = (pin > target * 1.0001) & (torch.rand((groups, nout), generator=generator, dtype=torch.float64)
-                                                  < 1 - target / pin)
+        pin = (1 - a * q.clamp(max=1)) ** fanin  # the neuron's firing from its own inputs alone
+        need = pin > target * 1.0001  # its inputs fire it too often: the bias lowers it (a transmitting bias blocks)
+        if self.bias_init == "graded":  # user: every such neuron's bias transmits 1 - t/pin, so it fires at t from its inputs
+            bias_strong = torch.zeros((groups, nout), dtype=torch.bool)
+            graded = (1 - target / pin).clamp(1e-6, 1 - 1e-6)
+            graded_logit = (graded.log() - (-graded).log1p()).float().expand(groups, nout)
+        else:  # binary (earlier runs): strong on a fraction 1 - t/pin of them (constant neurons), off on the rest
+            bias_strong = need & (torch.rand((groups, nout), generator=generator, dtype=torch.float64) < 1 - target / pin)
         # an off bias is one more weak link (an always-active input): the neuron's weak transmission, or silent; at -S it
         # blocked sigma(-S) of the time whatever the input (S=4: 1.8%, S=6: 0.25%, more than the weak links' 0.1%)
         off = weak[:, 0, :] - (self.spread ** 2 / 2 if self.weak_block > 0 else 0.0)
         b = torch.where(bias_strong, torch.tensor(S, dtype=torch.float32), off).float() if self.use_bias else torch.full((groups, nout), -CLAMP)
+        if self.use_bias and self.bias_init == "graded":
+            b = torch.where(need.expand(groups, nout), graded_logit, b)
         if self.spread > 0 and self.use_bias:
             b = b + self.spread * torch.randn((groups, nout), generator=generator)
         w, b = w.clamp(-CLAMP, CLAMP), b.clamp(-CLAMP, CLAMP)
